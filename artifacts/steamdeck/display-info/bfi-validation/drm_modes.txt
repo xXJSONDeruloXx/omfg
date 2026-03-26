@@ -1,0 +1,13 @@
+--- /sys/class/drm/*/status ---
+## /sys/class/drm/card0-DP-1/status
+disconnected
+## /sys/class/drm/card0-eDP-1/status
+connected
+## /sys/class/drm/card0-Writeback-1/status
+unknown
+
+--- /sys/class/drm/*/modes ---
+## /sys/class/drm/card0-DP-1/modes
+## /sys/class/drm/card0-eDP-1/modes
+800x1280
+## /sys/class/drm/card0-Writeback-1/modes

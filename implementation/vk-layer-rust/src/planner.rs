@@ -19,7 +19,7 @@ pub fn mutate_swapchain(
 
     if matches!(
         mode,
-        Mode::ClearTest | Mode::CopyTest | Mode::HistoryCopyTest
+        Mode::ClearTest | Mode::BfiTest | Mode::CopyTest | Mode::HistoryCopyTest
     ) {
         modified_usage |= vk::ImageUsageFlags::TRANSFER_DST;
         let image_bump = if matches!(mode, Mode::CopyTest | Mode::HistoryCopyTest) {
@@ -88,7 +88,7 @@ pub enum PresentSequence {
 pub fn planned_sequence(mode: Mode, state: &SimulatedPresentState) -> PresentSequence {
     match mode {
         Mode::PassThrough => PresentSequence::PassThrough,
-        Mode::ClearTest | Mode::CopyTest => PresentSequence::OriginalThenGenerated,
+        Mode::ClearTest | Mode::BfiTest | Mode::CopyTest => PresentSequence::OriginalThenGenerated,
         Mode::HistoryCopyTest
         | Mode::BlendTest
         | Mode::AdaptiveBlendTest
@@ -217,7 +217,7 @@ pub fn mark_injection_result(
 ) {
     match mode {
         Mode::PassThrough => {}
-        Mode::ClearTest | Mode::CopyTest => {
+        Mode::ClearTest | Mode::BfiTest | Mode::CopyTest => {
             if injected_successfully {
                 state.injection_works = true;
                 state.generated_present_count += 1;
@@ -272,6 +272,23 @@ mod tests {
     fn clear_mode_adds_transfer_dst_and_one_extra_image() {
         let result = mutate_swapchain(
             Mode::ClearTest,
+            3,
+            vk::ImageUsageFlags::COLOR_ATTACHMENT,
+            Some(10),
+        );
+        assert_eq!(result.modified_min_image_count, 4);
+        assert!(result
+            .modified_usage
+            .contains(vk::ImageUsageFlags::TRANSFER_DST));
+        assert!(!result
+            .modified_usage
+            .contains(vk::ImageUsageFlags::TRANSFER_SRC));
+    }
+
+    #[test]
+    fn bfi_mode_adds_transfer_dst_and_one_extra_image() {
+        let result = mutate_swapchain(
+            Mode::BfiTest,
             3,
             vk::ImageUsageFlags::COLOR_ATTACHMENT,
             Some(10),
@@ -704,7 +721,7 @@ mod tests {
     }
 
     #[test]
-    fn copy_and_clear_count_generated_frames() {
+    fn copy_clear_and_bfi_count_generated_frames() {
         let mut copy_state = SimulatedPresentState::default();
         assert_eq!(
             planned_sequence(Mode::CopyTest, &copy_state),
@@ -722,5 +739,14 @@ mod tests {
         mark_injection_result(Mode::ClearTest, &mut clear_state, true);
         assert_eq!(clear_state.generated_present_count, 1);
         assert!(clear_state.injection_works);
+
+        let mut bfi_state = SimulatedPresentState::default();
+        assert_eq!(
+            planned_sequence(Mode::BfiTest, &bfi_state),
+            PresentSequence::OriginalThenGenerated
+        );
+        mark_injection_result(Mode::BfiTest, &mut bfi_state, true);
+        assert_eq!(bfi_state.generated_present_count, 1);
+        assert!(bfi_state.injection_works);
     }
 }

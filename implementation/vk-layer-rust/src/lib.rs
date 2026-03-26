@@ -4201,11 +4201,51 @@ unsafe fn try_present_history_copy_frame(
     true
 }
 
+fn bfi_period() -> u32 {
+    env_u32("PPFG_BFI_PERIOD", 1).max(1)
+}
+
+fn should_insert_bfi_frame(state: &SwapchainState) -> bool {
+    (state.present_count % bfi_period() as u64) == 0
+}
+
+fn clear_mode_color(state: &SwapchainState, mode: Mode) -> vk::ClearColorValue {
+    match mode {
+        Mode::BfiTest => vk::ClearColorValue {
+            float32: [0.0, 0.0, 0.0, 1.0],
+        },
+        _ => {
+            let pulse = if (state.present_count % 120) < 60 {
+                0.85_f32
+            } else {
+                0.15_f32
+            };
+            vk::ClearColorValue {
+                float32: [0.0, pulse, 0.0, 1.0],
+            }
+        }
+    }
+}
+
+fn clear_mode_labels(mode: Mode) -> (&'static str, &'static str) {
+    match mode {
+        Mode::BfiTest => (
+            "first generated black-frame present succeeded",
+            "black frame present=",
+        ),
+        _ => (
+            "first generated clear-frame present succeeded",
+            "generated frame present=",
+        ),
+    }
+}
+
 unsafe fn try_present_clear_frame(
     state: &mut SwapchainState,
     device_info: &DeviceInfo,
     queue_info: &QueueInfo,
     queue: vk::Queue,
+    mode: Mode,
 ) -> bool {
     if !init_inject_resources(state, device_info, queue_info) {
         return false;
@@ -4250,6 +4290,10 @@ unsafe fn try_present_clear_frame(
             "WaitForFences failed for submit fence: {}",
             prior_submit_wait.as_raw()
         ));
+        return false;
+    }
+
+    if matches!(mode, Mode::BfiTest) && !should_insert_bfi_frame(state) {
         return false;
     }
 
@@ -4324,14 +4368,7 @@ unsafe fn try_present_clear_frame(
         &to_transfer_dst,
     );
 
-    let pulse = if (state.present_count % 120) < 60 {
-        0.85_f32
-    } else {
-        0.15_f32
-    };
-    let clear_color = vk::ClearColorValue {
-        float32: [0.0, pulse, 0.0, 1.0],
-    };
+    let clear_color = clear_mode_color(state, mode);
     let range = vk::ImageSubresourceRange {
         aspect_mask: vk::ImageAspectFlags::COLOR,
         base_mip_level: 0,
@@ -4431,15 +4468,19 @@ unsafe fn try_present_clear_frame(
         return false;
     }
 
+    let (first_success_label, generated_label_prefix) = clear_mode_labels(mode);
     state.injection_works = true;
     state.generated_present_count += 1;
     if first_success {
-        log_info("first generated clear-frame present succeeded");
+        if matches!(mode, Mode::BfiTest) {
+            log_info(format!("bfi settings; period={}", bfi_period()));
+        }
+        log_info(first_success_label);
     }
     if state.generated_present_count <= 5 || state.generated_present_count % 60 == 0 {
         log_info(format!(
-            "generated frame present={}; swapchainImageIndex={}",
-            state.generated_present_count, generated_image_index
+            "{}{}; swapchainImageIndex={}",
+            generated_label_prefix, state.generated_present_count, generated_image_index
         ));
     }
     true
@@ -5038,6 +5079,7 @@ unsafe extern "system" fn layer_queue_present_khr(
                 let prefix = if matches!(
                     mode,
                     Mode::ClearTest
+                        | Mode::BfiTest
                         | Mode::CopyTest
                         | Mode::HistoryCopyTest
                         | Mode::BlendTest
@@ -5073,7 +5115,7 @@ unsafe extern "system" fn layer_queue_present_khr(
             ) {
                 planner::PresentSequence::PassThrough => {}
                 planner::PresentSequence::OriginalThenGenerated
-                    if matches!(mode, Mode::ClearTest) && have_queue =>
+                    if matches!(mode, Mode::ClearTest | Mode::BfiTest) && have_queue =>
                 {
                     drop(state_guard);
                     let original_result = queue_present(queue, present_info);
@@ -5094,6 +5136,7 @@ unsafe extern "system" fn layer_queue_present_khr(
                             &device_info,
                             &queue_info,
                             queue,
+                            mode,
                         );
                         let mut sim = planner::SimulatedPresentState {
                             history_valid: swapchain_state.history_valid,

@@ -56,6 +56,7 @@ Build toward an open solution that can:
 - `docs/implementation-status.md`
   - current build/deploy/runtime status
   - what now works on the Steam Deck
+  - current BFI status and display-target observations
 - `docs/rust-feature-roadmap.md`
   - Rust-first implementation ladder
   - parity goals and next capability targets

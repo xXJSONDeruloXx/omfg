@@ -1,0 +1,40 @@
+[ppfg][info][1774568758027] vkNegotiateLoaderLayerInterfaceVersion ok; mode=bfi-test
+[ppfg][info][1774568758029] vkCreateInstance ok; mode=bfi-test; app=vkcube; engine=vkcube; apiVersion=1.0.0
+[ppfg][info][1774568758051] vkCreateDevice ok; gpu=AMD Custom GPU 0932 (RADV VANGOGH)
+[ppfg][info][1774568758056] vkCreateSwapchainKHR ok; extent=500x500; format=44; presentMode=FIFO; minImages=3->4; usage=COLOR_ATTACHMENT (0x10) -> TRANSFER_DST|COLOR_ATTACHMENT (0x12); images=4; mode=bfi-test
+[ppfg][info][1774568758058] vkQueuePresentKHR frame=1; queueFamily=0; imageIndex=0; waitSemaphores=1
+[ppfg][info][1774568758058] initialized injection resources for queue family 0
+[ppfg][info][1774568758058] bfi settings; period=1
+[ppfg][info][1774568758058] first generated black-frame present succeeded
+[ppfg][info][1774568758058] black frame present=1; swapchainImageIndex=1
+[ppfg][info][1774568758058] vkQueuePresentKHR frame=2; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568758058] black frame present=2; swapchainImageIndex=3
+[ppfg][info][1774568758063] vkQueuePresentKHR frame=3; queueFamily=0; imageIndex=0; waitSemaphores=1
+[ppfg][info][1774568758076] black frame present=3; swapchainImageIndex=1
+[ppfg][info][1774568758086] vkQueuePresentKHR frame=4; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568758098] black frame present=4; swapchainImageIndex=3
+[ppfg][info][1774568758108] vkQueuePresentKHR frame=5; queueFamily=0; imageIndex=0; waitSemaphores=1
+[ppfg][info][1774568758120] black frame present=5; swapchainImageIndex=1
+[ppfg][info][1774568759330] vkQueuePresentKHR frame=60; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568759342] black frame present=60; swapchainImageIndex=3
+[ppfg][info][1774568760663] vkQueuePresentKHR frame=120; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568760676] black frame present=120; swapchainImageIndex=3
+[ppfg][info][1774568761996] vkQueuePresentKHR frame=180; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568762009] black frame present=180; swapchainImageIndex=3
+[ppfg][info][1774568763330] vkQueuePresentKHR frame=240; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568763342] black frame present=240; swapchainImageIndex=3
+[ppfg][info][1774568764663] vkQueuePresentKHR frame=300; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568764676] black frame present=300; swapchainImageIndex=3
+[ppfg][info][1774568765996] vkQueuePresentKHR frame=360; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568766009] black frame present=360; swapchainImageIndex=3
+[ppfg][info][1774568767329] vkQueuePresentKHR frame=420; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568767341] black frame present=420; swapchainImageIndex=3
+[ppfg][info][1774568768663] vkQueuePresentKHR frame=480; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568768674] black frame present=480; swapchainImageIndex=3
+[ppfg][info][1774568769996] vkQueuePresentKHR frame=540; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568770009] black frame present=540; swapchainImageIndex=3
+[ppfg][info][1774568771329] vkQueuePresentKHR frame=600; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774568771341] black frame present=600; swapchainImageIndex=3
+[ppfg][info][1774568771341] vkDestroySwapchainKHR
+[ppfg][info][1774568771352] vkDestroyDevice
+[ppfg][info][1774568771465] vkDestroyInstance

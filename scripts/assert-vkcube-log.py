@@ -22,6 +22,10 @@ MODE_MARKERS = {
         "first generated clear-frame present succeeded",
         "generated frame present=120",
     ],
+    "bfi": [
+        "first generated black-frame present succeeded",
+        "black frame present=120",
+    ],
     "copy": [
         "first duplicated-frame present succeeded",
         "duplicated frame present=120",

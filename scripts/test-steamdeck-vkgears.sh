@@ -26,6 +26,7 @@ export DISABLE_GAMESCOPE_WSI=1
 export ${PPFG_LAYER_ENABLE_ENV}=1
 export PPFG_LAYER_MODE=${MODE}
 export PPFG_LAYER_LOG_FILE=${REMOTE_BASE}/ppfg-vkgears.log
+export PPFG_BFI_PERIOD=${PPFG_BFI_PERIOD:-}
 export VK_LAYER_PATH=${REMOTE_BASE}
 export VK_INSTANCE_LAYERS=${PPFG_LAYER_NAME}
 printf 'RUN impl=%s display=%s xauthority=%s mode=%s layer=%s\n' "${PPFG_LAYER_IMPL}" "\$DISPLAY" "\$XAUTHORITY" "\$PPFG_LAYER_MODE" "\$VK_INSTANCE_LAYERS"

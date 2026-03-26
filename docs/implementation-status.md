@@ -6,6 +6,7 @@ We now have:
 - a **working Linux Vulkan layer MVP** in C++
 - a **working Rust parity port** for the current MVP scope
 - multiple **Rust shader-based generated-frame backends**
+- a simple **software BFI / black-frame-insertion mode** in Rust
 - a first **adaptive frame-count control path** in Rust multi-FG
 - a repeatable local + Linux + Steam Deck regression harness
 
@@ -26,6 +27,8 @@ This is beyond paper architecture at this point.
   - `scripts/run-layer-regression-suite.sh`
   - `scripts/run-advanced-steamdeck-validation.sh`
   - `scripts/run-target-fps-steamdeck-validation.sh`
+  - `scripts/run-bfi-steamdeck-validation.sh`
+  - `scripts/collect-steamdeck-display-info.sh`
   - `scripts/assert-vkcube-log.py`
   - `scripts/compile-rust-shaders.sh`
 
@@ -37,6 +40,7 @@ Rust implementation location:
 Rust implementation currently has verified parity for the existing MVP feature set:
 - `passthrough`
 - `clear`
+- `bfi`
 - `copy`
 - `history-copy`
 
@@ -78,6 +82,24 @@ Observed:
 - 120 real presents completed cleanly
 - 120 generated placeholder presents completed cleanly
 - extra frame insertion proven on real Linux hardware
+
+#### 2a. `bfi` (Rust)
+Working as a simple software black-frame-insertion path.
+
+Validated with Rust layer on Steam Deck:
+- `vkcube --c 120`
+- `vkcube --c 600`
+- `vkcube --c 120 --present_mode 0`
+- `PPFG_BFI_PERIOD=2 vkcube --c 120`
+- full Rust regression suite including `bfi`
+- dedicated BFI validation via `scripts/run-bfi-steamdeck-validation.sh`
+
+Observed:
+- every inserted generated image is cleared to solid black
+- default `PPFG_BFI_PERIOD=1` inserts one black frame after every intercepted real present
+- `PPFG_BFI_PERIOD=2` reduces insertion cadence and was validated on Deck by ending at `black frame present=60` for a `120`-frame app run
+- swapchain image count was increased from `3 -> 4` for the validated Deck path
+- stable on Deck through smoke, long, and IMMEDIATE-mode runs
 
 #### 3. `copy`
 Working.
@@ -212,6 +234,26 @@ These modes are still stepping stones toward motion-aware interpolation, but the
 
 ---
 
+## Display target observations from current Steam Deck capture
+
+Captured via:
+- `scripts/collect-steamdeck-display-info.sh`
+- artifact root: `artifacts/steamdeck/display-info/bfi-validation/`
+
+Observed on the current Deck test target:
+- internal connector: `eDP`
+- active mode: `800x1280 @ 90.00 Hz`
+- no external `DP-1` display was connected during the capture
+- VRR is reported as unavailable on this active panel path (`vrr_capable = 0` in the captured outputs)
+- Vulkan reports support for:
+  - `VK_GOOGLE_display_timing`
+  - `VK_KHR_present_id`
+  - `VK_KHR_present_wait`
+
+That means we can now confirm the **active panel mode** on the Linux target, but we still have **not** yet wired end-to-end past-presentation timing into the layer itself, so panel-level pacing/scanout confirmation is still weaker than the layer's own present logs.
+
+---
+
 ## Important technical insight from implementation
 
 ### The stable placeholder-frame paths were:
@@ -231,6 +273,7 @@ That is not final-product pacing, but it is a real, working insertion path.
 
 Right now the layer can do:
 - **post-process frame insertion**
+- **software black-frame insertion**
 - **same-frame duplication**
 - **previous-frame placeholder insertion with private history**
 - **simple shader-based previous/current frame blending**
@@ -265,6 +308,11 @@ C++ MVP:
 Rust parity port:
 - `artifacts/steamdeck/rust/vkcube/passthrough/ppfg-vkcube.log`
 - `artifacts/steamdeck/rust/vkcube/clear/ppfg-vkcube.log`
+- `artifacts/steamdeck/rust/vkcube/bfi/ppfg-vkcube.log`
+- `artifacts/steamdeck/rust/vkcube/bfi-smoke/ppfg-vkcube.log`
+- `artifacts/steamdeck/rust/vkcube/bfi-long/ppfg-vkcube.log`
+- `artifacts/steamdeck/rust/vkcube/bfi-immediate/ppfg-vkcube.log`
+- `artifacts/steamdeck/rust/vkcube/bfi-period2-smoke/ppfg-vkcube.log`
 - `artifacts/steamdeck/rust/vkcube/copy/ppfg-vkcube.log`
 - `artifacts/steamdeck/rust/vkcube/history-copy/ppfg-vkcube.log`
 - `artifacts/steamdeck/rust/vkcube/blend/ppfg-vkcube.log`
@@ -289,6 +337,13 @@ Rust parity port:
 ### vkgears
 - `artifacts/steamdeck/vkgears/clear/ppfg-vkgears.log`
 - `artifacts/steamdeck/rust/vkgears/history-copy/ppfg-vkgears.log`
+
+### display info
+- `artifacts/steamdeck/display-info/bfi-validation/summary.txt`
+- `artifacts/steamdeck/display-info/bfi-validation/xrandr.txt`
+- `artifacts/steamdeck/display-info/bfi-validation/modetest.txt`
+- `artifacts/steamdeck/display-info/bfi-validation/drm_info.txt`
+- `artifacts/steamdeck/display-info/bfi-validation/vulkan_display_timing.txt`
 
 ---
 

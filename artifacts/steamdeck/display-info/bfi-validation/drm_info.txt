@@ -1,0 +1,1699 @@
+Node: /dev/dri/card0
+├───Driver: amdgpu (AMD GPU) version 3.59.0
+│   ├───DRM_CLIENT_CAP_STEREO_3D supported
+│   ├───DRM_CLIENT_CAP_UNIVERSAL_PLANES supported
+│   ├───DRM_CLIENT_CAP_ATOMIC supported
+│   ├───DRM_CLIENT_CAP_ASPECT_RATIO supported
+│   ├───DRM_CLIENT_CAP_WRITEBACK_CONNECTORS supported
+│   ├───DRM_CLIENT_CAP_CURSOR_PLANE_HOTSPOT not supported
+│   ├───DRM_CAP_DUMB_BUFFER = 1
+│   ├───DRM_CAP_VBLANK_HIGH_CRTC = 1
+│   ├───DRM_CAP_DUMB_PREFERRED_DEPTH = 24
+│   ├───DRM_CAP_DUMB_PREFER_SHADOW = 1
+│   ├───DRM_CAP_PRIME = 3
+│   ├───DRM_CAP_TIMESTAMP_MONOTONIC = 1
+│   ├───DRM_CAP_ASYNC_PAGE_FLIP = 1
+│   ├───DRM_CAP_CURSOR_WIDTH = 256
+│   ├───DRM_CAP_CURSOR_HEIGHT = 256
+│   ├───DRM_CAP_ADDFB2_MODIFIERS = 1
+│   ├───DRM_CAP_PAGE_FLIP_TARGET = 0
+│   ├───DRM_CAP_CRTC_IN_VBLANK_EVENT = 1
+│   ├───DRM_CAP_SYNCOBJ = 1
+│   ├───DRM_CAP_SYNCOBJ_TIMELINE = 1
+│   └───DRM_CAP_ATOMIC_ASYNC_PAGE_FLIP = 1
+├───Device: PCI 1002:1435 Advanced Micro Devices, Inc. [AMD/ATI] Sephiroth [AMD Custom GPU 0405]
+│   └───Available nodes: primary, render
+├───Framebuffer size
+│   ├───Width: [0, 16384]
+│   └───Height: [0, 16384]
+├───Connectors
+│   ├───Connector 0
+│   │   ├───Object ID: 113
+│   │   ├───Type: eDP
+│   │   ├───Status: connected
+│   │   ├───Physical size: 100×160 mm
+│   │   ├───Subpixel: unknown
+│   │   ├───Encoders: {0}
+│   │   ├───Modes
+│   │   │   └───800×1280@90.00 preferred driver phsync pvsync 
+│   │   └───Properties
+│   │       ├───"EDID" (immutable): blob = 148
+│   │       ├───"DPMS": enum {On, Standby, Suspend, Off} = On
+│   │       ├───"link-status": enum {Good, Bad} = Good
+│   │       ├───"non-desktop" (immutable): range [0, 1] = 0
+│   │       ├───"TILE" (immutable): blob = 0
+│   │       ├───"CRTC_ID" (atomic): object CRTC = 99
+│   │       ├───"scaling mode": enum {None, Full, Center, Full aspect} = None
+│   │       ├───"underscan": enum {off, on, auto} = off
+│   │       ├───"underscan hborder": range [0, 128] = 0
+│   │       ├───"underscan vborder": range [0, 128] = 0
+│   │       ├───"max bpc": range [8, 16] = 16
+│   │       ├───"Colorspace": enum {Default, BT709_YCC, opRGB, BT2020_RGB, BT2020_YCC} = Default
+│   │       ├───"HDR_OUTPUT_METADATA": blob = 0
+│   │       ├───"vrr_capable" (immutable): range [0, 1] = 0
+│   │       ├───"Content Protection": enum {Undesired, Desired, Enabled} = Undesired
+│   │       ├───"HDCP Content Type": enum {HDCP Type0, HDCP Type1} = HDCP Type0
+│   │       └───"panel orientation" (immutable): enum {Normal, Upside Down, Left Side Up, Right Side Up} = Right Side Up
+│   ├───Connector 1
+│   │   ├───Object ID: 122
+│   │   ├───Type: DisplayPort
+│   │   ├───Status: disconnected
+│   │   ├───Encoders: {1}
+│   │   └───Properties
+│   │       ├───"EDID" (immutable): blob = 0
+│   │       ├───"DPMS": enum {On, Standby, Suspend, Off} = Off
+│   │       ├───"link-status": enum {Good, Bad} = Good
+│   │       ├───"non-desktop" (immutable): range [0, 1] = 0
+│   │       ├───"TILE" (immutable): blob = 0
+│   │       ├───"CRTC_ID" (atomic): object CRTC = 0
+│   │       ├───"scaling mode": enum {None, Full, Center, Full aspect} = None
+│   │       ├───"Broadcast RGB": enum {Automatic, Full, Limited 16:235} = Automatic
+│   │       ├───"underscan": enum {off, on, auto} = off
+│   │       ├───"underscan hborder": range [0, 128] = 0
+│   │       ├───"underscan vborder": range [0, 128] = 0
+│   │       ├───"max bpc": range [8, 16] = 16
+│   │       ├───"Colorspace": enum {Default, BT709_YCC, opRGB, BT2020_RGB, BT2020_YCC} = Default
+│   │       ├───"HDR_OUTPUT_METADATA": blob = 0
+│   │       ├───"vrr_capable" (immutable): range [0, 1] = 0
+│   │       ├───"Content Protection": enum {Undesired, Desired, Enabled} = Undesired
+│   │       ├───"HDCP Content Type": enum {HDCP Type0, HDCP Type1} = HDCP Type0
+│   │       └───"subconnector" (immutable): enum {Unknown, VGA, DVI-D, HDMI, DP, Wireless, Native} = Unknown
+│   └───Connector 2
+│       ├───Object ID: 133
+│       ├───Type: writeback
+│       ├───Status: unknown
+│       ├───Physical size: 0×0 mm
+│       ├───Subpixel: unknown
+│       ├───Encoders: {2}
+│       └───Properties
+│           ├───"DPMS": enum {On, Standby, Suspend, Off} = On
+│           ├───"link-status": enum {Good, Bad} = Good
+│           ├───"non-desktop" (immutable): range [0, 1] = 0
+│           ├───"TILE" (immutable): blob = 0
+│           ├───"CRTC_ID" (atomic): object CRTC = 0
+│           ├───"WRITEBACK_OUT_FENCE_PTR" (atomic): range [0, UINT64_MAX] = 0
+│           ├───"WRITEBACK_FB_ID" (atomic): object framebuffer = 0
+│           └───"WRITEBACK_PIXEL_FORMATS" (atomic, immutable): blob = 132
+│               └───XRGB2101010 (0x30335258)
+├───Encoders
+│   ├───Encoder 0
+│   │   ├───Object ID: 112
+│   │   ├───Type: TMDS
+│   │   ├───CRTCS: {0, 1, 2, 3}
+│   │   └───Clones: {0}
+│   ├───Encoder 1
+│   │   ├───Object ID: 121
+│   │   ├───Type: TMDS
+│   │   ├───CRTCS: {0, 1, 2, 3}
+│   │   └───Clones: {1}
+│   ├───Encoder 2
+│   │   ├───Object ID: 128
+│   │   ├───Type: virtual
+│   │   ├───CRTCS: {0, 1, 2, 3}
+│   │   └───Clones: {2}
+│   ├───Encoder 3
+│   │   ├───Object ID: 134
+│   │   ├───Type: DP MST
+│   │   ├───CRTCS: {0, 1, 2, 3}
+│   │   └───Clones: {3}
+│   ├───Encoder 4
+│   │   ├───Object ID: 135
+│   │   ├───Type: DP MST
+│   │   ├───CRTCS: {0, 1, 2, 3}
+│   │   └───Clones: {4}
+│   ├───Encoder 5
+│   │   ├───Object ID: 136
+│   │   ├───Type: DP MST
+│   │   ├───CRTCS: {0, 1, 2, 3}
+│   │   └───Clones: {5}
+│   └───Encoder 6
+│       ├───Object ID: 137
+│       ├───Type: DP MST
+│       ├───CRTCS: {0, 1, 2, 3}
+│       └───Clones: {6}
+├───CRTCs
+│   ├───CRTC 0
+│   │   ├───Object ID: 99
+│   │   ├───Legacy info
+│   │   │   ├───Mode: 800×1280@90.00 phsync pvsync 
+│   │   │   └───Gamma size: 256
+│   │   └───Properties
+│   │       ├───"ACTIVE" (atomic): range [0, 1] = 1
+│   │       ├───"MODE_ID" (atomic): blob = 149
+│   │       │   └───800×1280@90.00 phsync pvsync 
+│   │       ├───"OUT_FENCE_PTR" (atomic): range [0, UINT64_MAX] = 0
+│   │       ├───"VRR_ENABLED": range [0, 1] = 0
+│   │       ├───"DEGAMMA_LUT": blob = 0
+│   │       ├───"DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+│   │       ├───"CTM": blob = 139
+│   │       ├───"GAMMA_LUT": blob = 150
+│   │       ├───"GAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+│   │       └───"AMD_CRTC_REGAMMA_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+│   ├───CRTC 1
+│   │   ├───Object ID: 103
+│   │   ├───Legacy info
+│   │   │   └───Gamma size: 256
+│   │   └───Properties
+│   │       ├───"ACTIVE" (atomic): range [0, 1] = 0
+│   │       ├───"MODE_ID" (atomic): blob = 0
+│   │       ├───"OUT_FENCE_PTR" (atomic): range [0, UINT64_MAX] = 0
+│   │       ├───"VRR_ENABLED": range [0, 1] = 0
+│   │       ├───"DEGAMMA_LUT": blob = 0
+│   │       ├───"DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+│   │       ├───"CTM": blob = 140
+│   │       ├───"GAMMA_LUT": blob = 144
+│   │       ├───"GAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+│   │       └───"AMD_CRTC_REGAMMA_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+│   ├───CRTC 2
+│   │   ├───Object ID: 107
+│   │   ├───Legacy info
+│   │   │   └───Gamma size: 256
+│   │   └───Properties
+│   │       ├───"ACTIVE" (atomic): range [0, 1] = 0
+│   │       ├───"MODE_ID" (atomic): blob = 0
+│   │       ├───"OUT_FENCE_PTR" (atomic): range [0, UINT64_MAX] = 0
+│   │       ├───"VRR_ENABLED": range [0, 1] = 0
+│   │       ├───"DEGAMMA_LUT": blob = 0
+│   │       ├───"DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+│   │       ├───"CTM": blob = 141
+│   │       ├───"GAMMA_LUT": blob = 145
+│   │       ├───"GAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+│   │       └───"AMD_CRTC_REGAMMA_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+│   └───CRTC 3
+│       ├───Object ID: 111
+│       ├───Legacy info
+│       │   └───Gamma size: 256
+│       └───Properties
+│           ├───"ACTIVE" (atomic): range [0, 1] = 0
+│           ├───"MODE_ID" (atomic): blob = 0
+│           ├───"OUT_FENCE_PTR" (atomic): range [0, UINT64_MAX] = 0
+│           ├───"VRR_ENABLED": range [0, 1] = 0
+│           ├───"DEGAMMA_LUT": blob = 0
+│           ├───"DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+│           ├───"CTM": blob = 142
+│           ├───"GAMMA_LUT": blob = 146
+│           ├───"GAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+│           └───"AMD_CRTC_REGAMMA_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+└───Planes
+    ├───Plane 0
+    │   ├───Object ID: 54
+    │   ├───CRTCs: {3}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───XRGB8888 (0x34325258)
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───RGBA8888 (0x34324152)
+    │   │       ├───XRGB2101010 (0x30335258)
+    │   │       ├───XBGR2101010 (0x30334258)
+    │   │       ├───ARGB2101010 (0x30335241)
+    │   │       ├───ABGR2101010 (0x30334241)
+    │   │       ├───XRGB16161616 (0x38345258)
+    │   │       ├───XBGR16161616 (0x38344258)
+    │   │       ├───ARGB16161616 (0x38345241)
+    │   │       ├───ABGR16161616 (0x38344241)
+    │   │       ├───XBGR8888 (0x34324258)
+    │   │       ├───ABGR8888 (0x34324241)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       ├───NV12 (0x3231564e)
+    │   │       ├───P010 (0x30313050)
+    │   │       ├───XRGB16161616F (0x48345258)
+    │   │       ├───ARGB16161616F (0x48345241)
+    │   │       ├───XBGR16161616F (0x48344258)
+    │   │       └───ABGR16161616F (0x48344241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Primary
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"IN_FORMATS" (immutable): blob = 55
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008533b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008563b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008537b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008567b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_S_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401903)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_D) (0x0200000000000a01)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_S) (0x0200000000000901)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       ├───XRGB8888 (0x34325258)
+    │       │       ├───ARGB8888 (0x34325241)
+    │       │       ├───RGBA8888 (0x34324152)
+    │       │       ├───XRGB2101010 (0x30335258)
+    │       │       ├───XBGR2101010 (0x30334258)
+    │       │       ├───ARGB2101010 (0x30335241)
+    │       │       ├───ABGR2101010 (0x30334241)
+    │       │       ├───XRGB16161616 (0x38345258)
+    │       │       ├───XBGR16161616 (0x38344258)
+    │       │       ├───ARGB16161616 (0x38345241)
+    │       │       ├───ABGR16161616 (0x38344241)
+    │       │       ├───XBGR8888 (0x34324258)
+    │       │       ├───ABGR8888 (0x34324241)
+    │       │       ├───RGB565 (0x36314752)
+    │       │       ├───NV12 (0x3231564e)
+    │       │       ├───P010 (0x30313050)
+    │       │       ├───XRGB16161616F (0x48345258)
+    │       │       ├───ARGB16161616F (0x48345241)
+    │       │       ├───XBGR16161616F (0x48344258)
+    │       │       └───ABGR16161616F (0x48344241)
+    │       ├───"zpos" (immutable): range [3, 3] = 3
+    │       ├───"COLOR_ENCODING": enum {ITU-R BT.601 YCbCr, ITU-R BT.709 YCbCr, ITU-R BT.2020 YCbCr} = ITU-R BT.709 YCbCr
+    │       ├───"COLOR_RANGE": enum {YCbCr limited range, YCbCr full range} = YCbCr limited range
+    │       ├───"rotation": bitmask {rotate-0, rotate-90, rotate-180, rotate-270} = (rotate-0)
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    ├───Plane 1
+    │   ├───Object ID: 60
+    │   ├───CRTCs: {2}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───XRGB8888 (0x34325258)
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───RGBA8888 (0x34324152)
+    │   │       ├───XRGB2101010 (0x30335258)
+    │   │       ├───XBGR2101010 (0x30334258)
+    │   │       ├───ARGB2101010 (0x30335241)
+    │   │       ├───ABGR2101010 (0x30334241)
+    │   │       ├───XRGB16161616 (0x38345258)
+    │   │       ├───XBGR16161616 (0x38344258)
+    │   │       ├───ARGB16161616 (0x38345241)
+    │   │       ├───ABGR16161616 (0x38344241)
+    │   │       ├───XBGR8888 (0x34324258)
+    │   │       ├───ABGR8888 (0x34324241)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       ├───NV12 (0x3231564e)
+    │   │       ├───P010 (0x30313050)
+    │   │       ├───XRGB16161616F (0x48345258)
+    │   │       ├───ARGB16161616F (0x48345241)
+    │   │       ├───XBGR16161616F (0x48344258)
+    │   │       └───ABGR16161616F (0x48344241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Primary
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"IN_FORMATS" (immutable): blob = 61
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008533b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008563b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008537b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008567b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_S_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401903)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_D) (0x0200000000000a01)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_S) (0x0200000000000901)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       ├───XRGB8888 (0x34325258)
+    │       │       ├───ARGB8888 (0x34325241)
+    │       │       ├───RGBA8888 (0x34324152)
+    │       │       ├───XRGB2101010 (0x30335258)
+    │       │       ├───XBGR2101010 (0x30334258)
+    │       │       ├───ARGB2101010 (0x30335241)
+    │       │       ├───ABGR2101010 (0x30334241)
+    │       │       ├───XRGB16161616 (0x38345258)
+    │       │       ├───XBGR16161616 (0x38344258)
+    │       │       ├───ARGB16161616 (0x38345241)
+    │       │       ├───ABGR16161616 (0x38344241)
+    │       │       ├───XBGR8888 (0x34324258)
+    │       │       ├───ABGR8888 (0x34324241)
+    │       │       ├───RGB565 (0x36314752)
+    │       │       ├───NV12 (0x3231564e)
+    │       │       ├───P010 (0x30313050)
+    │       │       ├───XRGB16161616F (0x48345258)
+    │       │       ├───ARGB16161616F (0x48345241)
+    │       │       ├───XBGR16161616F (0x48344258)
+    │       │       └───ABGR16161616F (0x48344241)
+    │       ├───"zpos" (immutable): range [3, 3] = 3
+    │       ├───"COLOR_ENCODING": enum {ITU-R BT.601 YCbCr, ITU-R BT.709 YCbCr, ITU-R BT.2020 YCbCr} = ITU-R BT.709 YCbCr
+    │       ├───"COLOR_RANGE": enum {YCbCr limited range, YCbCr full range} = YCbCr limited range
+    │       ├───"rotation": bitmask {rotate-0, rotate-90, rotate-180, rotate-270} = (rotate-0)
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    ├───Plane 2
+    │   ├───Object ID: 66
+    │   ├───CRTCs: {1}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───XRGB8888 (0x34325258)
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───RGBA8888 (0x34324152)
+    │   │       ├───XRGB2101010 (0x30335258)
+    │   │       ├───XBGR2101010 (0x30334258)
+    │   │       ├───ARGB2101010 (0x30335241)
+    │   │       ├───ABGR2101010 (0x30334241)
+    │   │       ├───XRGB16161616 (0x38345258)
+    │   │       ├───XBGR16161616 (0x38344258)
+    │   │       ├───ARGB16161616 (0x38345241)
+    │   │       ├───ABGR16161616 (0x38344241)
+    │   │       ├───XBGR8888 (0x34324258)
+    │   │       ├───ABGR8888 (0x34324241)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       ├───NV12 (0x3231564e)
+    │   │       ├───P010 (0x30313050)
+    │   │       ├───XRGB16161616F (0x48345258)
+    │   │       ├───ARGB16161616F (0x48345241)
+    │   │       ├───XBGR16161616F (0x48344258)
+    │   │       └───ABGR16161616F (0x48344241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Primary
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"IN_FORMATS" (immutable): blob = 67
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008533b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008563b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008537b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008567b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_S_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401903)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_D) (0x0200000000000a01)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_S) (0x0200000000000901)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       ├───XRGB8888 (0x34325258)
+    │       │       ├───ARGB8888 (0x34325241)
+    │       │       ├───RGBA8888 (0x34324152)
+    │       │       ├───XRGB2101010 (0x30335258)
+    │       │       ├───XBGR2101010 (0x30334258)
+    │       │       ├───ARGB2101010 (0x30335241)
+    │       │       ├───ABGR2101010 (0x30334241)
+    │       │       ├───XRGB16161616 (0x38345258)
+    │       │       ├───XBGR16161616 (0x38344258)
+    │       │       ├───ARGB16161616 (0x38345241)
+    │       │       ├───ABGR16161616 (0x38344241)
+    │       │       ├───XBGR8888 (0x34324258)
+    │       │       ├───ABGR8888 (0x34324241)
+    │       │       ├───RGB565 (0x36314752)
+    │       │       ├───NV12 (0x3231564e)
+    │       │       ├───P010 (0x30313050)
+    │       │       ├───XRGB16161616F (0x48345258)
+    │       │       ├───ARGB16161616F (0x48345241)
+    │       │       ├───XBGR16161616F (0x48344258)
+    │       │       └───ABGR16161616F (0x48344241)
+    │       ├───"zpos" (immutable): range [3, 3] = 3
+    │       ├───"COLOR_ENCODING": enum {ITU-R BT.601 YCbCr, ITU-R BT.709 YCbCr, ITU-R BT.2020 YCbCr} = ITU-R BT.709 YCbCr
+    │       ├───"COLOR_RANGE": enum {YCbCr limited range, YCbCr full range} = YCbCr limited range
+    │       ├───"rotation": bitmask {rotate-0, rotate-90, rotate-180, rotate-270} = (rotate-0)
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    ├───Plane 3
+    │   ├───Object ID: 72
+    │   ├───CRTCs: {0}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 147
+    │   │   │   ├───Object ID: 147
+    │   │   │   ├───Size: 800×1280
+    │   │   │   ├───Format: XRGB8888 (0x34325258)
+    │   │   │   ├───Modifier: AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401b03)
+    │   │   │   └───Planes:
+    │   │   │       └───Plane 0: offset = 0, pitch = 3584 bytes
+    │   │   └───Formats:
+    │   │       ├───XRGB8888 (0x34325258)
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───RGBA8888 (0x34324152)
+    │   │       ├───XRGB2101010 (0x30335258)
+    │   │       ├───XBGR2101010 (0x30334258)
+    │   │       ├───ARGB2101010 (0x30335241)
+    │   │       ├───ABGR2101010 (0x30334241)
+    │   │       ├───XRGB16161616 (0x38345258)
+    │   │       ├───XBGR16161616 (0x38344258)
+    │   │       ├───ARGB16161616 (0x38345241)
+    │   │       ├───ABGR16161616 (0x38344241)
+    │   │       ├───XBGR8888 (0x34324258)
+    │   │       ├───ABGR8888 (0x34324241)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       ├───NV12 (0x3231564e)
+    │   │       ├───P010 (0x30313050)
+    │   │       ├───XRGB16161616F (0x48345258)
+    │   │       ├───ARGB16161616F (0x48345241)
+    │   │       ├───XBGR16161616F (0x48344258)
+    │   │       └───ABGR16161616F (0x48344241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Primary
+    │       ├───"FB_ID" (atomic): object framebuffer = 147
+    │       │   ├───Object ID: 147
+    │       │   ├───Size: 800×1280
+    │       │   ├───Format: XRGB8888 (0x34325258)
+    │       │   ├───Modifier: AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401b03)
+    │       │   └───Planes:
+    │       │       └───Plane 0: offset = 0, pitch = 3584 bytes
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 99
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 800
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 1280
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 800
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 1280
+    │       ├───"IN_FORMATS" (immutable): blob = 73
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008533b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008563b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008537b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008567b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_S_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401903)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_D) (0x0200000000000a01)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_S) (0x0200000000000901)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       ├───XRGB8888 (0x34325258)
+    │       │       ├───ARGB8888 (0x34325241)
+    │       │       ├───RGBA8888 (0x34324152)
+    │       │       ├───XRGB2101010 (0x30335258)
+    │       │       ├───XBGR2101010 (0x30334258)
+    │       │       ├───ARGB2101010 (0x30335241)
+    │       │       ├───ABGR2101010 (0x30334241)
+    │       │       ├───XRGB16161616 (0x38345258)
+    │       │       ├───XBGR16161616 (0x38344258)
+    │       │       ├───ARGB16161616 (0x38345241)
+    │       │       ├───ABGR16161616 (0x38344241)
+    │       │       ├───XBGR8888 (0x34324258)
+    │       │       ├───ABGR8888 (0x34324241)
+    │       │       ├───RGB565 (0x36314752)
+    │       │       ├───NV12 (0x3231564e)
+    │       │       ├───P010 (0x30313050)
+    │       │       ├───XRGB16161616F (0x48345258)
+    │       │       ├───ARGB16161616F (0x48345241)
+    │       │       ├───XBGR16161616F (0x48344258)
+    │       │       └───ABGR16161616F (0x48344241)
+    │       ├───"zpos" (immutable): range [3, 3] = 3
+    │       ├───"COLOR_ENCODING": enum {ITU-R BT.601 YCbCr, ITU-R BT.709 YCbCr, ITU-R BT.2020 YCbCr} = ITU-R BT.709 YCbCr
+    │       ├───"COLOR_RANGE": enum {YCbCr limited range, YCbCr full range} = YCbCr limited range
+    │       ├───"rotation": bitmask {rotate-0, rotate-90, rotate-180, rotate-270} = (rotate-0)
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    ├───Plane 4
+    │   ├───Object ID: 78
+    │   ├───CRTCs: {0, 1, 2, 3, 4, 5, 6, 7}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───XRGB8888 (0x34325258)
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───RGBA8888 (0x34324152)
+    │   │       ├───XRGB2101010 (0x30335258)
+    │   │       ├───XBGR2101010 (0x30334258)
+    │   │       ├───ARGB2101010 (0x30335241)
+    │   │       ├───ABGR2101010 (0x30334241)
+    │   │       ├───XRGB16161616 (0x38345258)
+    │   │       ├───XBGR16161616 (0x38344258)
+    │   │       ├───ARGB16161616 (0x38345241)
+    │   │       ├───ABGR16161616 (0x38344241)
+    │   │       ├───XBGR8888 (0x34324258)
+    │   │       ├───ABGR8888 (0x34324241)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       ├───NV12 (0x3231564e)
+    │   │       ├───P010 (0x30313050)
+    │   │       ├───XRGB16161616F (0x48345258)
+    │   │       ├───ARGB16161616F (0x48345241)
+    │   │       ├───XBGR16161616F (0x48344258)
+    │   │       └───ABGR16161616F (0x48344241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Overlay
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"IN_FORMATS" (immutable): blob = 79
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008533b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008563b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008537b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008567b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_S_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401903)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_D) (0x0200000000000a01)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_S) (0x0200000000000901)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       ├───XRGB8888 (0x34325258)
+    │       │       ├───ARGB8888 (0x34325241)
+    │       │       ├───RGBA8888 (0x34324152)
+    │       │       ├───XRGB2101010 (0x30335258)
+    │       │       ├───XBGR2101010 (0x30334258)
+    │       │       ├───ARGB2101010 (0x30335241)
+    │       │       ├───ABGR2101010 (0x30334241)
+    │       │       ├───XRGB16161616 (0x38345258)
+    │       │       ├───XBGR16161616 (0x38344258)
+    │       │       ├───ARGB16161616 (0x38345241)
+    │       │       ├───ABGR16161616 (0x38344241)
+    │       │       ├───XBGR8888 (0x34324258)
+    │       │       ├───ABGR8888 (0x34324241)
+    │       │       ├───RGB565 (0x36314752)
+    │       │       ├───NV12 (0x3231564e)
+    │       │       ├───P010 (0x30313050)
+    │       │       ├───XRGB16161616F (0x48345258)
+    │       │       ├───ARGB16161616F (0x48345241)
+    │       │       ├───XBGR16161616F (0x48344258)
+    │       │       └───ABGR16161616F (0x48344241)
+    │       ├───"alpha": range [0, UINT16_MAX] = 65535
+    │       ├───"pixel blend mode": enum {None, Pre-multiplied, Coverage} = Pre-multiplied
+    │       ├───"zpos": range [0, 254] = 8
+    │       ├───"rotation": bitmask {rotate-0, rotate-90, rotate-180, rotate-270} = (rotate-0)
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    ├───Plane 5
+    │   ├───Object ID: 84
+    │   ├───CRTCs: {0, 1, 2, 3, 4, 5, 6, 7}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───XRGB8888 (0x34325258)
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───RGBA8888 (0x34324152)
+    │   │       ├───XRGB2101010 (0x30335258)
+    │   │       ├───XBGR2101010 (0x30334258)
+    │   │       ├───ARGB2101010 (0x30335241)
+    │   │       ├───ABGR2101010 (0x30334241)
+    │   │       ├───XRGB16161616 (0x38345258)
+    │   │       ├───XBGR16161616 (0x38344258)
+    │   │       ├───ARGB16161616 (0x38345241)
+    │   │       ├───ABGR16161616 (0x38344241)
+    │   │       ├───XBGR8888 (0x34324258)
+    │   │       ├───ABGR8888 (0x34324241)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       ├───NV12 (0x3231564e)
+    │   │       ├───P010 (0x30313050)
+    │   │       ├───XRGB16161616F (0x48345258)
+    │   │       ├───ARGB16161616F (0x48345241)
+    │   │       ├───XBGR16161616F (0x48344258)
+    │   │       └───ABGR16161616F (0x48344241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Overlay
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"IN_FORMATS" (immutable): blob = 85
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008533b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008563b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008537b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008567b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_S_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401903)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_D) (0x0200000000000a01)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_S) (0x0200000000000901)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       ├───XRGB8888 (0x34325258)
+    │       │       ├───ARGB8888 (0x34325241)
+    │       │       ├───RGBA8888 (0x34324152)
+    │       │       ├───XRGB2101010 (0x30335258)
+    │       │       ├───XBGR2101010 (0x30334258)
+    │       │       ├───ARGB2101010 (0x30335241)
+    │       │       ├───ABGR2101010 (0x30334241)
+    │       │       ├───XRGB16161616 (0x38345258)
+    │       │       ├───XBGR16161616 (0x38344258)
+    │       │       ├───ARGB16161616 (0x38345241)
+    │       │       ├───ABGR16161616 (0x38344241)
+    │       │       ├───XBGR8888 (0x34324258)
+    │       │       ├───ABGR8888 (0x34324241)
+    │       │       ├───RGB565 (0x36314752)
+    │       │       ├───NV12 (0x3231564e)
+    │       │       ├───P010 (0x30313050)
+    │       │       ├───XRGB16161616F (0x48345258)
+    │       │       ├───ARGB16161616F (0x48345241)
+    │       │       ├───XBGR16161616F (0x48344258)
+    │       │       └───ABGR16161616F (0x48344241)
+    │       ├───"alpha": range [0, UINT16_MAX] = 65535
+    │       ├───"pixel blend mode": enum {None, Pre-multiplied, Coverage} = Pre-multiplied
+    │       ├───"zpos": range [0, 254] = 9
+    │       ├───"rotation": bitmask {rotate-0, rotate-90, rotate-180, rotate-270} = (rotate-0)
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    ├───Plane 6
+    │   ├───Object ID: 90
+    │   ├───CRTCs: {0, 1, 2, 3, 4, 5, 6, 7}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       ├───XRGB8888 (0x34325258)
+    │   │       ├───ARGB8888 (0x34325241)
+    │   │       ├───RGBA8888 (0x34324152)
+    │   │       ├───XRGB2101010 (0x30335258)
+    │   │       ├───XBGR2101010 (0x30334258)
+    │   │       ├───ARGB2101010 (0x30335241)
+    │   │       ├───ABGR2101010 (0x30334241)
+    │   │       ├───XRGB16161616 (0x38345258)
+    │   │       ├───XBGR16161616 (0x38344258)
+    │   │       ├───ARGB16161616 (0x38345241)
+    │   │       ├───ABGR16161616 (0x38344241)
+    │   │       ├───XBGR8888 (0x34324258)
+    │   │       ├───ABGR8888 (0x34324241)
+    │   │       ├───RGB565 (0x36314752)
+    │   │       ├───NV12 (0x3231564e)
+    │   │       ├───P010 (0x30313050)
+    │   │       ├───XRGB16161616F (0x48345258)
+    │   │       ├───ARGB16161616F (0x48345241)
+    │   │       ├───XBGR16161616F (0x48344258)
+    │   │       └───ABGR16161616F (0x48344241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Overlay
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"IN_FORMATS" (immutable): blob = 91
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008533b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008563b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_64B, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 64B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008537b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, DCC, DCC_RETILE, DCC_INDEPENDENT_128B, DCC_MAX_COMPRESSED_BLOCK = 128B, DCC_CONSTANT_ENCODE, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008567b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   └───ABGR8888 (0x34324241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_R_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401b03)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX10_RBPLUS, TILE = GFX9_64K_S_X, PIPE_XOR_BITS = 2, PACKERS = 1) (0x0200000008401903)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_D) (0x0200000000000a01)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   ├───AMD(TILE_VERSION = GFX9, TILE = GFX9_64K_S) (0x0200000000000901)
+    │       │   │   ├───XRGB8888 (0x34325258)
+    │       │   │   ├───ARGB8888 (0x34325241)
+    │       │   │   ├───RGBA8888 (0x34324152)
+    │       │   │   ├───XRGB2101010 (0x30335258)
+    │       │   │   ├───XBGR2101010 (0x30334258)
+    │       │   │   ├───ARGB2101010 (0x30335241)
+    │       │   │   ├───ABGR2101010 (0x30334241)
+    │       │   │   ├───XRGB16161616 (0x38345258)
+    │       │   │   ├───XBGR16161616 (0x38344258)
+    │       │   │   ├───ARGB16161616 (0x38345241)
+    │       │   │   ├───ABGR16161616 (0x38344241)
+    │       │   │   ├───XBGR8888 (0x34324258)
+    │       │   │   ├───ABGR8888 (0x34324241)
+    │       │   │   ├───RGB565 (0x36314752)
+    │       │   │   ├───NV12 (0x3231564e)
+    │       │   │   ├───P010 (0x30313050)
+    │       │   │   ├───XRGB16161616F (0x48345258)
+    │       │   │   ├───ARGB16161616F (0x48345241)
+    │       │   │   ├───XBGR16161616F (0x48344258)
+    │       │   │   └───ABGR16161616F (0x48344241)
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       ├───XRGB8888 (0x34325258)
+    │       │       ├───ARGB8888 (0x34325241)
+    │       │       ├───RGBA8888 (0x34324152)
+    │       │       ├───XRGB2101010 (0x30335258)
+    │       │       ├───XBGR2101010 (0x30334258)
+    │       │       ├───ARGB2101010 (0x30335241)
+    │       │       ├───ABGR2101010 (0x30334241)
+    │       │       ├───XRGB16161616 (0x38345258)
+    │       │       ├───XBGR16161616 (0x38344258)
+    │       │       ├───ARGB16161616 (0x38345241)
+    │       │       ├───ABGR16161616 (0x38344241)
+    │       │       ├───XBGR8888 (0x34324258)
+    │       │       ├───ABGR8888 (0x34324241)
+    │       │       ├───RGB565 (0x36314752)
+    │       │       ├───NV12 (0x3231564e)
+    │       │       ├───P010 (0x30313050)
+    │       │       ├───XRGB16161616F (0x48345258)
+    │       │       ├───ARGB16161616F (0x48345241)
+    │       │       ├───XBGR16161616F (0x48344258)
+    │       │       └───ABGR16161616F (0x48344241)
+    │       ├───"alpha": range [0, UINT16_MAX] = 65535
+    │       ├───"pixel blend mode": enum {None, Pre-multiplied, Coverage} = Pre-multiplied
+    │       ├───"zpos": range [0, 254] = 10
+    │       ├───"rotation": bitmask {rotate-0, rotate-90, rotate-180, rotate-270} = (rotate-0)
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    ├───Plane 7
+    │   ├───Object ID: 96
+    │   ├───CRTCs: {0}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 153
+    │   │   │   ├───Object ID: 153
+    │   │   │   ├───Size: 256×256
+    │   │   │   ├───Format: ARGB8888 (0x34325241)
+    │   │   │   ├───Modifier: DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │   │   │   └───Planes:
+    │   │   │       └───Plane 0: offset = 0, pitch = 1024 bytes
+    │   │   └───Formats:
+    │   │       └───ARGB8888 (0x34325241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Cursor
+    │       ├───"FB_ID" (atomic): object framebuffer = 153
+    │       │   ├───Object ID: 153
+    │       │   ├───Size: 256×256
+    │       │   ├───Format: ARGB8888 (0x34325241)
+    │       │   ├───Modifier: DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │   └───Planes:
+    │       │       └───Plane 0: offset = 0, pitch = 1024 bytes
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 99
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 63
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 291
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 256
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 256
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 256
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 256
+    │       ├───"IN_FORMATS" (immutable): blob = 97
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       └───ARGB8888 (0x34325241)
+    │       ├───"zpos" (immutable): range [UINT8_MAX, UINT8_MAX] = 255
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    ├───Plane 8
+    │   ├───Object ID: 100
+    │   ├───CRTCs: {1}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       └───ARGB8888 (0x34325241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Cursor
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"IN_FORMATS" (immutable): blob = 101
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       └───ARGB8888 (0x34325241)
+    │       ├───"zpos" (immutable): range [UINT8_MAX, UINT8_MAX] = 255
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    ├───Plane 9
+    │   ├───Object ID: 104
+    │   ├───CRTCs: {2}
+    │   ├───Legacy info
+    │   │   ├───FB ID: 0
+    │   │   └───Formats:
+    │   │       └───ARGB8888 (0x34325241)
+    │   └───Properties
+    │       ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Cursor
+    │       ├───"FB_ID" (atomic): object framebuffer = 0
+    │       ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+    │       ├───"CRTC_ID" (atomic): object CRTC = 0
+    │       ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+    │       ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+    │       ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+    │       ├───"IN_FORMATS" (immutable): blob = 105
+    │       │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+    │       │       └───ARGB8888 (0x34325241)
+    │       ├───"zpos" (immutable): range [UINT8_MAX, UINT8_MAX] = 255
+    │       ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+    │       ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    │       ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+    │       ├───"AMD_PLANE_CTM": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+    │       ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+    │       ├───"AMD_PLANE_LUT3D": blob = 0
+    │       ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+    │       ├───"AMD_PLANE_BLEND_LUT": blob = 0
+    │       ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+    │       └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+    └───Plane 10
+        ├───Object ID: 108
+        ├───CRTCs: {3}
+        ├───Legacy info
+        │   ├───FB ID: 0
+        │   └───Formats:
+        │       └───ARGB8888 (0x34325241)
+        └───Properties
+            ├───"type" (immutable): enum {Overlay, Primary, Cursor} = Cursor
+            ├───"FB_ID" (atomic): object framebuffer = 0
+            ├───"IN_FENCE_FD" (atomic): srange [-1, INT32_MAX] = -1
+            ├───"CRTC_ID" (atomic): object CRTC = 0
+            ├───"CRTC_X" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+            ├───"CRTC_Y" (atomic): srange [INT32_MIN, INT32_MAX] = 0
+            ├───"CRTC_W" (atomic): range [0, INT32_MAX] = 0
+            ├───"CRTC_H" (atomic): range [0, INT32_MAX] = 0
+            ├───"SRC_X" (atomic): range [0, UINT32_MAX] = 0
+            ├───"SRC_Y" (atomic): range [0, UINT32_MAX] = 0
+            ├───"SRC_W" (atomic): range [0, UINT32_MAX] = 0
+            ├───"SRC_H" (atomic): range [0, UINT32_MAX] = 0
+            ├───"IN_FORMATS" (immutable): blob = 109
+            │   └───DRM_FORMAT_MOD_LINEAR (0x0000000000000000)
+            │       └───ARGB8888 (0x34325241)
+            ├───"zpos" (immutable): range [UINT8_MAX, UINT8_MAX] = 255
+            ├───"AMD_PLANE_DEGAMMA_LUT": blob = 0
+            ├───"AMD_PLANE_DEGAMMA_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+            ├───"AMD_PLANE_DEGAMMA_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default
+            ├───"AMD_PLANE_HDR_MULT": range [0, UINT64_MAX] = 4294967296
+            ├───"AMD_PLANE_CTM": blob = 0
+            ├───"AMD_PLANE_SHAPER_LUT": blob = 0
+            ├───"AMD_PLANE_SHAPER_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+            ├───"AMD_PLANE_SHAPER_TF": enum {Default, Identity, sRGB inv_EOTF, BT.709 OETF, PQ inv_EOTF, Gamma 2.2 inv_EOTF, Gamma 2.4 inv_EOTF, Gamma 2.6 inv_EOTF} = Default
+            ├───"AMD_PLANE_LUT3D": blob = 0
+            ├───"AMD_PLANE_LUT3D_SIZE" (immutable): range [0, UINT32_MAX] = 17
+            ├───"AMD_PLANE_BLEND_LUT": blob = 0
+            ├───"AMD_PLANE_BLEND_LUT_SIZE" (immutable): range [0, UINT32_MAX] = 4096
+            └───"AMD_PLANE_BLEND_TF": enum {Default, sRGB EOTF, BT.709 inv_OETF, PQ EOTF, Identity, Gamma 2.2 EOTF, Gamma 2.4 EOTF, Gamma 2.6 EOTF} = Default

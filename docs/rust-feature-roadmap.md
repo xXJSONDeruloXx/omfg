@@ -34,6 +34,8 @@ Continue iterating on the Rust implementation until practical feature parity is 
 - Local Rust regression tests
 - Linux/x86_64 Docker build/test path
 - Steam Deck regression harness
+- Simple software black-frame insertion mode:
+  - `bfi`
 - First shader-based generated backend:
   - `blend`
 - Next synthesis step:
@@ -118,11 +120,13 @@ Likely path:
 ### 5. Pacing / latency improvements
 Goal:
 - reduce the current conservative synchronization model
+- validate actual present pacing against display-side timing where possible
 
 Likely path:
 - reduce `vkQueueWaitIdle` dependence
 - improve semaphore/fence lifetime strategy
 - explore pacing thread / scheduling logic
+- use the now-confirmed `VK_GOOGLE_display_timing` / `VK_KHR_present_id` / `VK_KHR_present_wait` support on the Deck test target for stronger panel-side validation
 
 ### 6. Advanced parity targets
 Longer-term targets include:
