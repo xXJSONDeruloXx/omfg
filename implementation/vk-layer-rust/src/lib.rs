@@ -11,7 +11,10 @@ use layer_defs::{
     VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo, VkNegotiateLayerInterface,
     VkNegotiateLayerStructType, CURRENT_LOADER_LAYER_INTERFACE_VERSION,
 };
-use planner::{mark_injection_result, mutate_swapchain, planned_sequence};
+use planner::{
+    determine_adaptive_generated_frame_count, mark_injection_result, mutate_swapchain,
+    planned_sequence,
+};
 use std::collections::HashMap;
 use std::ffi::{c_char, CStr};
 use std::fs::OpenOptions;
@@ -341,6 +344,14 @@ fn now_epoch_ms() -> u128 {
         .as_millis()
 }
 
+fn now_epoch_us_u64() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_micros()
+        .min(u64::MAX as u128) as u64
+}
+
 fn log(level: &str, message: impl AsRef<str>) {
     let line = format!("[ppfg][{level}][{}] {}\n", now_epoch_ms(), message.as_ref());
     let mut guard = logger().lock().expect("logger mutex poisoned");
@@ -503,6 +514,8 @@ struct SwapchainState {
     history_memory: vk::DeviceMemory,
     history_valid: bool,
     present_count: u64,
+    last_present_timestamp_us: u64,
+    last_present_interval_ms: f32,
     generated_present_count: u64,
     injection_attempted: bool,
     injection_works: bool,
@@ -529,6 +542,8 @@ impl Default for SwapchainState {
             history_memory: vk::DeviceMemory::null(),
             history_valid: false,
             present_count: 0,
+            last_present_timestamp_us: 0,
+            last_present_interval_ms: 0.0,
             generated_present_count: 0,
             injection_attempted: false,
             injection_works: false,
@@ -766,6 +781,20 @@ fn cstr_opt(ptr: *const c_char) -> Option<String> {
     } else {
         unsafe { Some(CStr::from_ptr(ptr).to_string_lossy().into_owned()) }
     }
+}
+
+fn env_u32(name: &str, default_value: u32) -> u32 {
+    std::env::var(name)
+        .ok()
+        .and_then(|value| value.parse::<u32>().ok())
+        .unwrap_or(default_value)
+}
+
+fn env_f32(name: &str, default_value: f32) -> f32 {
+    std::env::var(name)
+        .ok()
+        .and_then(|value| value.parse::<f32>().ok())
+        .unwrap_or(default_value)
 }
 
 fn remember_queue(
@@ -1872,38 +1901,24 @@ fn blend_push_constants_for_mode(mode: Mode) -> BlendPushConstants {
     }
 }
 
-fn multi_blend_push_constants_plan(mode: Mode) -> Vec<BlendPushConstants> {
-    match mode {
-        Mode::MultiBlendTest => vec![
+fn multi_blend_push_constants_plan(
+    mode: Mode,
+    generated_frame_count: usize,
+) -> Vec<BlendPushConstants> {
+    let generated_frame_count = generated_frame_count.max(1);
+    let adaptive = matches!(mode, Mode::AdaptiveMultiBlendTest);
+
+    (1..=generated_frame_count)
+        .map(|index| {
+            let alpha = index as f32 / (generated_frame_count + 1) as f32;
             BlendPushConstants {
-                alpha: 1.0 / 3.0,
-                adaptive_strength: 0.0,
-                adaptive_bias: 0.0,
-                mode: 0,
-            },
-            BlendPushConstants {
-                alpha: 2.0 / 3.0,
-                adaptive_strength: 0.0,
-                adaptive_bias: 0.0,
-                mode: 0,
-            },
-        ],
-        Mode::AdaptiveMultiBlendTest => vec![
-            BlendPushConstants {
-                alpha: 1.0 / 3.0,
-                adaptive_strength: 2.0,
-                adaptive_bias: 0.25,
-                mode: 1,
-            },
-            BlendPushConstants {
-                alpha: 2.0 / 3.0,
-                adaptive_strength: 2.0,
-                adaptive_bias: 0.25,
-                mode: 1,
-            },
-        ],
-        _ => vec![blend_push_constants_for_mode(mode)],
-    }
+                alpha,
+                adaptive_strength: if adaptive { 2.0 } else { 0.0 },
+                adaptive_bias: if adaptive { 0.25 } else { 0.0 },
+                mode: if adaptive { 1 } else { 0 },
+            }
+        })
+        .collect()
 }
 
 fn blend_mode_labels(mode: Mode) -> (&'static str, &'static str, &'static str) {
@@ -2593,7 +2608,22 @@ unsafe fn try_present_multi_blend_frame(
         _ => return false,
     };
 
-    let generated_plan = multi_blend_push_constants_plan(mode);
+    let requested_generated_frame_count = match mode {
+        Mode::AdaptiveMultiBlendTest => {
+            let min_count = env_u32("PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES", 1);
+            let max_count = env_u32("PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES", 2);
+            let threshold_ms = env_f32("PPFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS", 5.0);
+            let interval = if state.last_present_interval_ms > 0.0 {
+                Some(state.last_present_interval_ms)
+            } else {
+                None
+            };
+            determine_adaptive_generated_frame_count(interval, threshold_ms, min_count, max_count)
+        }
+        Mode::MultiBlendTest => env_u32("PPFG_MULTI_BLEND_COUNT", 2).max(1),
+        _ => 1,
+    } as usize;
+    let generated_plan = multi_blend_push_constants_plan(mode, requested_generated_frame_count);
     let (prime_label, first_success_label, generated_label_prefix) = blend_mode_labels(mode);
 
     let (
@@ -4765,6 +4795,12 @@ unsafe extern "system" fn layer_queue_present_khr(
             .swapchains
             .get_mut(&(*present_info_ref.p_swapchains).as_raw())
         {
+            let now_us = now_epoch_us_u64();
+            if swapchain_state.last_present_timestamp_us != 0 {
+                swapchain_state.last_present_interval_ms =
+                    (now_us - swapchain_state.last_present_timestamp_us) as f32 / 1000.0;
+            }
+            swapchain_state.last_present_timestamp_us = now_us;
             swapchain_state.present_count += 1;
             if swapchain_state.present_count <= 5 || swapchain_state.present_count % 60 == 0 {
                 let prefix = if matches!(

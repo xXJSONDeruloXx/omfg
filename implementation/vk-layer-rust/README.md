@@ -104,7 +104,7 @@ The Rust port intentionally separates:
 The current `blend` mode uses a simple fullscreen graphics pass to synthesize a midpoint placeholder from the previous and current frames.
 The `adaptive-blend` mode builds on that by biasing the blend toward the current frame in higher-difference regions.
 The `multi-blend` mode is the first Rust **multi-FG** step, emitting two synthetic frames between real frames using temporal blend positions.
-The `adaptive-multi-blend` mode combines both ideas: multi-FG plus adaptive current-frame weighting.
+The `adaptive-multi-blend` mode combines both ideas: multi-FG plus adaptive current-frame weighting, and now also includes an initial present-interval-based frame-count controller.
 
 These are still not fully motion-aware interpolation backends, but they are real shader-based generated-frame steps beyond placeholder copying.
 

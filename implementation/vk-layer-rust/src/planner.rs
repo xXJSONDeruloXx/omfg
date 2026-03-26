@@ -98,6 +98,24 @@ pub fn planned_sequence(mode: Mode, state: &SimulatedPresentState) -> PresentSeq
     }
 }
 
+pub fn determine_adaptive_generated_frame_count(
+    last_present_interval_ms: Option<f32>,
+    threshold_ms: f32,
+    min_count: u32,
+    max_count: u32,
+) -> u32 {
+    let min_count = min_count.max(1);
+    let max_count = max_count.max(min_count);
+    let threshold_ms = threshold_ms.max(0.001);
+
+    let Some(interval_ms) = last_present_interval_ms else {
+        return max_count;
+    };
+
+    let scaled = (interval_ms / threshold_ms).floor() as u32;
+    scaled.clamp(min_count, max_count)
+}
+
 pub fn mark_injection_result(
     mode: Mode,
     state: &mut SimulatedPresentState,
@@ -131,8 +149,8 @@ pub fn mark_injection_result(
 #[cfg(test)]
 mod tests {
     use super::{
-        mark_injection_result, mutate_swapchain, planned_sequence, PresentSequence,
-        SimulatedPresentState,
+        determine_adaptive_generated_frame_count, mark_injection_result, mutate_swapchain,
+        planned_sequence, PresentSequence, SimulatedPresentState,
     };
     use crate::config::Mode;
     use ash::vk;
@@ -353,6 +371,31 @@ mod tests {
         mark_injection_result(Mode::AdaptiveMultiBlendTest, &mut state, true);
         assert_eq!(state.generated_present_count, 2);
         assert!(state.injection_works);
+    }
+
+    #[test]
+    fn adaptive_generated_frame_count_scales_with_interval() {
+        assert_eq!(determine_adaptive_generated_frame_count(None, 5.0, 1, 3), 3);
+        assert_eq!(
+            determine_adaptive_generated_frame_count(Some(0.3), 5.0, 1, 3),
+            1
+        );
+        assert_eq!(
+            determine_adaptive_generated_frame_count(Some(6.0), 5.0, 1, 3),
+            1
+        );
+        assert_eq!(
+            determine_adaptive_generated_frame_count(Some(11.0), 5.0, 1, 3),
+            2
+        );
+        assert_eq!(
+            determine_adaptive_generated_frame_count(Some(18.0), 5.0, 1, 3),
+            3
+        );
+        assert_eq!(
+            determine_adaptive_generated_frame_count(Some(40.0), 5.0, 1, 3),
+            3
+        );
     }
 
     #[test]

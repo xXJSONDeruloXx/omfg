@@ -53,10 +53,11 @@ Current status:
 - initial stepping stone achieved via `multi-blend`
 - adaptive synthesis variant achieved via `adaptive-multi-blend`
 - two generated frames are now emitted between real frames in Rust
+- initial adaptive frame-count control now exists via present-interval heuristics in `adaptive-multi-blend`
 
 Next likely path:
 - generalize beyond fixed 2x generation
-- make generated-frame count configurable/adaptive
+- expand adaptive count logic beyond the current simple interval heuristic
 - improve synchronization model beyond the current conservative approach
 - validate with broader Deck finite-frame runs and additional modes
 
@@ -64,13 +65,18 @@ Next likely path:
 Goal:
 - choose how aggressively to generate based on runtime conditions
 
-Likely path:
-- expose policy knobs via env/config
-- start with simple heuristics:
+Current status:
+- first controller exists in `adaptive-multi-blend`
+- current heuristic adapts generated-frame count using recent present interval timing
+
+Next likely path:
+- expand policy knobs via env/config
+- combine multiple heuristics:
   - present mode
   - generated-frame budget
   - frame time / queue pressure
   - scene-difference magnitude
+  - future GPU-side metrics if available
 
 ### 3. Better motion-aware synthesis
 Goal:
@@ -119,6 +125,6 @@ New capability work should continue following this loop:
 
 ## Current practical priority
 
-With `multi-blend` now working, the next highest-value capability is:
+With `adaptive-multi-blend` now working, the next highest-value capability is:
 
-## **adaptive FG frame-count control and richer motion-aware synthesis in Rust**
+## **richer motion-aware synthesis in Rust**
