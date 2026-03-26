@@ -53,9 +53,10 @@ export PPFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS=${PPFG_ADAPTIVE_MULTI_INTERVAL_
 export PPFG_ADAPTIVE_MULTI_TARGET_FPS=${PPFG_ADAPTIVE_MULTI_TARGET_FPS:-}
 export PPFG_ADAPTIVE_MULTI_INTERVAL_SMOOTHING_ALPHA=${PPFG_ADAPTIVE_MULTI_INTERVAL_SMOOTHING_ALPHA:-}
 export PPFG_BFI_PERIOD=${PPFG_BFI_PERIOD:-}
+export PPFG_BFI_HOLD_MS=${PPFG_BFI_HOLD_MS:-}
 export VK_LAYER_PATH=${REMOTE_BASE}
 export VK_INSTANCE_LAYERS=${PPFG_LAYER_NAME}
-printf 'RUN impl=%s display=%s xauthority=%s mode=%s layer=%s count=%s present_mode=%s extra=%s target_fps=%s min_generated=%s max_generated=%s bfi_period=%s\n' "${PPFG_LAYER_IMPL}" "\$DISPLAY" "\$XAUTHORITY" "\$PPFG_LAYER_MODE" "\$VK_INSTANCE_LAYERS" "${VKCUBE_COUNT}" "${VKCUBE_PRESENT_MODE:-default}" "${VKCUBE_EXTRA_ARGS:-none}" "${PPFG_ADAPTIVE_MULTI_TARGET_FPS:-default}" "${PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES:-default}" "${PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES:-default}" "${PPFG_BFI_PERIOD:-default}"
+printf 'RUN impl=%s display=%s xauthority=%s mode=%s layer=%s count=%s present_mode=%s extra=%s target_fps=%s min_generated=%s max_generated=%s bfi_period=%s bfi_hold_ms=%s\n' "${PPFG_LAYER_IMPL}" "\$DISPLAY" "\$XAUTHORITY" "\$PPFG_LAYER_MODE" "\$VK_INSTANCE_LAYERS" "${VKCUBE_COUNT}" "${VKCUBE_PRESENT_MODE:-default}" "${VKCUBE_EXTRA_ARGS:-none}" "${PPFG_ADAPTIVE_MULTI_TARGET_FPS:-default}" "${PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES:-default}" "${PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES:-default}" "${PPFG_BFI_PERIOD:-default}" "${PPFG_BFI_HOLD_MS:-default}"
 timeout ${VKCUBE_TIMEOUT_SEC}s vkcube --c ${VKCUBE_COUNT} --suppress_popups --wsi xcb ${PRESENT_MODE_ARG} ${VKCUBE_EXTRA_ARGS} > ${REMOTE_BASE}/vkcube.stdout 2>&1 || status=\$?
 printf 'VCUBE_STATUS=%s\n' "\${status:-0}"
 ls -lah ${REMOTE_BASE}

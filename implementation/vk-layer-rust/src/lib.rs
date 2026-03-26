@@ -24,7 +24,8 @@ use std::io::{Cursor, Write};
 use std::mem;
 use std::ptr;
 use std::sync::{Mutex, OnceLock};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::thread;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const LAYER_NAME_BYTES: &[u8] = b"VK_LAYER_PPFG_rust\0";
 const LAYER_DESCRIPTION_BYTES: &[u8] = b"Post-process frame generation Rust Vulkan layer\0";
@@ -4205,6 +4206,16 @@ fn bfi_period() -> u32 {
     env_u32("PPFG_BFI_PERIOD", 1).max(1)
 }
 
+fn bfi_hold_ms() -> u32 {
+    env_u32("PPFG_BFI_HOLD_MS", 0)
+}
+
+fn maybe_sleep_ms(duration_ms: u32) {
+    if duration_ms > 0 {
+        thread::sleep(Duration::from_millis(duration_ms as u64));
+    }
+}
+
 fn should_insert_bfi_frame(state: &SwapchainState) -> bool {
     (state.present_count % bfi_period() as u64) == 0
 }
@@ -4293,8 +4304,11 @@ unsafe fn try_present_clear_frame(
         return false;
     }
 
-    if matches!(mode, Mode::BfiTest) && !should_insert_bfi_frame(state) {
-        return false;
+    if matches!(mode, Mode::BfiTest) {
+        if !should_insert_bfi_frame(state) {
+            return false;
+        }
+        maybe_sleep_ms(bfi_hold_ms());
     }
 
     let mut generated_image_index = 0;
@@ -4473,7 +4487,11 @@ unsafe fn try_present_clear_frame(
     state.generated_present_count += 1;
     if first_success {
         if matches!(mode, Mode::BfiTest) {
-            log_info(format!("bfi settings; period={}", bfi_period()));
+            log_info(format!(
+                "bfi settings; period={}; holdMs={}",
+                bfi_period(),
+                bfi_hold_ms()
+            ));
         }
         log_info(first_success_label);
     }
@@ -4482,6 +4500,9 @@ unsafe fn try_present_clear_frame(
             "{}{}; swapchainImageIndex={}",
             generated_label_prefix, state.generated_present_count, generated_image_index
         ));
+    }
+    if matches!(mode, Mode::BfiTest) {
+        maybe_sleep_ms(bfi_hold_ms());
     }
     true
 }
