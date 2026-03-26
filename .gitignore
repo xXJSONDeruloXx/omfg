@@ -1,0 +1,12 @@
+.DS_Store
+.env*.local
+*.log
+!artifacts/**/*.log
+build/
+out/
+dist/
+cmake-build-*/
+compile_commands.json
+
+# Local vendor/source clones used for research only
+research/repos/

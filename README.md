@@ -1,0 +1,100 @@
+# post-proc-fg-research
+
+Research and design work for a **Linux-native, real-time, fully post-process frame generation / interpolation** stack.
+
+## Goal
+
+Build toward an open solution that can:
+
+- generate intermediate frames from final presented frames
+- avoid dependency on app-provided motion vectors / depth / engine hooks
+- work in real time on Linux
+- eventually approach the user experience of:
+  - Lossless Scaling Frame Generation
+  - AMD AFMF
+  - NVIDIA Smooth Motion
+
+## Current recommendation
+
+**MVP path:**
+- start with a **Vulkan layer / swapchain interception prototype**
+- keep it **clean-room / permissively licensed**
+- use `lsfg-vk` and old FFX Vulkan frame-generation code as **reference architecture**, not as code to directly fork
+- treat `gamescope` as the likely **phase 2 / compositor path** once the interpolation core and present scheduler are proven
+
+## Documentation map
+
+### Research
+- `research/post-process-frame-gen-linux-research.md`
+  - full landscape writeup
+  - what exists today
+  - what is possible
+  - what is missing
+  - cloned repos and fetched sources
+
+### Decisions / planning
+- `docs/path-comparison.md`
+  - Vulkan-layer path vs compositor/gamescope path
+  - tradeoffs, licensing, and recommendation
+- `docs/mvp-plan.md`
+  - scoped MVP proposal
+  - milestones and success criteria
+- `docs/testing-strategy.md`
+  - realistic testing plan
+  - what can and cannot be validated from macOS Apple Silicon
+- `docs/open-questions.md`
+  - unresolved technical questions and Linux experiments to run next
+- `docs/targets/steamdeck.md`
+  - confirmed remote Linux target
+  - Steam Deck environment details
+  - remote helper usage
+- `docs/implementation-status.md`
+  - current build/deploy/runtime status
+  - what now works on the Steam Deck
+
+### Implementation
+- `implementation/vk-layer-mvp/README.md`
+  - current Vulkan-layer MVP
+  - modes, build, deploy, and smoke-test usage
+
+## Local research assets
+
+### Cloned repositories
+Stored under `research/repos/`.
+
+Key repos:
+- `lsfg-vk`
+- `gamescope`
+- `FidelityFX-SDK`
+- `FidelityFX-SDK-v1.1.4`
+- `NVIDIAOpticalFlowSDK`
+- `linux-fg`
+- `lsfg-vk-afmf`
+- `vkBasalt`
+- `rife-ncnn-vulkan`
+
+### Fetched vendor docs
+Stored under `research/fetch/`.
+
+## Important current constraint
+
+Current host is:
+- macOS
+- Apple Silicon (`arm64`, Apple M4 Pro)
+
+That means this machine is good for:
+- research
+- documentation
+- scaffolding
+- code authoring
+- build-system work
+
+It is **not** the right place to validate:
+- Linux Vulkan layer behavior
+- real present timing / pacing
+- gamescope integration
+- NVIDIA OFA / FRUC
+- AFMF / Smooth Motion equivalents
+- VRR / HDR / queue-family behavior
+
+See `docs/testing-strategy.md` for details.
