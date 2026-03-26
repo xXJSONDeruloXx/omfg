@@ -40,6 +40,7 @@ Rust also now has additional next-step backend modes:
 - `blend`
 - `adaptive-blend`
 - `multi-blend`
+- `adaptive-multi-blend`
 
 Validated via:
 - local `cargo test --locked`
@@ -156,6 +157,19 @@ Observed:
 - swapchain image count was increased from `3 -> 6` for the validated Deck path
 - stable on Deck through 120-frame, 600-frame, and IMMEDIATE-mode runs
 
+#### 8. `adaptive-multi-blend` (Rust)
+Working as the current richest generated-frame backend in the Rust layer.
+
+Validated with Rust layer on Steam Deck:
+- `vkcube --c 120`
+- full Rust regression suite including `adaptive-multi-blend`
+
+Observed:
+- emits **two generated frames** before the current real frame
+- applies adaptive current-frame bias based on previous/current difference while doing multi-FG
+- stable on the Deck 120-frame smoke path
+- demonstrates the first combined multi-FG + adaptive synthesis mode in Rust
+
 These modes are still stepping stones toward motion-aware interpolation, but they are now clearly beyond placeholder-only generation in the Rust implementation.
 
 ---
@@ -184,6 +198,7 @@ Right now the layer can do:
 - **simple shader-based previous/current frame blending**
 - **difference-aware adaptive blending**
 - **initial multi-FG via two generated frames per real frame**
+- **combined adaptive + multi-FG synthesis**
 
 It still cannot do:
 - **motion-aware interpolated frame generation**
@@ -221,6 +236,7 @@ Rust parity port:
 - `artifacts/steamdeck/rust/vkcube/multi-blend/ppfg-vkcube.log`
 - `artifacts/steamdeck/rust/vkcube/multi-blend-long/ppfg-vkcube-multi-long.log`
 - `artifacts/steamdeck/rust/vkcube/multi-blend-immediate/ppfg-vkcube-multi-immediate.log`
+- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend/ppfg-vkcube.log`
 
 ### vkgears
 - `artifacts/steamdeck/vkgears/clear/ppfg-vkgears.log`
@@ -263,6 +279,6 @@ Recommended execution model now:
 
 Meaning:
 - keep the current queue/swapchain/present path
-- treat `blend`, `adaptive-blend`, and `multi-blend` as shader stepping stones
+- treat `blend`, `adaptive-blend`, `multi-blend`, and `adaptive-multi-blend` as shader stepping stones
 - next target **adaptive FG frame-count control in Rust**
 - then continue toward motion-aware interpolation and richer multi-FG policies

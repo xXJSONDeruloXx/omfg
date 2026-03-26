@@ -1862,7 +1862,7 @@ fn blend_push_constants_for_mode(mode: Mode) -> BlendPushConstants {
             adaptive_bias: 0.0,
             mode: 0,
         },
-        Mode::AdaptiveBlendTest => BlendPushConstants {
+        Mode::AdaptiveBlendTest | Mode::AdaptiveMultiBlendTest => BlendPushConstants {
             alpha: 0.5,
             adaptive_strength: 2.0,
             adaptive_bias: 0.25,
@@ -1888,6 +1888,20 @@ fn multi_blend_push_constants_plan(mode: Mode) -> Vec<BlendPushConstants> {
                 mode: 0,
             },
         ],
+        Mode::AdaptiveMultiBlendTest => vec![
+            BlendPushConstants {
+                alpha: 1.0 / 3.0,
+                adaptive_strength: 2.0,
+                adaptive_bias: 0.25,
+                mode: 1,
+            },
+            BlendPushConstants {
+                alpha: 2.0 / 3.0,
+                adaptive_strength: 2.0,
+                adaptive_bias: 0.25,
+                mode: 1,
+            },
+        ],
         _ => vec![blend_push_constants_for_mode(mode)],
     }
 }
@@ -1903,6 +1917,11 @@ fn blend_mode_labels(mode: Mode) -> (&'static str, &'static str, &'static str) {
             "multi-blend primed previous frame history",
             "first multi blended generated-frame present succeeded",
             "multi blended frame present=",
+        ),
+        Mode::AdaptiveMultiBlendTest => (
+            "adaptive-multi-blend primed previous frame history",
+            "first adaptive multi blended generated-frame present succeeded",
+            "adaptive multi blended frame present=",
         ),
         _ => (
             "blend primed previous frame history",
@@ -2560,6 +2579,7 @@ unsafe fn try_present_multi_blend_frame(
     queue_info: &QueueInfo,
     queue: vk::Queue,
     present_info: *const PresentInfoKHR,
+    mode: Mode,
 ) -> bool {
     if !init_inject_resources(state, device_info, queue_info) {
         return false;
@@ -2573,9 +2593,8 @@ unsafe fn try_present_multi_blend_frame(
         _ => return false,
     };
 
-    let generated_plan = multi_blend_push_constants_plan(Mode::MultiBlendTest);
-    let (prime_label, first_success_label, generated_label_prefix) =
-        blend_mode_labels(Mode::MultiBlendTest);
+    let generated_plan = multi_blend_push_constants_plan(mode);
+    let (prime_label, first_success_label, generated_label_prefix) = blend_mode_labels(mode);
 
     let (
         Some(wait_for_fences),
@@ -4651,7 +4670,11 @@ unsafe extern "system" fn layer_create_swapchain_khr(
     refresh_swapchain_images(&mut state_entry, &device_info.dispatch);
     if matches!(
         mode,
-        Mode::HistoryCopyTest | Mode::BlendTest | Mode::AdaptiveBlendTest | Mode::MultiBlendTest
+        Mode::HistoryCopyTest
+            | Mode::BlendTest
+            | Mode::AdaptiveBlendTest
+            | Mode::MultiBlendTest
+            | Mode::AdaptiveMultiBlendTest
     ) {
         let _ = ensure_history_image(&mut state_entry, &device_info);
     }
@@ -4752,6 +4775,7 @@ unsafe extern "system" fn layer_queue_present_khr(
                         | Mode::BlendTest
                         | Mode::AdaptiveBlendTest
                         | Mode::MultiBlendTest
+                        | Mode::AdaptiveMultiBlendTest
                 ) {
                     "vkQueuePresentKHR frame="
                 } else {
@@ -4855,7 +4879,8 @@ unsafe extern "system" fn layer_queue_present_khr(
                 }
                 planner::PresentSequence::PrimeHistory
                 | planner::PresentSequence::GeneratedThenOriginal
-                    if matches!(mode, Mode::MultiBlendTest) && have_queue =>
+                    if matches!(mode, Mode::MultiBlendTest | Mode::AdaptiveMultiBlendTest)
+                        && have_queue =>
                 {
                     swapchain_state.injection_attempted = true;
                     if try_present_multi_blend_frame(
@@ -4864,6 +4889,7 @@ unsafe extern "system" fn layer_queue_present_khr(
                         &queue_info,
                         queue,
                         present_info,
+                        mode,
                     ) {
                         return vk::Result::SUCCESS;
                     }

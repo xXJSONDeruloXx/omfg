@@ -40,6 +40,8 @@ Continue iterating on the Rust implementation until practical feature parity is 
   - `adaptive-blend`
 - First multi-FG stepping stone:
   - `multi-blend`
+- Adaptive multi-FG synthesis stepping stone:
+  - `adaptive-multi-blend`
 
 ## Next implementation ladder
 
@@ -49,6 +51,7 @@ Goal:
 
 Current status:
 - initial stepping stone achieved via `multi-blend`
+- adaptive synthesis variant achieved via `adaptive-multi-blend`
 - two generated frames are now emitted between real frames in Rust
 
 Next likely path:

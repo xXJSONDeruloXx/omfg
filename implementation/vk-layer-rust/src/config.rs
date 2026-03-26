@@ -7,6 +7,7 @@ pub enum Mode {
     BlendTest,
     AdaptiveBlendTest,
     MultiBlendTest,
+    AdaptiveMultiBlendTest,
 }
 
 impl Mode {
@@ -22,6 +23,10 @@ impl Mode {
             "multi-blend" | "multi-fg" | "multi-fg-test" | "multi-blend-test" => {
                 Self::MultiBlendTest
             }
+            "adaptive-multi-blend"
+            | "adaptive-multi-fg"
+            | "adaptive-multi-blend-test"
+            | "multi-blend-adaptive" => Self::AdaptiveMultiBlendTest,
             _ => Self::PassThrough,
         }
     }
@@ -39,6 +44,7 @@ impl Mode {
             Self::BlendTest => "blend-test",
             Self::AdaptiveBlendTest => "adaptive-blend-test",
             Self::MultiBlendTest => "multi-blend-test",
+            Self::AdaptiveMultiBlendTest => "adaptive-multi-blend-test",
         }
     }
 }
@@ -105,6 +111,22 @@ mod tests {
             Mode::from_env_value(Some("multi-blend-test")),
             Mode::MultiBlendTest
         );
+        assert_eq!(
+            Mode::from_env_value(Some("adaptive-multi-blend")),
+            Mode::AdaptiveMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("adaptive-multi-fg")),
+            Mode::AdaptiveMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("adaptive-multi-blend-test")),
+            Mode::AdaptiveMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("multi-blend-adaptive")),
+            Mode::AdaptiveMultiBlendTest
+        );
         assert_eq!(Mode::from_env_value(Some("wat")), Mode::PassThrough);
     }
 
@@ -117,5 +139,9 @@ mod tests {
         assert_eq!(Mode::BlendTest.name(), "blend-test");
         assert_eq!(Mode::AdaptiveBlendTest.name(), "adaptive-blend-test");
         assert_eq!(Mode::MultiBlendTest.name(), "multi-blend-test");
+        assert_eq!(
+            Mode::AdaptiveMultiBlendTest.name(),
+            "adaptive-multi-blend-test"
+        );
     }
 }
