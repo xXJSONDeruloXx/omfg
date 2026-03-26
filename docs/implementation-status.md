@@ -25,6 +25,7 @@ This is beyond paper architecture at this point.
 - generic regression harness scripts:
   - `scripts/run-layer-regression-suite.sh`
   - `scripts/run-advanced-steamdeck-validation.sh`
+  - `scripts/run-target-fps-steamdeck-validation.sh`
   - `scripts/assert-vkcube-log.py`
   - `scripts/compile-rust-shaders.sh`
 
@@ -198,13 +199,14 @@ Validated with Rust layer on Steam Deck:
 - full Rust regression suite including `adaptive-multi-blend`
 
 Observed:
-- adapts generated frame count based on recent present interval
-- in fast **IMMEDIATE** mode, it can drop to a single generated frame
-- in slower FIFO-like pacing, it can use multi-FG behavior
+- adapts generated frame count based on runtime timing
+- supports a new LSFG-style **target-FPS controller** via `PPFG_ADAPTIVE_MULTI_TARGET_FPS`
+- fractional targets are accumulated over time via generated-frame credit, so effective multipliers can fluctuate between `0`, `1`, and `2` generated frames per real frame
+- Deck validation now includes real target-FPS cases for `90`, `100`, `120`, and `150` FPS targets
 - applies adaptive current-frame bias based on previous/current difference while doing multi-FG
 - stable on the Deck 120-frame smoke path
 - stable on an additional **600-frame** run
-- demonstrates the first combined multi-FG + adaptive synthesis mode in Rust
+- demonstrates the first combined multi-FG + adaptive synthesis + target-FPS control mode in Rust
 
 These modes are still stepping stones toward motion-aware interpolation, but they are now clearly beyond placeholder-only generation in the Rust implementation.
 
@@ -240,7 +242,7 @@ Right now the layer can do:
 
 It still cannot do:
 - **true motion-aware interpolated frame generation**
-- **richer adaptive FG frame-count control beyond the current interval-based heuristic**
+- **a pacing-decoupled target-FPS controller comparable to polished production FG stacks**
 - **higher-quality motion/disocclusion-aware multi-FG**
 
 So the next major milestone is replacing duplicate copy with:
@@ -279,6 +281,10 @@ Rust parity port:
 - `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend/ppfg-vkcube.log`
 - `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-long/ppfg-vkcube-adaptive-multi-long.log`
 - `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-immediate/ppfg-vkcube-adaptive-multi-immediate.log`
+- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-target100-long/ppfg-vkcube.log`
+- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-target120-smoke/ppfg-vkcube.log`
+- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-target150-smoke/ppfg-vkcube.log`
+- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-target90-immediate/ppfg-vkcube.log`
 
 ### vkgears
 - `artifacts/steamdeck/vkgears/clear/ppfg-vkgears.log`

@@ -84,6 +84,11 @@ def main() -> int:
         default=[],
         help="Additional raw text markers that must appear in the log.",
     )
+    parser.add_argument(
+        "--skip-mode-markers",
+        action="store_true",
+        help="Only assert common markers plus any extra expected text.",
+    )
     args = parser.parse_args()
 
     log_path = pathlib.Path(args.log)
@@ -92,7 +97,9 @@ def main() -> int:
         return 1
 
     text = log_path.read_text(encoding="utf-8", errors="replace")
-    expected_markers = COMMON_MARKERS + MODE_MARKERS[args.mode] + args.expect_text
+    expected_markers = COMMON_MARKERS + args.expect_text
+    if not args.skip_mode_markers:
+        expected_markers += MODE_MARKERS[args.mode]
     missing = [marker for marker in expected_markers if marker not in text]
     if missing:
         print(f"log assertion failed for {log_path}", file=sys.stderr)

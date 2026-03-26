@@ -61,11 +61,12 @@ Current status:
 - initial stepping stone achieved via `multi-blend`
 - adaptive synthesis variant achieved via `adaptive-multi-blend`
 - two generated frames are now emitted between real frames in Rust
-- initial adaptive frame-count control now exists via present-interval heuristics in `adaptive-multi-blend`
+- LSFG-style target-FPS control now exists in `adaptive-multi-blend` via fractional generated-frame credit accumulation
+- real Steam Deck target-FPS validation now covers `90`, `100`, `120`, and `150` FPS targets
 
 Next likely path:
-- generalize beyond fixed 2x generation
-- expand adaptive count logic beyond the current simple interval heuristic
+- generalize beyond the current `0..2` generated-frame range
+- decouple controller quality from the current conservative synchronization overhead
 - improve synchronization model beyond the current conservative approach
 - validate with broader Deck finite-frame runs and additional modes
 
@@ -75,10 +76,12 @@ Goal:
 
 Current status:
 - first controller exists in `adaptive-multi-blend`
-- current heuristic adapts generated-frame count using recent present interval timing
+- it now supports both interval-based control and a target-FPS controller
+- the target-FPS controller accumulates fractional generated-frame credit so effective multipliers can fluctuate over time
 
 Next likely path:
 - expand policy knobs via env/config
+- better separate base-app cadence from current FG overhead
 - combine multiple heuristics:
   - present mode
   - generated-frame budget

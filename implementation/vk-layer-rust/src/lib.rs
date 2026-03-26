@@ -14,8 +14,8 @@ use layer_defs::{
     VkNegotiateLayerStructType, CURRENT_LOADER_LAYER_INTERFACE_VERSION,
 };
 use planner::{
-    determine_adaptive_generated_frame_count, mark_injection_result, mutate_swapchain,
-    planned_sequence,
+    determine_adaptive_generated_frame_count, determine_target_generated_frame_count,
+    mark_injection_result, mutate_swapchain, planned_sequence, smooth_present_interval_ms,
 };
 use std::collections::HashMap;
 use std::ffi::{c_char, CStr};
@@ -522,6 +522,9 @@ struct SwapchainState {
     present_count: u64,
     last_present_timestamp_us: u64,
     last_present_interval_ms: f32,
+    smoothed_present_interval_ms: f32,
+    adaptive_generated_frame_credit: f32,
+    last_adaptive_requested_generated_frames: u32,
     generated_present_count: u64,
     injection_attempted: bool,
     injection_works: bool,
@@ -550,6 +553,9 @@ impl Default for SwapchainState {
             present_count: 0,
             last_present_timestamp_us: 0,
             last_present_interval_ms: 0.0,
+            smoothed_present_interval_ms: 0.0,
+            adaptive_generated_frame_credit: 0.0,
+            last_adaptive_requested_generated_frames: 0,
             generated_present_count: 0,
             injection_attempted: false,
             injection_works: false,
@@ -1913,6 +1919,80 @@ fn reproject_confidence_scale() -> f32 {
     env_f32("PPFG_REPROJECT_CONFIDENCE_SCALE", 4.0)
 }
 
+fn adaptive_multi_target_fps() -> f32 {
+    env_f32("PPFG_ADAPTIVE_MULTI_TARGET_FPS", 0.0).max(0.0)
+}
+
+fn adaptive_multi_interval_smoothing_alpha() -> f32 {
+    env_f32("PPFG_ADAPTIVE_MULTI_INTERVAL_SMOOTHING_ALPHA", 0.25).clamp(0.0, 1.0)
+}
+
+#[derive(Debug, Clone, Copy)]
+struct AdaptiveMultiFrameRequest {
+    generated_frame_count: usize,
+    target_fps: Option<f32>,
+    base_fps: f32,
+    desired_generated_frames: f32,
+    carry: f32,
+}
+
+fn adaptive_multi_frame_request(state: &mut SwapchainState) -> AdaptiveMultiFrameRequest {
+    let target_fps = adaptive_multi_target_fps();
+    let target_enabled = target_fps > 0.0;
+    let min_count = env_u32(
+        "PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES",
+        if target_enabled { 0 } else { 1 },
+    );
+    let max_count = env_u32("PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES", 2).max(min_count);
+
+    if target_enabled {
+        let interval = if state.smoothed_present_interval_ms > 0.0 {
+            Some(state.smoothed_present_interval_ms)
+        } else if state.last_present_interval_ms > 0.0 {
+            Some(state.last_present_interval_ms)
+        } else {
+            None
+        };
+        let decision = determine_target_generated_frame_count(
+            interval,
+            target_fps,
+            min_count,
+            max_count,
+            state.adaptive_generated_frame_credit,
+        );
+        state.adaptive_generated_frame_credit = decision.next_credit;
+        AdaptiveMultiFrameRequest {
+            generated_frame_count: decision.emitted_generated_frames as usize,
+            target_fps: Some(decision.target_fps),
+            base_fps: decision.base_fps,
+            desired_generated_frames: decision.desired_generated_frames,
+            carry: decision.next_credit,
+        }
+    } else {
+        state.adaptive_generated_frame_credit = 0.0;
+        let threshold_ms = env_f32("PPFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS", 5.0);
+        let interval = if state.last_present_interval_ms > 0.0 {
+            Some(state.last_present_interval_ms)
+        } else {
+            None
+        };
+        let generated_frame_count =
+            determine_adaptive_generated_frame_count(interval, threshold_ms, min_count, max_count)
+                as usize;
+        AdaptiveMultiFrameRequest {
+            generated_frame_count,
+            target_fps: None,
+            base_fps: if let Some(interval_ms) = interval {
+                1000.0 / interval_ms.max(0.001)
+            } else {
+                0.0
+            },
+            desired_generated_frames: generated_frame_count as f32,
+            carry: 0.0,
+        }
+    }
+}
+
 fn blend_push_constants_for_mode(mode: Mode) -> BlendPushConstants {
     match mode {
         Mode::BlendTest | Mode::MultiBlendTest => BlendPushConstants {
@@ -1967,7 +2047,6 @@ fn multi_blend_push_constants_plan(
     mode: Mode,
     generated_frame_count: usize,
 ) -> Vec<BlendPushConstants> {
-    let generated_frame_count = generated_frame_count.max(1);
     let adaptive = matches!(mode, Mode::AdaptiveMultiBlendTest);
 
     (1..=generated_frame_count)
@@ -2695,23 +2774,38 @@ unsafe fn try_present_multi_blend_frame(
         _ => return false,
     };
 
+    let adaptive_request = match mode {
+        Mode::AdaptiveMultiBlendTest => Some(adaptive_multi_frame_request(state)),
+        _ => None,
+    };
     let requested_generated_frame_count = match mode {
-        Mode::AdaptiveMultiBlendTest => {
-            let min_count = env_u32("PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES", 1);
-            let max_count = env_u32("PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES", 2);
-            let threshold_ms = env_f32("PPFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS", 5.0);
-            let interval = if state.last_present_interval_ms > 0.0 {
-                Some(state.last_present_interval_ms)
-            } else {
-                None
-            };
-            determine_adaptive_generated_frame_count(interval, threshold_ms, min_count, max_count)
-        }
-        Mode::MultiBlendTest => env_u32("PPFG_MULTI_BLEND_COUNT", 2).max(1),
+        Mode::AdaptiveMultiBlendTest => adaptive_request
+            .map(|request| request.generated_frame_count)
+            .unwrap_or(0),
+        Mode::MultiBlendTest => env_u32("PPFG_MULTI_BLEND_COUNT", 2).max(1) as usize,
         _ => 1,
-    } as usize;
+    };
     let generated_plan = multi_blend_push_constants_plan(mode, requested_generated_frame_count);
     let (prime_label, first_success_label, generated_label_prefix) = blend_mode_labels(mode);
+
+    if let Some(request) = adaptive_request {
+        let count_changed = state.last_adaptive_requested_generated_frames
+            != requested_generated_frame_count as u32;
+        if state.present_count <= 5 || state.present_count % 60 == 0 || count_changed {
+            log_info(format!(
+                "adaptive-multi target controller; present={}; targetFps={:.1}; baseFps={:.1}; desiredGeneratedFrames={:.3}; emittedGeneratedFrames={}; carry={:.3}; intervalMs={:.3}; smoothedIntervalMs={:.3}",
+                state.present_count,
+                request.target_fps.unwrap_or(0.0),
+                request.base_fps,
+                request.desired_generated_frames,
+                requested_generated_frame_count,
+                request.carry,
+                state.last_present_interval_ms,
+                state.smoothed_present_interval_ms,
+            ));
+        }
+    }
+    state.last_adaptive_requested_generated_frames = requested_generated_frame_count as u32;
 
     let (
         Some(wait_for_fences),
@@ -2781,9 +2875,10 @@ unsafe fn try_present_multi_blend_frame(
     }
     let source_image = state.images[source_index as usize];
 
-    let have_generated = state.history_valid;
+    let have_history = state.history_valid;
+    let emit_generated = have_history && !generated_plan.is_empty();
     let mut generated_image_indices = Vec::new();
-    if have_generated {
+    if emit_generated {
         for _ in 0..generated_plan.len() {
             if reset_fences(device_info.device, 1, &state.inject.acquire_fence)
                 != vk::Result::SUCCESS
@@ -2847,7 +2942,7 @@ unsafe fn try_present_multi_blend_frame(
     let mut generated_views = Vec::new();
     let mut framebuffers = Vec::new();
 
-    if have_generated {
+    if emit_generated {
         current_view = match create_simple_image_view(device_info, source_image, state.format) {
             Some(view) => view,
             None => {
@@ -2959,7 +3054,7 @@ unsafe fn try_present_multi_blend_frame(
         return false;
     }
 
-    if have_generated {
+    if emit_generated {
         let mut barriers_before = Vec::with_capacity(2 + generated_image_indices.len());
         barriers_before.push(image_barrier(
             source_image,
@@ -3080,6 +3175,35 @@ unsafe fn try_present_multi_blend_frame(
             ptr::null(),
             barriers_after_render.len() as u32,
             barriers_after_render.as_ptr(),
+        );
+    } else if have_history {
+        let barriers_before_refresh = [
+            image_barrier(
+                source_image,
+                vk::AccessFlags::MEMORY_READ,
+                vk::AccessFlags::TRANSFER_READ,
+                vk::ImageLayout::PRESENT_SRC_KHR,
+                vk::ImageLayout::TRANSFER_SRC_OPTIMAL,
+            ),
+            image_barrier(
+                state.history_image,
+                vk::AccessFlags::SHADER_READ,
+                vk::AccessFlags::TRANSFER_WRITE,
+                vk::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
+                vk::ImageLayout::TRANSFER_DST_OPTIMAL,
+            ),
+        ];
+        cmd_pipeline_barrier(
+            state.inject.command_buffer,
+            vk::PipelineStageFlags::ALL_COMMANDS,
+            vk::PipelineStageFlags::TRANSFER,
+            vk::DependencyFlags::empty(),
+            0,
+            ptr::null(),
+            0,
+            ptr::null(),
+            barriers_before_refresh.len() as u32,
+            barriers_before_refresh.as_ptr(),
         );
     } else {
         let barriers_before_prime = [
@@ -3260,7 +3384,7 @@ unsafe fn try_present_multi_blend_frame(
 
     const EMPTY_WAIT_SEMAPHORE_COUNT: u32 = 0;
     let first_success = !state.injection_works;
-    if have_generated {
+    if emit_generated {
         for &generated_image_index in &generated_image_indices {
             let generated_present = PresentInfoKHR {
                 s_type: vk::StructureType::PRESENT_INFO_KHR,
@@ -3331,8 +3455,8 @@ unsafe fn try_present_multi_blend_frame(
     );
 
     state.history_valid = true;
-    state.injection_works = state.injection_works || have_generated;
-    if have_generated {
+    state.injection_works = state.injection_works || emit_generated;
+    if emit_generated {
         state.generated_present_count += generated_image_indices.len() as u64;
         if first_success {
             log_info(first_success_label);
@@ -3345,6 +3469,13 @@ unsafe fn try_present_multi_blend_frame(
                 generated_label_prefix,
                 state.generated_present_count,
                 generated_image_indices,
+                source_index
+            ));
+        }
+    } else if have_history {
+        if state.present_count <= 5 || state.present_count % 60 == 0 {
+            log_info(format!(
+                "adaptive-multi-blend refreshed history without generated frame; currentImageIndex={}",
                 source_index
             ));
         }
@@ -4890,6 +5021,16 @@ unsafe extern "system" fn layer_queue_present_khr(
             if swapchain_state.last_present_timestamp_us != 0 {
                 swapchain_state.last_present_interval_ms =
                     (now_us - swapchain_state.last_present_timestamp_us) as f32 / 1000.0;
+                swapchain_state.smoothed_present_interval_ms = smooth_present_interval_ms(
+                    if swapchain_state.smoothed_present_interval_ms > 0.0 {
+                        Some(swapchain_state.smoothed_present_interval_ms)
+                    } else {
+                        None
+                    },
+                    Some(swapchain_state.last_present_interval_ms),
+                    adaptive_multi_interval_smoothing_alpha(),
+                )
+                .unwrap_or(0.0);
             }
             swapchain_state.last_present_timestamp_us = now_us;
             swapchain_state.present_count += 1;

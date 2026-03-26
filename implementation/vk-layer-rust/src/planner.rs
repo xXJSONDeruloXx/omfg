@@ -132,6 +132,84 @@ pub fn determine_adaptive_generated_frame_count(
     scaled.clamp(min_count, max_count)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TargetFrameRateDecision {
+    pub target_fps: f32,
+    pub base_fps: f32,
+    pub desired_generated_frames: f32,
+    pub emitted_generated_frames: u32,
+    pub next_credit: f32,
+}
+
+pub fn smooth_present_interval_ms(
+    previous_interval_ms: Option<f32>,
+    sample_interval_ms: Option<f32>,
+    alpha: f32,
+) -> Option<f32> {
+    let alpha = alpha.clamp(0.0, 1.0);
+
+    match (previous_interval_ms, sample_interval_ms) {
+        (_, None) => previous_interval_ms,
+        (None, Some(sample)) => Some(sample.max(0.0)),
+        (Some(previous), Some(sample)) => {
+            let previous = previous.max(0.0);
+            let sample = sample.max(0.0);
+            Some(previous + (sample - previous) * alpha)
+        }
+    }
+}
+
+pub fn determine_target_generated_frame_count(
+    present_interval_ms: Option<f32>,
+    target_fps: f32,
+    min_count: u32,
+    max_count: u32,
+    prior_credit: f32,
+) -> TargetFrameRateDecision {
+    let min_count = min_count.min(max_count);
+    let max_count = max_count.max(min_count);
+    let target_fps = target_fps.max(0.0);
+
+    let Some(interval_ms) = present_interval_ms.filter(|interval| *interval > 0.0) else {
+        return TargetFrameRateDecision {
+            target_fps,
+            base_fps: 0.0,
+            desired_generated_frames: min_count as f32,
+            emitted_generated_frames: min_count,
+            next_credit: 0.0,
+        };
+    };
+
+    let base_fps = 1000.0 / interval_ms.max(0.001);
+    let desired_generated_frames = ((target_fps / base_fps) - 1.0)
+        .clamp(min_count as f32, max_count as f32)
+        .max(0.0);
+
+    if desired_generated_frames <= min_count as f32 + 1e-4 {
+        return TargetFrameRateDecision {
+            target_fps,
+            base_fps,
+            desired_generated_frames,
+            emitted_generated_frames: min_count,
+            next_credit: 0.0,
+        };
+    }
+
+    let accumulated_credit =
+        (prior_credit.max(0.0) + desired_generated_frames).min(max_count as f32 + 0.999_9);
+    let emitted_generated_frames =
+        ((accumulated_credit + 1e-4).floor() as u32).clamp(min_count, max_count);
+    let next_credit = (accumulated_credit - emitted_generated_frames as f32).clamp(0.0, 0.999_9);
+
+    TargetFrameRateDecision {
+        target_fps,
+        base_fps,
+        desired_generated_frames,
+        emitted_generated_frames,
+        next_credit,
+    }
+}
+
 pub fn mark_injection_result(
     mode: Mode,
     state: &mut SimulatedPresentState,
@@ -171,8 +249,9 @@ pub fn mark_injection_result(
 #[cfg(test)]
 mod tests {
     use super::{
-        determine_adaptive_generated_frame_count, mark_injection_result, mutate_swapchain,
-        planned_sequence, PresentSequence, SimulatedPresentState,
+        determine_adaptive_generated_frame_count, determine_target_generated_frame_count,
+        mark_injection_result, mutate_swapchain, planned_sequence, smooth_present_interval_ms,
+        PresentSequence, SimulatedPresentState,
     };
     use crate::config::Mode;
     use ash::vk;
@@ -554,6 +633,74 @@ mod tests {
             determine_adaptive_generated_frame_count(Some(40.0), 5.0, 1, 3),
             3
         );
+    }
+
+    #[test]
+    fn smooth_present_interval_blends_samples() {
+        assert_eq!(smooth_present_interval_ms(None, None, 0.25), None);
+        assert_eq!(
+            smooth_present_interval_ms(None, Some(16.0), 0.25),
+            Some(16.0)
+        );
+        assert_eq!(
+            smooth_present_interval_ms(Some(20.0), Some(10.0), 0.25),
+            Some(17.5)
+        );
+        assert_eq!(
+            smooth_present_interval_ms(Some(20.0), Some(10.0), 1.0),
+            Some(10.0)
+        );
+    }
+
+    #[test]
+    fn target_generated_frame_count_hits_integer_multiplier_exactly() {
+        let decision =
+            determine_target_generated_frame_count(Some(1000.0 / 60.0), 120.0, 0, 2, 0.0);
+        assert_eq!(decision.emitted_generated_frames, 1);
+        assert!((decision.desired_generated_frames - 1.0).abs() < 0.01);
+        assert!(decision.next_credit < 0.01);
+    }
+
+    #[test]
+    fn target_generated_frame_count_accumulates_fractional_credit() {
+        let mut carry = 0.0;
+        let mut emitted = Vec::new();
+        for _ in 0..6 {
+            let decision =
+                determine_target_generated_frame_count(Some(1000.0 / 60.0), 100.0, 0, 2, carry);
+            emitted.push(decision.emitted_generated_frames);
+            carry = decision.next_credit;
+        }
+        assert_eq!(emitted, vec![0, 1, 1, 0, 1, 1]);
+    }
+
+    #[test]
+    fn target_generated_frame_count_resets_credit_when_base_exceeds_target() {
+        let decision =
+            determine_target_generated_frame_count(Some(1000.0 / 144.0), 120.0, 0, 2, 0.8);
+        assert_eq!(decision.emitted_generated_frames, 0);
+        assert_eq!(decision.next_credit, 0.0);
+    }
+
+    #[test]
+    fn target_generated_frame_count_can_alternate_between_one_and_two_generated_frames() {
+        let mut carry = 0.0;
+        let mut emitted = Vec::new();
+        for _ in 0..4 {
+            let decision =
+                determine_target_generated_frame_count(Some(1000.0 / 60.0), 150.0, 0, 2, carry);
+            emitted.push(decision.emitted_generated_frames);
+            carry = decision.next_credit;
+        }
+        assert_eq!(emitted, vec![1, 2, 1, 2]);
+    }
+
+    #[test]
+    fn target_generated_frame_count_clamps_to_maximum() {
+        let decision = determine_target_generated_frame_count(Some(25.0), 180.0, 0, 2, 0.0);
+        assert_eq!(decision.emitted_generated_frames, 2);
+        assert!(decision.desired_generated_frames >= 2.0);
+        assert!(decision.next_credit < 0.01);
     }
 
     #[test]

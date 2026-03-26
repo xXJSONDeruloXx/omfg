@@ -23,6 +23,7 @@ Current Rust capability set:
   - `reproject-adaptive-blend`
   - `multi-blend`
   - `adaptive-multi-blend`
+- LSFG-style target-FPS adaptive controller for `adaptive-multi-blend`
 - testable swapchain mutation + present sequencing logic
 - expandable regression harness for future interpolation work
 
@@ -41,6 +42,7 @@ This currently covers:
 - present ordering semantics
 - generated-frame accounting
 - blend/adaptive-blend/search-blend/search-adaptive-blend/reproject-blend/reproject-adaptive-blend/multi-blend/adaptive-multi-blend policy semantics
+- target-FPS adaptive multi-FG controller logic
 - pure Rust motion-search / reprojection heuristic tests
 - dispatch-key extraction helper
 - exported layer enumeration/proc-address plumbing
@@ -102,6 +104,12 @@ export PPFG_LAYER_MODE=multi-blend
 
 export PPFG_LAYER_MODE=adaptive-multi-blend
 ./scripts/test-steamdeck-vkcube.sh
+
+# Optional LSFG-style target-FPS controller for adaptive-multi-blend
+export PPFG_ADAPTIVE_MULTI_TARGET_FPS=120
+export PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0
+export PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
+./scripts/test-steamdeck-vkcube.sh
 ```
 
 ### Full regression suite
@@ -120,6 +128,15 @@ export PPFG_LAYER_IMPL=rust
 ./scripts/run-advanced-steamdeck-validation.sh
 ```
 
+### Target-FPS adaptive multi-FG validation
+This exercises the LSFG-style target-FPS controller on the Steam Deck, including fractional target cases.
+
+```bash
+export STEAMDECK_PASS='...'
+export PPFG_LAYER_IMPL=rust
+./scripts/run-target-fps-steamdeck-validation.sh
+```
+
 ## Design notes
 
 The Rust port intentionally separates:
@@ -135,7 +152,11 @@ The `search-adaptive-blend` mode combines the small neighborhood search with ada
 The `reproject-blend` mode adds a stronger **symmetric patch-search reprojection** step, searching for a midpoint half-motion offset between the previous and current frames and blending confidence-weighted reprojected samples.
 The `reproject-adaptive-blend` mode combines that stronger reprojection path with adaptive current-frame weighting.
 The `multi-blend` mode is the first Rust **multi-FG** step, emitting two synthetic frames between real frames using temporal blend positions.
-The `adaptive-multi-blend` mode combines both ideas: multi-FG plus adaptive current-frame weighting, and now also includes an initial present-interval-based frame-count controller.
+The `adaptive-multi-blend` mode combines both ideas: multi-FG plus adaptive current-frame weighting, and now includes both:
+- the older present-interval heuristic path
+- a newer **target-FPS adaptive controller** (`PPFG_ADAPTIVE_MULTI_TARGET_FPS`) that accumulates fractional generated-frame credit so the effective FG multiplier can fluctuate over time.
+
+Today that target-FPS controller is already validated on the Deck, but it still observes the app's intercepted present cadence under the current conservative synchronization model, so its decisions are still coupled to current pacing overhead.
 
 These are still not fully optical-flow or ML interpolation backends, but they are real shader-based generated-frame steps beyond placeholder copying and simple same-pixel blending.
 

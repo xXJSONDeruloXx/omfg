@@ -1,0 +1,65 @@
+[ppfg][info][1774565478514] vkNegotiateLoaderLayerInterfaceVersion ok; mode=adaptive-multi-blend-test
+[ppfg][info][1774565478517] vkCreateInstance ok; mode=adaptive-multi-blend-test; app=vkcube; engine=vkcube; apiVersion=1.0.0
+[ppfg][info][1774565478543] vkCreateDevice ok; gpu=AMD Custom GPU 0932 (RADV VANGOGH)
+[ppfg][info][1774565478548] created history image for swapchain
+[ppfg][info][1774565478548] vkCreateSwapchainKHR ok; extent=500x500; format=44; presentMode=FIFO; minImages=3->6; usage=COLOR_ATTACHMENT (0x10) -> TRANSFER_SRC|SAMPLED|COLOR_ATTACHMENT (0x15); images=6; mode=adaptive-multi-blend-test
+[ppfg][info][1774565478551] vkQueuePresentKHR frame=1; queueFamily=0; imageIndex=0; waitSemaphores=1
+[ppfg][info][1774565478551] initialized injection resources for queue family 0
+[ppfg][info][1774565478551] initialized blend resources for swapchain
+[ppfg][info][1774565478551] adaptive-multi target controller; present=1; targetFps=100.0; baseFps=0.0; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.000; smoothedIntervalMs=0.000
+[ppfg][info][1774565478551] adaptive-multi-blend primed previous frame history
+[ppfg][info][1774565478552] vkQueuePresentKHR frame=2; queueFamily=0; imageIndex=1; waitSemaphores=1
+[ppfg][info][1774565478552] adaptive-multi target controller; present=2; targetFps=100.0; baseFps=1008.1; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.992; smoothedIntervalMs=0.992
+[ppfg][info][1774565478552] adaptive-multi-blend refreshed history without generated frame; currentImageIndex=1
+[ppfg][info][1774565478552] vkQueuePresentKHR frame=3; queueFamily=0; imageIndex=2; waitSemaphores=1
+[ppfg][info][1774565478552] adaptive-multi target controller; present=3; targetFps=100.0; baseFps=1190.8; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.383; smoothedIntervalMs=0.840
+[ppfg][info][1774565478552] adaptive-multi-blend refreshed history without generated frame; currentImageIndex=2
+[ppfg][info][1774565478552] vkQueuePresentKHR frame=4; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565478552] adaptive-multi target controller; present=4; targetFps=100.0; baseFps=1408.3; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.321; smoothedIntervalMs=0.710
+[ppfg][info][1774565478552] adaptive-multi-blend refreshed history without generated frame; currentImageIndex=3
+[ppfg][info][1774565478553] vkQueuePresentKHR frame=5; queueFamily=0; imageIndex=4; waitSemaphores=1
+[ppfg][info][1774565478553] adaptive-multi target controller; present=5; targetFps=100.0; baseFps=1664.5; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.273; smoothedIntervalMs=0.601
+[ppfg][info][1774565478553] adaptive-multi-blend refreshed history without generated frame; currentImageIndex=4
+[ppfg][info][1774565478773] adaptive-multi target controller; present=26; targetFps=100.0; baseFps=89.8; desiredGeneratedFrames=0.113; emittedGeneratedFrames=1; carry=0.009; intervalMs=11.309; smoothedIntervalMs=11.134
+[ppfg][info][1774565478785] first adaptive multi blended generated-frame present succeeded
+[ppfg][info][1774565478786] adaptive multi blended frame present=1; generatedImageIndices=[2]; currentImageIndex=1
+[ppfg][info][1774565478795] adaptive-multi target controller; present=27; targetFps=100.0; baseFps=72.0; desiredGeneratedFrames=0.388; emittedGeneratedFrames=0; carry=0.398; intervalMs=22.135; smoothedIntervalMs=13.884
+[ppfg][info][1774565478828] adaptive-multi target controller; present=30; targetFps=100.0; baseFps=81.6; desiredGeneratedFrames=0.226; emittedGeneratedFrames=1; carry=0.204; intervalMs=11.097; smoothedIntervalMs=12.255
+[ppfg][info][1774565478841] adaptive multi blended frame present=2; generatedImageIndices=[2]; currentImageIndex=0
+[ppfg][info][1774565478850] adaptive-multi target controller; present=31; targetFps=100.0; baseFps=67.8; desiredGeneratedFrames=0.475; emittedGeneratedFrames=0; carry=0.678; intervalMs=22.226; smoothedIntervalMs=14.748
+[ppfg][info][1774565478861] adaptive-multi target controller; present=32; targetFps=100.0; baseFps=72.5; desiredGeneratedFrames=0.379; emittedGeneratedFrames=1; carry=0.057; intervalMs=10.910; smoothedIntervalMs=13.788
+[ppfg][info][1774565478874] adaptive multi blended frame present=3; generatedImageIndices=[4]; currentImageIndex=3
+[ppfg][info][1774565478884] adaptive-multi target controller; present=33; targetFps=100.0; baseFps=62.5; desiredGeneratedFrames=0.601; emittedGeneratedFrames=0; carry=0.658; intervalMs=22.661; smoothedIntervalMs=16.007
+[ppfg][info][1774565478894] adaptive-multi target controller; present=34; targetFps=100.0; baseFps=68.1; desiredGeneratedFrames=0.468; emittedGeneratedFrames=1; carry=0.125; intervalMs=10.686; smoothedIntervalMs=14.676
+[ppfg][info][1774565478917] adaptive-multi target controller; present=35; targetFps=100.0; baseFps=60.2; desiredGeneratedFrames=0.662; emittedGeneratedFrames=0; carry=0.787; intervalMs=22.434; smoothedIntervalMs=16.616
+[ppfg][info][1774565478928] adaptive-multi target controller; present=36; targetFps=100.0; baseFps=65.6; desiredGeneratedFrames=0.524; emittedGeneratedFrames=1; carry=0.312; intervalMs=11.132; smoothedIntervalMs=15.245
+[ppfg][info][1774565478972] adaptive-multi target controller; present=38; targetFps=100.0; baseFps=54.6; desiredGeneratedFrames=0.833; emittedGeneratedFrames=0; carry=0.843; intervalMs=22.392; smoothedIntervalMs=18.332
+[ppfg][info][1774565478984] adaptive-multi target controller; present=39; targetFps=100.0; baseFps=60.5; desiredGeneratedFrames=0.653; emittedGeneratedFrames=1; carry=0.495; intervalMs=11.110; smoothedIntervalMs=16.526
+[ppfg][info][1774565479206] adaptive-multi target controller; present=49; targetFps=100.0; baseFps=45.7; desiredGeneratedFrames=1.187; emittedGeneratedFrames=2; carry=0.090; intervalMs=22.028; smoothedIntervalMs=21.874
+[ppfg][info][1774565479239] adaptive-multi target controller; present=50; targetFps=100.0; baseFps=40.4; desiredGeneratedFrames=1.478; emittedGeneratedFrames=1; carry=0.568; intervalMs=33.493; smoothedIntervalMs=24.779
+[ppfg][info][1774565479284] adaptive-multi target controller; present=52; targetFps=100.0; baseFps=42.2; desiredGeneratedFrames=1.368; emittedGeneratedFrames=2; carry=0.345; intervalMs=22.427; smoothedIntervalMs=23.677
+[ppfg][info][1774565479317] adaptive-multi target controller; present=53; targetFps=100.0; baseFps=38.3; desiredGeneratedFrames=1.610; emittedGeneratedFrames=1; carry=0.955; intervalMs=33.371; smoothedIntervalMs=26.100
+[ppfg][info][1774565479339] adaptive-multi target controller; present=54; targetFps=100.0; baseFps=39.8; desiredGeneratedFrames=1.511; emittedGeneratedFrames=2; carry=0.466; intervalMs=22.131; smoothedIntervalMs=25.108
+[ppfg][info][1774565479539] vkQueuePresentKHR frame=60; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565479539] adaptive-multi target controller; present=60; targetFps=100.0; baseFps=31.4; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.351; smoothedIntervalMs=31.883
+[ppfg][info][1774565481539] vkQueuePresentKHR frame=120; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565481539] adaptive-multi target controller; present=120; targetFps=100.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.428; smoothedIntervalMs=33.354
+[ppfg][info][1774565483539] vkQueuePresentKHR frame=180; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565483539] adaptive-multi target controller; present=180; targetFps=100.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.448; smoothedIntervalMs=33.347
+[ppfg][info][1774565485539] vkQueuePresentKHR frame=240; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565485539] adaptive-multi target controller; present=240; targetFps=100.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.411; smoothedIntervalMs=33.383
+[ppfg][info][1774565487539] vkQueuePresentKHR frame=300; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565487539] adaptive-multi target controller; present=300; targetFps=100.0; baseFps=30.1; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.062; smoothedIntervalMs=33.270
+[ppfg][info][1774565489539] vkQueuePresentKHR frame=360; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565489539] adaptive-multi target controller; present=360; targetFps=100.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.511; smoothedIntervalMs=33.352
+[ppfg][info][1774565491538] vkQueuePresentKHR frame=420; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565491539] adaptive-multi target controller; present=420; targetFps=100.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.039; smoothedIntervalMs=33.301
+[ppfg][info][1774565493539] vkQueuePresentKHR frame=480; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565493539] adaptive-multi target controller; present=480; targetFps=100.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.186; smoothedIntervalMs=33.301
+[ppfg][info][1774565495538] vkQueuePresentKHR frame=540; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565495538] adaptive-multi target controller; present=540; targetFps=100.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.147; smoothedIntervalMs=33.278
+[ppfg][info][1774565497538] vkQueuePresentKHR frame=600; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774565497538] adaptive-multi target controller; present=600; targetFps=100.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.035; intervalMs=33.210; smoothedIntervalMs=33.284
+[ppfg][info][1774565497562] vkDestroySwapchainKHR
+[ppfg][info][1774565497573] vkDestroyDevice
+[ppfg][info][1774565497648] vkDestroyInstance
