@@ -348,6 +348,38 @@ These modes are still stepping stones toward motion-aware interpolation, but the
 
 ---
 
+## Initial debug / observability views
+
+The Rust layer now has a first debug-view path for reprojection-backed modes via:
+- `OMFG_DEBUG_VIEW=motion`
+- `OMFG_DEBUG_VIEW=confidence`
+- `OMFG_DEBUG_VIEW=ambiguity`
+- `OMFG_DEBUG_VIEW=disocclusion`
+- `OMFG_DEBUG_VIEW=hole-fill`
+- `OMFG_DEBUG_VIEW=fallback`
+
+Current behavior:
+- debug views apply only to reprojection-backed modes for now
+- the generated frame output is replaced with the requested diagnostic view
+- benchmark samples/summaries now include `debugView=...` so debug runs can be separated cleanly from normal runs
+
+Validated on Steam Deck with real layer deployment through `vkcube`:
+- `reproject-blend` + `OMFG_DEBUG_VIEW=disocclusion`
+  - artifact root: `artifacts/steamdeck/rust/vkcube/reproject-blend-debug-disocclusion/`
+- `reproject-blend` + `OMFG_DEBUG_VIEW=hole-fill`
+  - artifact root: `artifacts/steamdeck/rust/vkcube/reproject-blend-debug-hole-fill/`
+- `reproject-multi-blend` + `OMFG_MULTI_BLEND_COUNT=3` + `OMFG_DEBUG_VIEW=fallback`
+  - artifact root: `artifacts/steamdeck/rust/vkcube/reproject-multi-blend-debug-fallback-multi3/`
+
+Observed:
+- all three Deck debug-view runs completed successfully on the real target
+- logs confirm the selected `debugView` in benchmark samples/summaries
+- the fallback view also works on the higher-cost reprojection-backed multi-FG path
+
+This is the first landing of the observability track; the next follow-up is to use these views for deliberate tuning and then extend them further if needed.
+
+---
+
 ## Display target observations from current Steam Deck capture
 
 Captured via:

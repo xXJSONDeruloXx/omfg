@@ -97,6 +97,8 @@ void main() {
     vec2 debug_half_offset_px = vec2(0.0);
     float debug_confidence = 0.0;
     float debug_ambiguity = 0.0;
+    float debug_disocclusion = 0.0;
+    float debug_fallback_weight = 1.0;
 
     if (u_params.mode == 2u || u_params.mode == 3u) {
         ivec2 size_px = textureSize(u_prev_frame, 0);
@@ -186,6 +188,8 @@ void main() {
         reproject_half_offset_uv = half_offset_uv;
         reproject_texel = texel;
         debug_confidence = confidence;
+        debug_disocclusion = disocclusion;
+        debug_fallback_weight = 1.0 - confidence;
         reproject_hole_fill_weight = clamp((1.0 - confidence) * disocclusion * u_params.hole_fill_strength, 0.0, 1.0);
 
         source_prev = mix(prev_color, reproject_prev, confidence);
@@ -218,6 +222,18 @@ void main() {
     }
     if (u_params.debug_view == 3u) {
         out_color = vec4(vec3(debug_ambiguity), 1.0);
+        return;
+    }
+    if (u_params.debug_view == 4u) {
+        out_color = vec4(vec3(debug_disocclusion), 1.0);
+        return;
+    }
+    if (u_params.debug_view == 5u) {
+        out_color = vec4(vec3(reproject_hole_fill_weight), 1.0);
+        return;
+    }
+    if (u_params.debug_view == 6u) {
+        out_color = vec4(debug_fallback_weight, debug_confidence, reproject_hole_fill_weight, 1.0);
         return;
     }
 

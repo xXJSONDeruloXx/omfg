@@ -156,6 +156,13 @@ export OMFG_REPROJECT_HOLE_FILL_STRENGTH=0.85
 export OMFG_REPROJECT_HOLE_FILL_RADIUS=2
 export OMFG_REPROJECT_AMBIGUITY_SCALE=6.0
 ./scripts/test-steamdeck-vkcube.sh
+
+# Optional reprojection debug views (currently for reprojection-backed modes)
+export OMFG_LAYER_MODE=reproject-blend
+export OMFG_DEBUG_VIEW=motion        # or confidence / ambiguity / disocclusion / hole-fill / fallback
+export OMFG_BENCHMARK=1
+export OMFG_BENCHMARK_LABEL=debug-motion
+./scripts/test-steamdeck-vkcube.sh
 ```
 
 ### Full regression suite

@@ -93,6 +93,9 @@ pub enum DebugView {
     Motion,
     Confidence,
     Ambiguity,
+    Disocclusion,
+    HoleFill,
+    Fallback,
 }
 
 impl DebugView {
@@ -101,6 +104,9 @@ impl DebugView {
             "motion" | "vector" | "offset" | "reprojection-offset" => Self::Motion,
             "confidence" | "reproject-confidence" => Self::Confidence,
             "ambiguity" | "reproject-ambiguity" => Self::Ambiguity,
+            "disocclusion" | "reproject-disocclusion" | "occlusion" => Self::Disocclusion,
+            "hole-fill" | "holefill" | "reproject-hole-fill" => Self::HoleFill,
+            "fallback" | "source" | "fallback-source" => Self::Fallback,
             _ => Self::Off,
         }
     }
@@ -115,6 +121,9 @@ impl DebugView {
             Self::Motion => "motion",
             Self::Confidence => "confidence",
             Self::Ambiguity => "ambiguity",
+            Self::Disocclusion => "disocclusion",
+            Self::HoleFill => "hole-fill",
+            Self::Fallback => "fallback",
         }
     }
 
@@ -124,6 +133,9 @@ impl DebugView {
             Self::Motion => 1,
             Self::Confidence => 2,
             Self::Ambiguity => 3,
+            Self::Disocclusion => 4,
+            Self::HoleFill => 5,
+            Self::Fallback => 6,
         }
     }
 }
@@ -373,6 +385,42 @@ mod tests {
             DebugView::from_env_value(Some("reproject-ambiguity")),
             DebugView::Ambiguity
         );
+        assert_eq!(
+            DebugView::from_env_value(Some("disocclusion")),
+            DebugView::Disocclusion
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("reproject-disocclusion")),
+            DebugView::Disocclusion
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("occlusion")),
+            DebugView::Disocclusion
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("hole-fill")),
+            DebugView::HoleFill
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("holefill")),
+            DebugView::HoleFill
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("reproject-hole-fill")),
+            DebugView::HoleFill
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("fallback")),
+            DebugView::Fallback
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("source")),
+            DebugView::Fallback
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("fallback-source")),
+            DebugView::Fallback
+        );
         assert_eq!(DebugView::from_env_value(Some("wat")), DebugView::Off);
     }
 
@@ -382,9 +430,15 @@ mod tests {
         assert_eq!(DebugView::Motion.name(), "motion");
         assert_eq!(DebugView::Confidence.name(), "confidence");
         assert_eq!(DebugView::Ambiguity.name(), "ambiguity");
+        assert_eq!(DebugView::Disocclusion.name(), "disocclusion");
+        assert_eq!(DebugView::HoleFill.name(), "hole-fill");
+        assert_eq!(DebugView::Fallback.name(), "fallback");
         assert_eq!(DebugView::Off.shader_code(), 0);
         assert_eq!(DebugView::Motion.shader_code(), 1);
         assert_eq!(DebugView::Confidence.shader_code(), 2);
         assert_eq!(DebugView::Ambiguity.shader_code(), 3);
+        assert_eq!(DebugView::Disocclusion.shader_code(), 4);
+        assert_eq!(DebugView::HoleFill.shader_code(), 5);
+        assert_eq!(DebugView::Fallback.shader_code(), 6);
     }
 }
