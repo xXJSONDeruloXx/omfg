@@ -32,6 +32,8 @@ const LAYER_DESCRIPTION_BYTES: &[u8] = b"Post-process frame generation Rust Vulk
 const BLEND_VERT_SPV: &[u8] = include_bytes!("../shaders/blend.vert.spv");
 const BLEND_FRAG_SPV: &[u8] = include_bytes!("../shaders/blend.frag.spv");
 const BENCHMARK_QUERY_CAPACITY: u32 = 4096;
+const MAX_MULTI_ACQUIRE_SEMAPHORES: usize = 4;
+const MAX_TRACKED_PRESENT_READY_SEMAPHORES: usize = 16;
 
 fn layer_name() -> &'static CStr {
     unsafe { CStr::from_bytes_with_nul_unchecked(LAYER_NAME_BYTES) }
@@ -499,13 +501,15 @@ struct InjectResources {
     acquire_semaphore: vk::Semaphore,
     ready_original_semaphore: vk::Semaphore,
     ready_generated_semaphore: vk::Semaphore,
+    multi_acquire_semaphores: [vk::Semaphore; MAX_MULTI_ACQUIRE_SEMAPHORES],
+    present_ready_semaphores: [vk::Semaphore; MAX_TRACKED_PRESENT_READY_SEMAPHORES],
     submit_fence: vk::Fence,
     acquire_fence: vk::Fence,
     benchmark_query_pool: vk::QueryPool,
     benchmark_next_query: u32,
 }
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 struct BlendResources {
     initialized: bool,
     render_pass: vk::RenderPass,
@@ -516,6 +520,8 @@ struct BlendResources {
     descriptor_set: vk::DescriptorSet,
     sampler: vk::Sampler,
     history_view: vk::ImageView,
+    swapchain_views: Vec<vk::ImageView>,
+    swapchain_framebuffers: Vec<vk::Framebuffer>,
 }
 
 #[derive(Clone, Copy, Default)]
@@ -920,6 +926,13 @@ fn benchmark_label() -> String {
         .unwrap_or_else(|| "default".to_string())
 }
 
+fn can_use_multi_gpu_acquire_chain(state: &SwapchainState, generated_frame_count: usize) -> bool {
+    generated_frame_count > 0
+        && generated_frame_count <= MAX_MULTI_ACQUIRE_SEMAPHORES
+        && !state.images.is_empty()
+        && state.images.len() <= MAX_TRACKED_PRESENT_READY_SEMAPHORES
+}
+
 fn record_benchmark_sample(
     mode: Mode,
     present_count: u64,
@@ -1204,6 +1217,18 @@ unsafe fn destroy_inject_resources(
             destroy_semaphore(device, inject.ready_generated_semaphore, ptr::null());
             inject.ready_generated_semaphore = vk::Semaphore::null();
         }
+        for semaphore in &mut inject.multi_acquire_semaphores {
+            if !semaphore.is_null() {
+                destroy_semaphore(device, *semaphore, ptr::null());
+                *semaphore = vk::Semaphore::null();
+            }
+        }
+        for semaphore in &mut inject.present_ready_semaphores {
+            if !semaphore.is_null() {
+                destroy_semaphore(device, *semaphore, ptr::null());
+                *semaphore = vk::Semaphore::null();
+            }
+        }
     }
     if let Some(destroy_fence) = dispatch.destroy_fence {
         if !inject.submit_fence.is_null() {
@@ -1451,11 +1476,27 @@ unsafe fn destroy_blend_resources(
         return;
     }
 
+    if let Some(destroy_framebuffer) = dispatch.destroy_framebuffer {
+        for framebuffer in blend.swapchain_framebuffers.drain(..) {
+            if !framebuffer.is_null() {
+                destroy_framebuffer(device, framebuffer, ptr::null());
+            }
+        }
+    } else {
+        blend.swapchain_framebuffers.clear();
+    }
     if let Some(destroy_image_view) = dispatch.destroy_image_view {
+        for image_view in blend.swapchain_views.drain(..) {
+            if !image_view.is_null() {
+                destroy_image_view(device, image_view, ptr::null());
+            }
+        }
         if !blend.history_view.is_null() {
             destroy_image_view(device, blend.history_view, ptr::null());
             blend.history_view = vk::ImageView::null();
         }
+    } else {
+        blend.swapchain_views.clear();
     }
     if let Some(destroy_sampler) = dispatch.destroy_sampler {
         if !blend.sampler.is_null() {
@@ -1859,6 +1900,51 @@ unsafe fn init_blend_resources(swapchain: &mut SwapchainState, device_info: &Dev
         return false;
     }
 
+    blend.swapchain_views.reserve(swapchain.images.len());
+    blend.swapchain_framebuffers.reserve(swapchain.images.len());
+    for &swapchain_image in &swapchain.images {
+        let Some(image_view) =
+            create_simple_image_view(device_info, swapchain_image, swapchain.format)
+        else {
+            log_warn("CreateImageView failed for blend swapchain view cache");
+            destroy_blend_resources(&device_info.dispatch, device_info.device, &mut blend);
+            return false;
+        };
+        let attachments = [image_view];
+        let framebuffer_info = vk::FramebufferCreateInfo {
+            s_type: vk::StructureType::FRAMEBUFFER_CREATE_INFO,
+            render_pass: blend.render_pass,
+            attachment_count: attachments.len() as u32,
+            p_attachments: attachments.as_ptr(),
+            width: swapchain.extent.width,
+            height: swapchain.extent.height,
+            layers: 1,
+            ..Default::default()
+        };
+        let mut framebuffer = vk::Framebuffer::null();
+        if let Some(create_framebuffer) = device_info.dispatch.create_framebuffer {
+            if create_framebuffer(
+                device_info.device,
+                &framebuffer_info,
+                ptr::null(),
+                &mut framebuffer,
+            ) != vk::Result::SUCCESS
+            {
+                blend.swapchain_views.push(image_view);
+                log_warn("CreateFramebuffer failed for blend swapchain framebuffer cache");
+                destroy_blend_resources(&device_info.dispatch, device_info.device, &mut blend);
+                return false;
+            }
+        } else {
+            log_warn("CreateFramebuffer unavailable for blend swapchain framebuffer cache");
+            blend.swapchain_views.push(image_view);
+            destroy_blend_resources(&device_info.dispatch, device_info.device, &mut blend);
+            return false;
+        }
+        blend.swapchain_views.push(image_view);
+        blend.swapchain_framebuffers.push(framebuffer);
+    }
+
     let history_descriptor = [vk::DescriptorImageInfo {
         sampler: blend.sampler,
         image_view: blend.history_view,
@@ -2060,6 +2146,32 @@ unsafe fn init_inject_resources(
             &mut swapchain.inject,
         );
         return false;
+    }
+    for semaphore in &mut swapchain.inject.multi_acquire_semaphores {
+        if create_semaphore(device_info.device, &semaphore_info, ptr::null(), semaphore)
+            != vk::Result::SUCCESS
+        {
+            log_warn("CreateSemaphore failed for multi-acquire semaphore");
+            destroy_inject_resources(
+                &device_info.dispatch,
+                device_info.device,
+                &mut swapchain.inject,
+            );
+            return false;
+        }
+    }
+    for semaphore in &mut swapchain.inject.present_ready_semaphores {
+        if create_semaphore(device_info.device, &semaphore_info, ptr::null(), semaphore)
+            != vk::Result::SUCCESS
+        {
+            log_warn("CreateSemaphore failed for present-ready semaphore");
+            destroy_inject_resources(
+                &device_info.dispatch,
+                device_info.device,
+                &mut swapchain.inject,
+            );
+            return false;
+        }
     }
 
     let submit_fence_info = vk::FenceCreateInfo {
@@ -3149,38 +3261,6 @@ unsafe fn try_present_blend_frame(
     true
 }
 
-unsafe fn destroy_multi_blend_frame_resources(
-    dispatch: &DeviceDispatch,
-    device: vk::Device,
-    current_view: &mut vk::ImageView,
-    generated_views: &mut Vec<vk::ImageView>,
-    framebuffers: &mut Vec<vk::Framebuffer>,
-) {
-    if let Some(destroy_framebuffer) = dispatch.destroy_framebuffer {
-        for framebuffer in framebuffers.drain(..) {
-            if !framebuffer.is_null() {
-                destroy_framebuffer(device, framebuffer, ptr::null());
-            }
-        }
-    } else {
-        framebuffers.clear();
-    }
-    if let Some(destroy_image_view) = dispatch.destroy_image_view {
-        for image_view in generated_views.drain(..) {
-            if !image_view.is_null() {
-                destroy_image_view(device, image_view, ptr::null());
-            }
-        }
-        if !current_view.is_null() {
-            destroy_image_view(device, *current_view, ptr::null());
-            *current_view = vk::ImageView::null();
-        }
-    } else {
-        generated_views.clear();
-        *current_view = vk::ImageView::null();
-    }
-}
-
 unsafe fn try_present_multi_blend_frame(
     state: &mut SwapchainState,
     device_info: &DeviceInfo,
@@ -3252,8 +3332,6 @@ unsafe fn try_present_multi_blend_frame(
         Some(end_command_buffer),
         Some(queue_submit),
         Some(queue_present),
-        Some(queue_wait_idle),
-        Some(create_framebuffer),
         Some(cmd_begin_render_pass),
         Some(cmd_end_render_pass),
         Some(cmd_bind_pipeline),
@@ -3271,8 +3349,6 @@ unsafe fn try_present_multi_blend_frame(
         device_info.dispatch.end_command_buffer,
         device_info.dispatch.queue_submit,
         device_info.dispatch.queue_present_khr,
-        device_info.dispatch.queue_wait_idle,
-        device_info.dispatch.create_framebuffer,
         device_info.dispatch.cmd_begin_render_pass,
         device_info.dispatch.cmd_end_render_pass,
         device_info.dispatch.cmd_bind_pipeline,
@@ -3316,23 +3392,43 @@ unsafe fn try_present_multi_blend_frame(
     } else {
         0
     };
+    let use_gpu_acquire_chain =
+        emit_generated && can_use_multi_gpu_acquire_chain(state, generated_plan.len());
+    if emit_generated
+        && !use_gpu_acquire_chain
+        && (state.present_count <= 5 || state.present_count % 60 == 0)
+    {
+        log_warn(format!(
+            "multi-blend falling back to cpu acquire path; generatedFrames={}; swapchainImages={}",
+            generated_plan.len(),
+            state.images.len()
+        ));
+    }
     let acquire_timer = (benchmark_active && emit_generated).then(Instant::now);
     let mut generated_image_indices = Vec::new();
     if emit_generated {
-        for _ in 0..generated_plan.len() {
-            if reset_fences(device_info.device, 1, &state.inject.acquire_fence)
-                != vk::Result::SUCCESS
-            {
-                log_warn("ResetFences failed for multi-blend acquire fence");
-                return false;
-            }
+        for slot in 0..generated_plan.len() {
             let mut generated_image_index = 0;
+            let (acquire_semaphore, acquire_fence) = if use_gpu_acquire_chain {
+                (
+                    state.inject.multi_acquire_semaphores[slot],
+                    vk::Fence::null(),
+                )
+            } else {
+                if reset_fences(device_info.device, 1, &state.inject.acquire_fence)
+                    != vk::Result::SUCCESS
+                {
+                    log_warn("ResetFences failed for multi-blend acquire fence");
+                    return false;
+                }
+                (vk::Semaphore::null(), state.inject.acquire_fence)
+            };
             let acquire_result = acquire_next_image(
                 device_info.device,
                 state.handle,
                 20_000_000,
-                vk::Semaphore::null(),
-                state.inject.acquire_fence,
+                acquire_semaphore,
+                acquire_fence,
                 &mut generated_image_index,
             );
             if acquire_result == vk::Result::TIMEOUT || acquire_result == vk::Result::NOT_READY {
@@ -3347,19 +3443,21 @@ unsafe fn try_present_multi_blend_frame(
                 ));
                 return false;
             }
-            let acquire_wait = wait_for_fences(
-                device_info.device,
-                1,
-                &state.inject.acquire_fence,
-                vk::TRUE,
-                5_000_000_000,
-            );
-            if acquire_wait != vk::Result::SUCCESS {
-                log_warn(format!(
-                    "WaitForFences failed for multi-blend acquire fence: {}",
-                    acquire_wait.as_raw()
-                ));
-                return false;
+            if !use_gpu_acquire_chain {
+                let acquire_wait = wait_for_fences(
+                    device_info.device,
+                    1,
+                    &state.inject.acquire_fence,
+                    vk::TRUE,
+                    5_000_000_000,
+                );
+                if acquire_wait != vk::Result::SUCCESS {
+                    log_warn(format!(
+                        "WaitForFences failed for multi-blend acquire fence: {}",
+                        acquire_wait.as_raw()
+                    ));
+                    return false;
+                }
             }
             if generated_image_index as usize >= state.images.len() {
                 refresh_swapchain_images(state, &device_info.dispatch);
@@ -3382,70 +3480,37 @@ unsafe fn try_present_multi_blend_frame(
     }
 
     let setup_timer = (benchmark_active && emit_generated).then(Instant::now);
-    let mut current_view = vk::ImageView::null();
-    let mut generated_views = Vec::new();
-    let mut framebuffers = Vec::new();
+    let current_view = if emit_generated {
+        match state
+            .blend
+            .swapchain_views
+            .get(source_index as usize)
+            .copied()
+        {
+            Some(view) if !view.is_null() => view,
+            _ => {
+                log_warn("cached multi-blend current source view unavailable");
+                return false;
+            }
+        }
+    } else {
+        vk::ImageView::null()
+    };
 
     if emit_generated {
-        current_view = match create_simple_image_view(device_info, source_image, state.format) {
-            Some(view) => view,
-            None => {
-                log_warn("CreateImageView failed for multi-blend current source view");
-                return false;
-            }
-        };
-
         for &generated_image_index in &generated_image_indices {
-            let generated_view = match create_simple_image_view(
-                device_info,
-                state.images[generated_image_index as usize],
-                state.format,
-            ) {
-                Some(view) => view,
-                None => {
-                    log_warn("CreateImageView failed for multi-blend generated target view");
-                    destroy_multi_blend_frame_resources(
-                        &device_info.dispatch,
-                        device_info.device,
-                        &mut current_view,
-                        &mut generated_views,
-                        &mut framebuffers,
-                    );
+            match state
+                .blend
+                .swapchain_framebuffers
+                .get(generated_image_index as usize)
+                .copied()
+            {
+                Some(framebuffer) if !framebuffer.is_null() => {}
+                _ => {
+                    log_warn("cached multi-blend generated framebuffer unavailable");
                     return false;
                 }
-            };
-            let attachments = [generated_view];
-            let framebuffer_info = vk::FramebufferCreateInfo {
-                s_type: vk::StructureType::FRAMEBUFFER_CREATE_INFO,
-                render_pass: state.blend.render_pass,
-                attachment_count: attachments.len() as u32,
-                p_attachments: attachments.as_ptr(),
-                width: state.extent.width,
-                height: state.extent.height,
-                layers: 1,
-                ..Default::default()
-            };
-            let mut framebuffer = vk::Framebuffer::null();
-            if create_framebuffer(
-                device_info.device,
-                &framebuffer_info,
-                ptr::null(),
-                &mut framebuffer,
-            ) != vk::Result::SUCCESS
-            {
-                log_warn("CreateFramebuffer failed for multi-blend generated target");
-                generated_views.push(generated_view);
-                destroy_multi_blend_frame_resources(
-                    &device_info.dispatch,
-                    device_info.device,
-                    &mut current_view,
-                    &mut generated_views,
-                    &mut framebuffers,
-                );
-                return false;
             }
-            generated_views.push(generated_view);
-            framebuffers.push(framebuffer);
         }
 
         if !update_blend_descriptor_set(
@@ -3454,13 +3519,6 @@ unsafe fn try_present_multi_blend_frame(
             state.blend.history_view,
             current_view,
         ) {
-            destroy_multi_blend_frame_resources(
-                &device_info.dispatch,
-                device_info.device,
-                &mut current_view,
-                &mut generated_views,
-                &mut framebuffers,
-            );
             return false;
         }
     }
@@ -3476,13 +3534,6 @@ unsafe fn try_present_multi_blend_frame(
     ) != vk::Result::SUCCESS
     {
         log_warn("ResetCommandPool failed in multi-blend mode");
-        destroy_multi_blend_frame_resources(
-            &device_info.dispatch,
-            device_info.device,
-            &mut current_view,
-            &mut generated_views,
-            &mut framebuffers,
-        );
         return false;
     }
     let begin_info = vk::CommandBufferBeginInfo {
@@ -3492,13 +3543,6 @@ unsafe fn try_present_multi_blend_frame(
     };
     if begin_command_buffer(state.inject.command_buffer, &begin_info) != vk::Result::SUCCESS {
         log_warn("BeginCommandBuffer failed in multi-blend mode");
-        destroy_multi_blend_frame_resources(
-            &device_info.dispatch,
-            device_info.device,
-            &mut current_view,
-            &mut generated_views,
-            &mut framebuffers,
-        );
         return false;
     }
     write_benchmark_timestamp(
@@ -3552,11 +3596,12 @@ unsafe fn try_present_multi_blend_frame(
             offset: vk::Offset2D { x: 0, y: 0 },
             extent: state.extent,
         };
-        for (idx, framebuffer) in framebuffers.iter().enumerate() {
+        for (idx, &generated_image_index) in generated_image_indices.iter().enumerate() {
+            let framebuffer = state.blend.swapchain_framebuffers[generated_image_index as usize];
             let render_pass_info = vk::RenderPassBeginInfo {
                 s_type: vk::StructureType::RENDER_PASS_BEGIN_INFO,
                 render_pass: state.blend.render_pass,
-                framebuffer: *framebuffer,
+                framebuffer,
                 render_area,
                 clear_value_count: 0,
                 p_clear_values: ptr::null(),
@@ -3759,26 +3804,32 @@ unsafe fn try_present_multi_blend_frame(
 
     if end_command_buffer(state.inject.command_buffer) != vk::Result::SUCCESS {
         log_warn("EndCommandBuffer failed in multi-blend mode");
-        destroy_multi_blend_frame_resources(
-            &device_info.dispatch,
-            device_info.device,
-            &mut current_view,
-            &mut generated_views,
-            &mut framebuffers,
-        );
         return false;
     }
     if let Some(timer) = record_timer {
         benchmark_sample.cpu_record_ms = timer.elapsed().as_secs_f64() * 1000.0;
     }
 
-    let mut wait_semaphores = Vec::with_capacity(present_info.wait_semaphore_count as usize);
-    let mut wait_stages = Vec::with_capacity(present_info.wait_semaphore_count as usize);
+    let mut wait_semaphores = Vec::with_capacity(
+        present_info.wait_semaphore_count as usize
+            + if use_gpu_acquire_chain {
+                generated_image_indices.len()
+            } else {
+                0
+            },
+    );
+    let mut wait_stages = Vec::with_capacity(wait_semaphores.capacity());
     for index in 0..present_info.wait_semaphore_count as usize {
         wait_semaphores.push(*present_info.p_wait_semaphores.add(index));
         wait_stages.push(
             vk::PipelineStageFlags::COLOR_ATTACHMENT_OUTPUT | vk::PipelineStageFlags::TRANSFER,
         );
+    }
+    if use_gpu_acquire_chain {
+        for slot in 0..generated_image_indices.len() {
+            wait_semaphores.push(state.inject.multi_acquire_semaphores[slot]);
+            wait_stages.push(vk::PipelineStageFlags::COLOR_ATTACHMENT_OUTPUT);
+        }
     }
     let submit_info = SubmitInfo {
         s_type: vk::StructureType::SUBMIT_INFO,
@@ -3800,13 +3851,6 @@ unsafe fn try_present_multi_blend_frame(
 
     if reset_fences(device_info.device, 1, &state.inject.submit_fence) != vk::Result::SUCCESS {
         log_warn("ResetFences failed for submit fence before multi-blend QueueSubmit");
-        destroy_multi_blend_frame_resources(
-            &device_info.dispatch,
-            device_info.device,
-            &mut current_view,
-            &mut generated_views,
-            &mut framebuffers,
-        );
         return false;
     }
     let submit_timer = (benchmark_active && emit_generated).then(Instant::now);
@@ -3819,13 +3863,6 @@ unsafe fn try_present_multi_blend_frame(
             "QueueSubmit failed for multi-blend frame: {}",
             submit_result.as_raw()
         ));
-        destroy_multi_blend_frame_resources(
-            &device_info.dispatch,
-            device_info.device,
-            &mut current_view,
-            &mut generated_views,
-            &mut framebuffers,
-        );
         return false;
     }
 
@@ -3845,13 +3882,6 @@ unsafe fn try_present_multi_blend_frame(
             "WaitForFences failed after multi-blend submit: {}",
             submit_wait.as_raw()
         ));
-        destroy_multi_blend_frame_resources(
-            &device_info.dispatch,
-            device_info.device,
-            &mut current_view,
-            &mut generated_views,
-            &mut framebuffers,
-        );
         return false;
     }
 
@@ -3878,13 +3908,6 @@ unsafe fn try_present_multi_blend_frame(
                     "generated QueuePresentKHR failed in multi-blend mode: {}",
                     generated_result.as_raw()
                 ));
-                destroy_multi_blend_frame_resources(
-                    &device_info.dispatch,
-                    device_info.device,
-                    &mut current_view,
-                    &mut generated_views,
-                    &mut framebuffers,
-                );
                 return false;
             }
         }
@@ -3909,30 +3932,7 @@ unsafe fn try_present_multi_blend_frame(
             "original QueuePresentKHR failed in multi-blend mode: {}",
             original_result.as_raw()
         ));
-        destroy_multi_blend_frame_resources(
-            &device_info.dispatch,
-            device_info.device,
-            &mut current_view,
-            &mut generated_views,
-            &mut framebuffers,
-        );
         return false;
-    }
-
-    let queue_wait_idle_timer = (benchmark_active && emit_generated).then(Instant::now);
-    if queue_wait_idle(queue) != vk::Result::SUCCESS {
-        log_warn("QueueWaitIdle failed in multi-blend mode");
-        destroy_multi_blend_frame_resources(
-            &device_info.dispatch,
-            device_info.device,
-            &mut current_view,
-            &mut generated_views,
-            &mut framebuffers,
-        );
-        return false;
-    }
-    if let Some(timer) = queue_wait_idle_timer {
-        benchmark_sample.cpu_queue_idle_ms = timer.elapsed().as_secs_f64() * 1000.0;
     }
     if let Some(gpu_cmd_ms) =
         resolve_benchmark_gpu_cmd_ms(device_info, queue_info, &state.inject, benchmark_query_span)
@@ -3940,14 +3940,6 @@ unsafe fn try_present_multi_blend_frame(
         benchmark_sample.gpu_cmd_ms = gpu_cmd_ms;
         benchmark_sample.has_gpu_cmd = true;
     }
-
-    destroy_multi_blend_frame_resources(
-        &device_info.dispatch,
-        device_info.device,
-        &mut current_view,
-        &mut generated_views,
-        &mut framebuffers,
-    );
 
     state.history_valid = true;
     state.injection_works = state.injection_works || emit_generated;

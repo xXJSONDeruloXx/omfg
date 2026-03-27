@@ -1,0 +1,15 @@
+label,mode,samples,generatedFrames,gpuSamples,avgCpuAcquireMs,avgCpuSetupMs,avgCpuRecordMs,avgCpuSubmitMs,avgCpuSubmitWaitMs,avgCpuGeneratedPresentMs,avgCpuOriginalPresentMs,avgCpuQueueIdleMs,avgCpuTotalMs,avgCpuPerGeneratedFrameMs,maxCpuTotalMs,avgGpuCmdMs,avgGpuPerGeneratedFrameMs,maxGpuCmdMs
+blend,blend-test,119,119,119,10.787,0.014,0.091,0.109,0.0,0.081,0.061,1.254,12.397,12.397,13.185,0.23,0.23,0.251
+adaptive-blend,adaptive-blend-test,119,119,119,10.794,0.013,0.089,0.097,0.0,0.072,0.056,1.258,12.38,12.38,13.221,0.188,0.188,0.246
+search-blend-r1,search-blend-test,119,119,119,10.795,0.016,0.099,0.101,0.0,0.075,0.055,1.264,12.405,12.405,13.346,0.246,0.246,0.275
+search-blend-r2,search-blend-test,119,119,119,10.829,0.014,0.092,0.102,0.0,0.076,0.058,1.463,12.634,12.634,13.57,0.377,0.377,0.404
+search-adaptive-blend-r1,search-adaptive-blend-test,119,119,119,10.79,0.015,0.095,0.102,0.0,0.077,0.061,1.263,12.403,12.403,13.228,0.237,0.237,0.276
+reproject-blend-default,reproject-blend-test,119,119,119,10.763,0.015,0.097,0.104,0.0,0.078,0.059,4.87,15.985,15.985,17.364,3.788,3.788,3.843
+reproject-blend-wide,reproject-blend-test,119,119,119,1.658,0.016,0.102,0.091,0.0,0.079,0.057,19.709,21.712,21.712,23.554,19.213,19.213,19.686
+reproject-adaptive-blend-default,reproject-adaptive-blend-test,119,119,119,10.779,0.016,0.105,0.113,0.0,0.081,0.062,5.019,16.175,16.175,16.929,3.834,3.834,3.849
+multi-blend-count2,multi-blend-test,119,238,119,21.746,0.003,0.116,0.119,1.416,0.162,0.031,0.0,23.593,11.796,24.816,0.374,0.187,0.405
+multi-blend-count3,multi-blend-test,119,357,119,32.811,0.003,0.111,0.115,1.683,0.146,0.033,0.0,34.902,11.634,36.098,0.493,0.164,0.549
+adaptive-multi-default,adaptive-multi-blend-test,119,235,119,21.589,0.003,0.104,0.108,1.454,0.096,0.031,0.0,23.384,11.841,24.72,0.329,0.167,0.403
+adaptive-multi-target120,adaptive-multi-blend-test,103,199,103,21.286,0.003,0.106,0.11,1.563,0.116,0.032,0.0,23.216,12.016,24.572,0.351,0.182,0.396
+adaptive-multi-target150,adaptive-multi-blend-test,107,211,107,21.811,0.003,0.104,0.11,1.389,0.09,0.033,0.0,23.539,11.937,24.728,0.34,0.172,0.434
+adaptive-multi-target180,adaptive-multi-blend-test,109,216,109,21.91,0.003,0.108,0.108,1.452,0.112,0.034,0.0,23.726,11.973,24.456,0.369,0.186,0.4
