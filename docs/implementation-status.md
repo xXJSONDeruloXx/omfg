@@ -69,6 +69,7 @@ Rust also now has additional next-step backend modes:
 - `optflow-blend`
 - `optflow-adaptive-blend`
 - `optflow-multi-blend`
+- `optflow-adaptive-multi-blend`
 - `multi-blend`
 - `adaptive-multi-blend`
 - `reproject-multi-blend`
@@ -324,6 +325,24 @@ Observed:
 - debug views work per generated frame via the shared reprojection debug-view plumbing
 - env aliases: `optflow-multi-blend`, `optflow-multi-fg`, `optflow-multi`, `optical-flow-multi`
 - benchmark preset: use `OMFG_BENCHMARK_PRESET=optflow-quality` with the `optflow-multi-blend-count2` case for Deck cost comparison
+- Steam Deck validation: pending (no credentials in current host environment)
+
+#### 8f. `optflow-adaptive-multi-blend` (Rust)
+Working as the richest optical-flow-backed frame generation mode.
+
+Validated locally:
+- local `cargo test --locked` (74 tests pass)
+- `./scripts/test-rust-layer.sh`
+- `OMFG_LAYER_IMPL=rust ./scripts/build-linux-amd64.sh`
+
+Observed:
+- combines optical-flow coarse-to-fine block-matching with adaptive current-frame bias and LSFG-style target-FPS controller
+- each generated frame uses shader mode 7 (optflow-adaptive) at the frame's temporal alpha position
+- supports `OMFG_ADAPTIVE_MULTI_TARGET_FPS`, `OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES`, `OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES`
+- fractional generated-frame credit accumulation allows effective multipliers to vary over time
+- all optflow knobs, debug views, and dynamic swapchain headroom expansion apply
+- env aliases: `optflow-adaptive-multi-blend`, `optflow-adaptive-multi-fg`, `optflow-adaptive-multi`
+- benchmark preset: use `OMFG_BENCHMARK_PRESET=optflow-quality` with the `optflow-adaptive-multi-target180` case
 - Steam Deck validation: pending (no credentials in current host environment)
 
 #### 9. `multi-blend` (Rust)

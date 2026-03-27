@@ -36,6 +36,11 @@ PRESETS = {
             "metric": "avgCpuPerGeneratedFrameMs",
             "weight": 2.0,
         },
+        {
+            "label": "optflow-adaptive-multi-target180",
+            "metric": "avgCpuPerGeneratedFrameMs",
+            "weight": 2.5,
+        },
     ],
     "reproject-quality": [
         {"label": "reproject-blend-default", "metric": "avgCpuTotalMs", "weight": 2.0},

@@ -205,17 +205,22 @@ Current status:
 - `optflow-adaptive-blend` (shader mode 7) now adds adaptive current-frame bias on top of optflow
   - combines the coarse-to-fine pyramid search with the difference-weighted blend alpha from `adaptive-blend`
   - all optflow knobs apply; debug views work
-  - validated locally: 71 tests pass, Docker build succeeds
+  - validated locally: 74 tests pass, Docker build succeeds
 - `optflow-multi-blend` now extends optical-flow generation to multi-FG (2+ frames per real frame)
   - uses shader mode 6 per generated frame position with per-frame temporal alpha
   - shares `OMFG_MULTI_BLEND_COUNT` with other multi-FG paths
   - dynamic swapchain headroom expansion applies
-  - validated locally: 71 tests pass, Docker build succeeds
-- `optflow-quality` benchmark preset now covers all three optflow variants vs reprojection-blend baseline
+  - validated locally: 74 tests pass, Docker build succeeds
+- `optflow-adaptive-multi-blend` is the richest optflow mode (shader mode 7 per frame + target-FPS controller)
+  - combines optflow-adaptive-blend per-frame quality with the LSFG-style target-FPS controller
+  - supports `OMFG_ADAPTIVE_MULTI_TARGET_FPS` and fractional credit accumulation
+  - mirrors the `reproject-adaptive-multi-blend` pattern for the optflow family
+  - validated locally: 74 tests pass, Docker build succeeds
+- `optflow-quality` benchmark preset now covers all four optflow modes vs reprojection-blend baseline
   - run with `OMFG_BENCHMARK_PRESET=optflow-quality ./scripts/run-steamdeck-benchmark-suite.sh`
 
 Next likely path:
-- Deck validation of `optflow-adaptive-blend` and `optflow-multi-blend` once credentials available
+- Deck validation of all four optflow modes once credentials available
 - improve confidence model: larger search window or better patch metrics for the coarse-to-fine path
 - consider a separate multi-pass flow texture stage for cleaner motion field reuse in multi-FG
 - keep vendor optical flow and ML as optional side branches rather than the default mainline
@@ -260,14 +265,14 @@ New capability work should continue following this loop:
 
 ## Current practical priority
 
-With `optflow-adaptive-blend` and `optflow-multi-blend` now implemented locally (pending Deck validation),
-the current mainline focus is:
+With `optflow-adaptive-blend`, `optflow-multi-blend`, and `optflow-adaptive-multi-blend` now implemented
+locally (pending Deck validation), the current mainline focus is:
 
-## **validate the new optical-flow mode family on Deck, then improve quality across the full optflow stack**
+## **validate the complete optical-flow mode family on Deck, then improve quality across the full optflow stack**
 
 More specifically, the current ordering is:
-1. Steam Deck smoke validation for `optflow-adaptive-blend` and `optflow-multi-blend` once credentials available
-2. `optflow-quality` benchmark run comparing new modes vs reprojection baseline on real hardware
+1. Steam Deck smoke validation for all four optflow modes once credentials available
+2. `optflow-quality` benchmark run comparing all modes vs reprojection baseline on real hardware
 3. improve optflow confidence model: stronger search, better patch metrics, or temporal flow stability
 4. consider a separate multi-pass flow texture stage for cleaner motion field reuse across multi-FG frames
 5. richer confidence / disocclusion / hole-filling improvements inside reprojection-backed multi-FG

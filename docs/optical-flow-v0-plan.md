@@ -234,11 +234,11 @@ If v0 is promising, the follow-up order should be:
    - all optflow knobs apply; debug views work
    - locally validated: 71 tests pass, Docker build succeeds
    - Deck validation pending (no credentials in current host)
-4. ~~evaluate propagation into multi-FG~~ → **DONE**: `optflow-multi-blend` landed
-   - extends optical-flow generation to 2+ generated frames per real frame
-   - uses shader mode 6 per frame with per-frame temporal alpha
-   - shares `OMFG_MULTI_BLEND_COUNT` and headroom expansion with other multi-FG paths
-   - locally validated: 71 tests pass, Docker build succeeds
+4. ~~evaluate propagation into multi-FG~~ → **DONE**: `optflow-multi-blend` and `optflow-adaptive-multi-blend` landed
+   - `optflow-multi-blend`: extends optical-flow to 2+ frames, shader mode 6 per frame
+   - `optflow-adaptive-multi-blend`: richest optflow mode, shader mode 7 per frame + target-FPS controller
+   - both share `OMFG_MULTI_BLEND_COUNT` / headroom expansion with other multi-FG paths
+   - locally validated: 74 tests pass, Docker build succeeds
    - Deck validation pending (no credentials in current host)
 5. compare against vendor optical flow or ML oracle outputs where helpful
 
