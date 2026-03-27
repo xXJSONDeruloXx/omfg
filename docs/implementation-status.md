@@ -12,6 +12,15 @@ We now have:
 
 This is beyond paper architecture at this point.
 
+## Real-game journal
+
+Real Steam-game investigation notes now live under:
+- `docs/compat-journal/README.md`
+- `docs/compat-journal/960990-beyond-two-souls.md`
+- `docs/compat-journal/1196590-resident-evil-village.md`
+
+These capture per-game outcomes, repo snapshots, wrapper assumptions, and the specific good/bad log snippets that informed compatibility decisions.
+
 ## Current status
 
 ### Working
