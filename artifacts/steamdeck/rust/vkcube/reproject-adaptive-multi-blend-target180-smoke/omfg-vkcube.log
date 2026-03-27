@@ -1,0 +1,37 @@
+[omfg][info][1774586275732] vkNegotiateLoaderLayerInterfaceVersion ok; mode=reproject-adaptive-multi-blend-test
+[omfg][info][1774586275734] vkCreateInstance ok; mode=reproject-adaptive-multi-blend-test; app=vkcube; engine=vkcube; apiVersion=1.0.0
+[omfg][info][1774586275756] vkCreateDevice appended timing extensions; extensions=VK_KHR_present_id,VK_KHR_present_wait
+[omfg][info][1774586275756] vkCreateDevice ok; gpu=AMD Custom GPU 0932 (RADV VANGOGH); presentId=1; presentWait=1; displayTiming=0
+[omfg][info][1774586275761] created history image for swapchain
+[omfg][info][1774586275761] vkCreateSwapchainKHR ok; extent=500x500; format=44; presentMode=FIFO; minImages=3->6; usage=COLOR_ATTACHMENT (0x10) -> TRANSFER_SRC|SAMPLED|COLOR_ATTACHMENT (0x15); images=6; mode=reproject-adaptive-multi-blend-test
+[omfg][info][1774586275763] vkQueuePresentKHR frame=1; queueFamily=0; imageIndex=0; waitSemaphores=1
+[omfg][info][1774586275763] initialized injection resources for queue family 0
+[omfg][info][1774586275764] initialized blend resources for swapchain
+[omfg][info][1774586275764] reproject-adaptive-multi target controller; present=1; targetFps=180.0; baseFps=0.0; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.000; smoothedIntervalMs=0.000
+[omfg][info][1774586275764] reproject-adaptive-multi-blend primed previous frame history
+[omfg][info][1774586275764] vkQueuePresentKHR frame=2; queueFamily=0; imageIndex=1; waitSemaphores=1
+[omfg][info][1774586275764] reproject-adaptive-multi target controller; present=2; targetFps=180.0; baseFps=1078.7; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.927; smoothedIntervalMs=0.927
+[omfg][info][1774586275765] reproject-adaptive-multi-blend refreshed history without generated frame; currentImageIndex=1
+[omfg][info][1774586275765] vkQueuePresentKHR frame=3; queueFamily=0; imageIndex=2; waitSemaphores=1
+[omfg][info][1774586275765] reproject-adaptive-multi target controller; present=3; targetFps=180.0; baseFps=1294.1; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.310; smoothedIntervalMs=0.773
+[omfg][info][1774586275765] reproject-adaptive-multi-blend refreshed history without generated frame; currentImageIndex=2
+[omfg][info][1774586275765] vkQueuePresentKHR frame=4; queueFamily=0; imageIndex=3; waitSemaphores=1
+[omfg][info][1774586275765] reproject-adaptive-multi target controller; present=4; targetFps=180.0; baseFps=1511.0; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.329; smoothedIntervalMs=0.662
+[omfg][info][1774586275765] reproject-adaptive-multi-blend refreshed history without generated frame; currentImageIndex=3
+[omfg][info][1774586275765] vkQueuePresentKHR frame=5; queueFamily=0; imageIndex=4; waitSemaphores=1
+[omfg][info][1774586275765] reproject-adaptive-multi target controller; present=5; targetFps=180.0; baseFps=1729.8; desiredGeneratedFrames=0.000; emittedGeneratedFrames=0; carry=0.000; intervalMs=0.327; smoothedIntervalMs=0.578
+[omfg][info][1774586275766] reproject-adaptive-multi-blend refreshed history without generated frame; currentImageIndex=4
+[omfg][info][1774586275823] reproject-adaptive-multi target controller; present=12; targetFps=180.0; baseFps=114.9; desiredGeneratedFrames=0.566; emittedGeneratedFrames=1; carry=0.195; intervalMs=11.081; smoothedIntervalMs=8.702
+[omfg][info][1774586275839] first reproject adaptive multi blended generated-frame present succeeded
+[omfg][info][1774586275839] reproject adaptive multi blended frame present=1; generatedImageIndices=[0]; currentImageIndex=5
+[omfg][info][1774586275861] reproject adaptive multi blended frame present=2; generatedImageIndices=[2]; currentImageIndex=1
+[omfg][info][1774586275884] reproject adaptive multi blended frame present=3; generatedImageIndices=[4]; currentImageIndex=3
+[omfg][info][1774586275889] reproject-adaptive-multi target controller; present=15; targetFps=180.0; baseFps=60.5; desiredGeneratedFrames=1.973; emittedGeneratedFrames=2; carry=0.955; intervalMs=22.460; smoothedIntervalMs=16.519
+[omfg][info][1774586275921] reproject adaptive multi blended frame present=5; generatedImageIndices=[5, 2]; currentImageIndex=0
+[omfg][info][1774586277389] vkQueuePresentKHR frame=60; queueFamily=0; imageIndex=4; waitSemaphores=1
+[omfg][info][1774586277390] reproject-adaptive-multi target controller; present=60; targetFps=180.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.955; intervalMs=33.078; smoothedIntervalMs=33.306
+[omfg][info][1774586279389] vkQueuePresentKHR frame=120; queueFamily=0; imageIndex=4; waitSemaphores=1
+[omfg][info][1774586279390] reproject-adaptive-multi target controller; present=120; targetFps=180.0; baseFps=30.0; desiredGeneratedFrames=2.000; emittedGeneratedFrames=2; carry=0.955; intervalMs=33.323; smoothedIntervalMs=33.328
+[omfg][info][1774586279421] vkDestroySwapchainKHR
+[omfg][info][1774586279423] vkDestroyDevice
+[omfg][info][1774586279460] vkDestroyInstance

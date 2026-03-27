@@ -167,7 +167,7 @@ export OMFG_LAYER_IMPL=rust
 ```
 
 ### Target-FPS adaptive multi-FG validation
-This exercises the LSFG-style target-FPS controller on the Steam Deck, including fractional target cases.
+This exercises the LSFG-style target-FPS controller on the Steam Deck for both `adaptive-multi-blend` and `reproject-adaptive-multi-blend`, including fractional target cases.
 
 ```bash
 export STEAMDECK_PASS='...'

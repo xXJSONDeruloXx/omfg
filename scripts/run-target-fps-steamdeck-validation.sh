@@ -19,13 +19,14 @@ OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/build-linux-amd64.sh"
 OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/deploy-steamdeck-layer.sh"
 
 run_case() {
-  local suffix="$1"
-  local count="$2"
-  local present_mode="$3"
-  local target_fps="$4"
-  local min_generated="$5"
-  local max_generated="$6"
-  shift 6
+  local mode="$1"
+  local suffix="$2"
+  local count="$3"
+  local present_mode="$4"
+  local target_fps="$5"
+  local min_generated="$6"
+  local max_generated="$7"
+  shift 7
 
   local skip_mode_markers=0
   if [[ "${1:-}" == "--skip-mode-markers" ]]; then
@@ -40,7 +41,7 @@ run_case() {
   done
 
   OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" \
-  OMFG_LAYER_MODE=adaptive-multi-blend \
+  OMFG_LAYER_MODE="${mode}" \
   OMFG_VKCUBE_COUNT="${count}" \
   OMFG_VKCUBE_PRESENT_MODE="${present_mode}" \
   OMFG_VKCUBE_TIMEOUT_SEC=40 \
@@ -53,8 +54,8 @@ run_case() {
 
   local -a cmd=(
     python3 "${ROOT_DIR}/scripts/assert-vkcube-log.py"
-    --mode adaptive-multi-blend
-    --log "${ROOT_DIR}/artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-${suffix}/omfg-vkcube.log"
+    --mode "${mode}"
+    --log "${ROOT_DIR}/artifacts/steamdeck/rust/vkcube/${mode}-${suffix}/omfg-vkcube.log"
   )
   if [[ ${skip_mode_markers} -eq 1 ]]; then
     cmd+=(--skip-mode-markers)
@@ -65,25 +66,34 @@ run_case() {
   "${cmd[@]}"
 }
 
-run_case target100-long 600 "" 100 0 2 \
+run_case adaptive-multi-blend target100-long 600 "" 100 0 2 \
   "targetFps=100.0" \
   "emittedGeneratedFrames=0" \
   "emittedGeneratedFrames=1" \
   "vkQueuePresentKHR frame=600"
 
-run_case target120-smoke 120 "" 120 0 2 \
+run_case adaptive-multi-blend target120-smoke 120 "" 120 0 2 \
   "targetFps=120.0" \
   "emittedGeneratedFrames=1"
 
-run_case target150-smoke 120 "" 150 0 2 \
+run_case adaptive-multi-blend target150-smoke 120 "" 150 0 2 \
   "targetFps=150.0" \
   "emittedGeneratedFrames=1" \
   "emittedGeneratedFrames=2"
 
-run_case target90-immediate 120 0 90 0 2 \
+run_case adaptive-multi-blend target90-immediate 120 0 90 0 2 \
   --skip-mode-markers \
   "targetFps=90.0" \
   "presentMode=IMMEDIATE" \
   "emittedGeneratedFrames=0"
+
+run_case reproject-adaptive-multi-blend target120-smoke 120 "" 120 0 2 \
+  "targetFps=120.0" \
+  "emittedGeneratedFrames=1"
+
+run_case reproject-adaptive-multi-blend target180-smoke 120 "" 180 0 2 \
+  "targetFps=180.0" \
+  "emittedGeneratedFrames=1" \
+  "emittedGeneratedFrames=2"
 
 echo "Target-FPS Steam Deck validation passed for ${OMFG_LAYER_IMPL}"

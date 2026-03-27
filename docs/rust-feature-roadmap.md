@@ -115,7 +115,9 @@ Current status:
   - `reproject-adaptive-multi-blend` smoke / long / IMMEDIATE
   - targeted higher-count smoke runs at `6` generated frames for both reprojection-backed multi-FG paths
 - LSFG-style target-FPS control now exists in `adaptive-multi-blend` and `reproject-adaptive-multi-blend` via fractional generated-frame credit accumulation
-- real Steam Deck target-FPS validation is fully automated for `adaptive-multi-blend` and manually smoke-validated for the reprojection-backed adaptive multi path
+- real Steam Deck target-FPS validation is now automated for:
+  - `adaptive-multi-blend`
+  - `reproject-adaptive-multi-blend` (`120` and `180` FPS smoke coverage)
 
 Next likely path:
 - improve confidence/disocclusion handling inside the new reprojection-backed multi-FG modes

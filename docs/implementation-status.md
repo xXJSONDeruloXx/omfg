@@ -314,9 +314,12 @@ Validated with Rust layer on Steam Deck:
 - `vkcube --c 120`
 - `vkcube --c 600`
 - `vkcube --c 120 --present_mode 0`
+- `OMFG_ADAPTIVE_MULTI_TARGET_FPS=120 vkcube --c 120`
+- `OMFG_ADAPTIVE_MULTI_TARGET_FPS=180 vkcube --c 120`
 - `OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=1 OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=6 OMFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS=1.0 vkcube --c 120`
 - full Rust regression suite including `reproject-adaptive-multi-blend`
 - advanced Deck validation via `scripts/run-advanced-steamdeck-validation.sh`
+- target-FPS validation via `scripts/run-target-fps-steamdeck-validation.sh`
 
 Observed:
 - combines stronger reprojection, confidence/disocclusion-aware fallback, adaptive current-frame weighting, and adaptive multi-FG control in one backend
