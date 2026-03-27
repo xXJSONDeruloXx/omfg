@@ -62,14 +62,26 @@ This intentionally favors wins on the multi-FG paths.
 ## Supporting scripts
 
 - `scripts/run-steamdeck-benchmark-suite.sh`
-  - now supports `OMFG_BENCHMARK_PRESET=decision|full`
+  - now supports `OMFG_BENCHMARK_PRESET=decision|full|reproject-quality`
   - supports `OMFG_BENCHMARK_ARTIFACT_PREFIX` so repeated runs do not clobber canonical benchmark case artifacts
 - `scripts/aggregate-benchmark-results.py`
   - aggregates repeated benchmark runs into mean/stdev summaries
 - `scripts/compare-benchmark-results.py`
   - compares baseline vs candidate and emits accept/reject
+  - now supports the matching `reproject-quality` comparison preset for focused reprojection heuristic work
 - `scripts/run-autoperf-loop.sh`
   - orchestrates repeated decision runs, aggregation, comparison, and optional full-suite promotion
+
+### Focused reprojection-quality loop
+
+When tuning reprojection heuristics specifically, run the matching benchmark and compare presets together:
+
+```bash
+OMFG_AUTOPERF_BENCHMARK_PRESET=reproject-quality \
+OMFG_AUTOPERF_COMPARE_PRESET=reproject-quality \
+OMFG_LAYER_IMPL=rust \
+./scripts/run-autoperf-loop.sh
+```
 
 ## Baseline
 

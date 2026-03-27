@@ -22,6 +22,32 @@ PRESETS = {
         {"label": "adaptive-multi-default", "metric": "avgCpuPerGeneratedFrameMs", "weight": 2.0},
         {"label": "adaptive-multi-target180", "metric": "avgCpuPerGeneratedFrameMs", "weight": 3.0},
     ],
+    "reproject-quality": [
+        {"label": "reproject-blend-default", "metric": "avgCpuTotalMs", "weight": 2.0},
+        {"label": "reproject-blend-no-gradient", "metric": "avgCpuTotalMs", "weight": 0.75},
+        {"label": "reproject-blend-no-chroma", "metric": "avgCpuTotalMs", "weight": 0.75},
+        {"label": "reproject-blend-no-ambiguity", "metric": "avgCpuTotalMs", "weight": 0.75},
+        {
+            "label": "reproject-multi-count3-default",
+            "metric": "avgCpuPerGeneratedFrameMs",
+            "weight": 3.0,
+        },
+        {
+            "label": "reproject-multi-count3-no-ambiguity",
+            "metric": "avgCpuPerGeneratedFrameMs",
+            "weight": 1.5,
+        },
+        {
+            "label": "reproject-adaptive-multi-target180-default",
+            "metric": "avgCpuPerGeneratedFrameMs",
+            "weight": 3.0,
+        },
+        {
+            "label": "reproject-adaptive-multi-target180-no-ambiguity",
+            "metric": "avgCpuPerGeneratedFrameMs",
+            "weight": 1.5,
+        },
+    ],
 }
 
 

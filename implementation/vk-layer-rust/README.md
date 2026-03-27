@@ -243,6 +243,11 @@ export OMFG_LAYER_IMPL=rust
 
 # Optional full-suite promotion on acceptance
 OMFG_AUTOPERF_RUN_FULL_ON_ACCEPT=1 ./scripts/run-autoperf-loop.sh
+
+# Focused reprojection-quality loop
+OMFG_AUTOPERF_BENCHMARK_PRESET=reproject-quality \
+OMFG_AUTOPERF_COMPARE_PRESET=reproject-quality \
+./scripts/run-autoperf-loop.sh
 ```
 
 See `experiments/program.md` for the current subset, weights, and accept/reject rules.

@@ -398,13 +398,14 @@ We now also have a first repo-specific **autoperf loop** for repeated Deck bench
 
 Current pieces:
 - `scripts/run-steamdeck-benchmark-suite.sh`
-  - supports both `OMFG_BENCHMARK_PRESET=full` and `OMFG_BENCHMARK_PRESET=decision`
+  - supports `OMFG_BENCHMARK_PRESET=full|decision|reproject-quality`
 - `scripts/run-steamdeck-multi-count-sweep.sh`
   - probes how far `multi-blend` scaling can be pushed on the Deck
 - `scripts/aggregate-benchmark-results.py`
   - aggregates repeated benchmark runs into mean / stdev summaries
 - `scripts/compare-benchmark-results.py`
   - compares baseline vs candidate with weighted accept / reject logic
+  - now has a matching `reproject-quality` comparison preset for focused reprojection heuristic work
 - `scripts/run-autoperf-loop.sh`
   - orchestrates repeated decision-subset runs, aggregation, comparison, and optional full-suite promotion
 - `experiments/program.md`
