@@ -1,0 +1,14 @@
+[omfg][info][1774543449959] vkNegotiateLoaderLayerInterfaceVersion ok; mode=passthrough
+[omfg][info][1774543449961] vkCreateInstance ok; mode=passthrough; app=vkcube; engine=vkcube; apiVersion=1.0.0
+[omfg][info][1774543449984] vkCreateDevice ok; gpu=AMD Custom GPU 0932 (RADV VANGOGH)
+[omfg][info][1774543449988] vkCreateSwapchainKHR ok; extent=500x500; format=44; presentMode=FIFO; minImages=3->3; usage=COLOR_ATTACHMENT (0x10) -> COLOR_ATTACHMENT (0x10); images=3; mode=passthrough
+[omfg][info][1774543449990] vkQueuePresentKHR passthrough frame=1; queueFamily=0; imageIndex=0; waitSemaphores=1
+[omfg][info][1774543449990] vkQueuePresentKHR passthrough frame=2; queueFamily=0; imageIndex=1; waitSemaphores=1
+[omfg][info][1774543449990] vkQueuePresentKHR passthrough frame=3; queueFamily=0; imageIndex=2; waitSemaphores=1
+[omfg][info][1774543449997] vkQueuePresentKHR passthrough frame=4; queueFamily=0; imageIndex=0; waitSemaphores=1
+[omfg][info][1774543450009] vkQueuePresentKHR passthrough frame=5; queueFamily=0; imageIndex=1; waitSemaphores=1
+[omfg][info][1774543450620] vkQueuePresentKHR passthrough frame=60; queueFamily=0; imageIndex=2; waitSemaphores=1
+[omfg][info][1774543451287] vkQueuePresentKHR passthrough frame=120; queueFamily=0; imageIndex=2; waitSemaphores=1
+[omfg][info][1774543451288] vkDestroySwapchainKHR
+[omfg][info][1774543451298] vkDestroyDevice
+[omfg][info][1774543451378] vkDestroyInstance

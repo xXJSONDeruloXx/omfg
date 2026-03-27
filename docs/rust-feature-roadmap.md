@@ -59,7 +59,7 @@ Continue iterating on the Rust implementation until practical feature parity is 
   - optional full-suite promotion path
 - Dynamic multi-FG swapchain headroom scaling:
   - new auto-expansion of swapchain image count for larger requested multi-FG counts
-  - controlled by `PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` (default `32`)
+  - controlled by `OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` (default `32`)
   - validated on the Steam Deck through a successful `multi-blend` count sweep from `1..20`
   - repeatable via `scripts/run-steamdeck-multi-count-sweep.sh`
 
@@ -162,12 +162,19 @@ Goal:
 - reduce the current conservative synchronization model
 - validate actual present pacing against display-side timing where possible
 
+Current status:
+- first timing-aware present instrumentation now exists in the Rust layer
+- the layer can now append and use `VK_KHR_present_id` / `VK_KHR_present_wait` when available
+- Deck smoke validation now confirms successful `present wait` results on injected presents
+- `VK_GOOGLE_display_timing` query hooks are now part of the layer, but the current `vkcube` Deck path still has not yielded useful past-presentation samples
+
 Likely path:
 - use the new autoperf loop as the gate for pacing experiments before promoting to the full Deck suite
+- strengthen the current timing instrumentation so it yields more useful panel-side evidence
 - reduce `vkQueueWaitIdle` dependence
 - improve semaphore/fence lifetime strategy
 - explore pacing thread / scheduling logic
-- use the now-confirmed `VK_GOOGLE_display_timing` / `VK_KHR_present_id` / `VK_KHR_present_wait` support on the Deck test target for stronger panel-side validation
+- keep using the now-confirmed `VK_GOOGLE_display_timing` / `VK_KHR_present_id` / `VK_KHR_present_wait` support on the Deck test target for stronger panel-side validation
 
 ### 6. Advanced parity targets
 Longer-term targets include:

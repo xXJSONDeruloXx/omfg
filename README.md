@@ -1,6 +1,6 @@
 # post-proc-fg-research
 
-Research and implementation work for a **Linux-native, real-time, fully post-process frame generation / interpolation** stack.
+Research and implementation work for **OMFG — Open Multi Frame Generation**, a Linux-native, real-time, fully post-process frame generation / interpolation stack.
 
 ## Goal
 

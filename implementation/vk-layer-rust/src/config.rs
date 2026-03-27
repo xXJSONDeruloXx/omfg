@@ -53,7 +53,7 @@ impl Mode {
     }
 
     pub fn from_env() -> Self {
-        Self::from_env_value(std::env::var("PPFG_LAYER_MODE").ok().as_deref())
+        Self::from_env_value(std::env::var("OMFG_LAYER_MODE").ok().as_deref())
     }
 
     pub const fn name(self) -> &'static str {

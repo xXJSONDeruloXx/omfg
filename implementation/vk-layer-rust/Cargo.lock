@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ppfg-vk-layer-rust"
+name = "omfg-vk-layer-rust"
 version = "0.1.0"
 dependencies = [
  "ash",

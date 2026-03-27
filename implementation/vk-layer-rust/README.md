@@ -53,7 +53,7 @@ This currently covers:
 From project root:
 
 ```bash
-PPFG_LAYER_IMPL=rust ./scripts/build-linux-amd64.sh
+OMFG_LAYER_IMPL=rust ./scripts/build-linux-amd64.sh
 ```
 
 The Rust crate vendors its dependencies under `implementation/vk-layer-rust/vendor/`, so the Linux builder can run offline/reproducibly.
@@ -61,72 +61,78 @@ The Docker builder also recompiles the GLSL shaders via `scripts/compile-rust-sh
 
 That runs Rust tests inside the Linux builder container and emits:
 
-- `build/linux-amd64/vk-layer-rust/out/libVkLayer_PPFG_rust.so`
-- `build/linux-amd64/vk-layer-rust/out/VkLayer_PPFG_rust.json`
+- `build/linux-amd64/vk-layer-rust/out/libVkLayer_OMFG_rust.so`
+- `build/linux-amd64/vk-layer-rust/out/VkLayer_OMFG_rust.json`
 
 ## Steam Deck flow
 
 ### Deploy
 ```bash
 export STEAMDECK_PASS='...'
-PPFG_LAYER_IMPL=rust ./scripts/deploy-steamdeck-layer.sh
+OMFG_LAYER_IMPL=rust ./scripts/deploy-steamdeck-layer.sh
 ```
 
 ### Smoke test with vkcube
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_IMPL=rust
-export PPFG_LAYER_MODE=passthrough
+export OMFG_LAYER_IMPL=rust
+export OMFG_LAYER_MODE=passthrough
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=history-copy
+export OMFG_LAYER_MODE=history-copy
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=bfi
-export PPFG_BFI_PERIOD=1
+export OMFG_LAYER_MODE=bfi
+export OMFG_BFI_PERIOD=1
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=blend
+export OMFG_LAYER_MODE=blend
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=adaptive-blend
+export OMFG_LAYER_MODE=adaptive-blend
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=search-blend
+export OMFG_LAYER_MODE=search-blend
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=search-adaptive-blend
+export OMFG_LAYER_MODE=search-adaptive-blend
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=reproject-blend
+export OMFG_LAYER_MODE=reproject-blend
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=reproject-adaptive-blend
+export OMFG_LAYER_MODE=reproject-adaptive-blend
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=multi-blend
+export OMFG_LAYER_MODE=multi-blend
 ./scripts/test-steamdeck-vkcube.sh
 
 # Optional higher-count multi-FG experiments.
 # The layer now auto-expands swapchain image headroom for larger counts,
-# capped by PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES (default: 32).
-export PPFG_MULTI_BLEND_COUNT=10
+# capped by OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES (default: 32).
+export OMFG_MULTI_BLEND_COUNT=10
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=adaptive-multi-blend
+export OMFG_LAYER_MODE=adaptive-multi-blend
 ./scripts/test-steamdeck-vkcube.sh
 
 # Optional LSFG-style target-FPS controller for adaptive-multi-blend
-export PPFG_ADAPTIVE_MULTI_TARGET_FPS=120
-export PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0
-export PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
+export OMFG_ADAPTIVE_MULTI_TARGET_FPS=120
+export OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0
+export OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
+./scripts/test-steamdeck-vkcube.sh
+
+# Optional present timing / pacing instrumentation
+export OMFG_PRESENT_TIMING=1
+export OMFG_PRESENT_WAIT=1
+export OMFG_PRESENT_WAIT_TIMEOUT_NS=5000000000
 ./scripts/test-steamdeck-vkcube.sh
 ```
 
 ### Full regression suite
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_IMPL=rust
+export OMFG_LAYER_IMPL=rust
 ./scripts/run-layer-regression-suite.sh
 ```
 
@@ -135,7 +141,7 @@ This extends the normal smoke suite with long FIFO and IMMEDIATE runs for the st
 
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_IMPL=rust
+export OMFG_LAYER_IMPL=rust
 ./scripts/run-advanced-steamdeck-validation.sh
 ```
 
@@ -144,16 +150,25 @@ This exercises the LSFG-style target-FPS controller on the Steam Deck, including
 
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_IMPL=rust
+export OMFG_LAYER_IMPL=rust
 ./scripts/run-target-fps-steamdeck-validation.sh
 ```
 
-### BFI validation
-This validates black-frame insertion behavior, including a reduced-cadence `PPFG_BFI_PERIOD=2` case.
+### Present timing validation
+This exercises the present-id / present-wait timing instrumentation on the Steam Deck.
 
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_IMPL=rust
+export OMFG_LAYER_IMPL=rust
+./scripts/run-present-timing-steamdeck-validation.sh
+```
+
+### BFI validation
+This validates black-frame insertion behavior, including a reduced-cadence `OMFG_BFI_PERIOD=2` case.
+
+```bash
+export STEAMDECK_PASS='...'
+export OMFG_LAYER_IMPL=rust
 ./scripts/run-bfi-steamdeck-validation.sh
 ```
 
@@ -170,11 +185,11 @@ This runs the Steam Deck benchmark matrix and writes per-run CSV/summary artifac
 
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_IMPL=rust
+export OMFG_LAYER_IMPL=rust
 ./scripts/run-steamdeck-benchmark-suite.sh
 
 # Fast decision subset only
-PPFG_BENCHMARK_PRESET=decision ./scripts/run-steamdeck-benchmark-suite.sh
+OMFG_BENCHMARK_PRESET=decision ./scripts/run-steamdeck-benchmark-suite.sh
 ```
 
 ### Multi-count sweep
@@ -182,7 +197,7 @@ This runs a `multi-blend` multiplier sweep and records how far the current archi
 
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_IMPL=rust
+export OMFG_LAYER_IMPL=rust
 ./scripts/run-steamdeck-multi-count-sweep.sh
 ```
 
@@ -191,11 +206,11 @@ This repeatedly runs the fast decision subset, aggregates the results, compares 
 
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_IMPL=rust
+export OMFG_LAYER_IMPL=rust
 ./scripts/run-autoperf-loop.sh
 
 # Optional full-suite promotion on acceptance
-PPFG_AUTOPERF_RUN_FULL_ON_ACCEPT=1 ./scripts/run-autoperf-loop.sh
+OMFG_AUTOPERF_RUN_FULL_ON_ACCEPT=1 ./scripts/run-autoperf-loop.sh
 ```
 
 See `experiments/program.md` for the current subset, weights, and accept/reject rules.
@@ -219,7 +234,7 @@ The Rust port intentionally separates:
 - **precompiled test shaders** in `shaders/`
 
 The `clear` mode is the original generated-placeholder path using a visible debug clear color.
-The `bfi` mode reuses that insertion machinery but clears the generated image to solid black, providing a simple software black-frame-insertion path with configurable cadence via `PPFG_BFI_PERIOD`.
+The `bfi` mode reuses that insertion machinery but clears the generated image to solid black, providing a simple software black-frame-insertion path with configurable cadence via `OMFG_BFI_PERIOD`.
 The current `blend` mode uses a simple fullscreen graphics pass to synthesize a midpoint placeholder from the previous and current frames.
 The `adaptive-blend` mode builds on that by biasing the blend toward the current frame in higher-difference regions.
 The `search-blend` mode adds a small neighborhood search on the previous frame to approximate motion-aware reprojection before blending.
@@ -227,11 +242,11 @@ The `search-adaptive-blend` mode combines the small neighborhood search with ada
 The `reproject-blend` mode adds a stronger **symmetric patch-search reprojection** step, searching for a midpoint half-motion offset between the previous and current frames and blending confidence-weighted reprojected samples.
 The `reproject-adaptive-blend` mode combines that stronger reprojection path with adaptive current-frame weighting.
 The `multi-blend` mode is the first Rust **multi-FG** step, emitting multiple synthetic frames between real frames using temporal blend positions.
-It now auto-expands swapchain image headroom for larger requested multipliers, controlled by `PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` (default `32`).
+It now auto-expands swapchain image headroom for larger requested multipliers, controlled by `OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` (default `32`).
 A Steam Deck sweep has now validated successful `multi-blend` counts from `1..20` with full generated-frame success once that dynamic headroom expansion is enabled.
 The `adaptive-multi-blend` mode combines both ideas: multi-FG plus adaptive current-frame weighting, and now includes both:
 - the older present-interval heuristic path
-- a newer **target-FPS adaptive controller** (`PPFG_ADAPTIVE_MULTI_TARGET_FPS`) that accumulates fractional generated-frame credit so the effective FG multiplier can fluctuate over time.
+- a newer **target-FPS adaptive controller** (`OMFG_ADAPTIVE_MULTI_TARGET_FPS`) that accumulates fractional generated-frame credit so the effective FG multiplier can fluctuate over time.
 
 Today that target-FPS controller is already validated on the Deck, but it still observes the app's intercepted present cadence under the current conservative synchronization model, so its decisions are still coupled to current pacing overhead.
 

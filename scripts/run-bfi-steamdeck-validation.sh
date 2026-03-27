@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-: "${PPFG_LAYER_IMPL:=rust}"
+: "${OMFG_LAYER_IMPL:=rust}"
 
-if [[ "${PPFG_LAYER_IMPL}" != "rust" ]]; then
+if [[ "${OMFG_LAYER_IMPL}" != "rust" ]]; then
   echo "BFI Steam Deck validation currently targets the Rust layer only." >&2
   exit 1
 fi
@@ -15,8 +15,8 @@ if [[ -z "${STEAMDECK_PASS:-}" ]]; then
 fi
 
 "${ROOT_DIR}/scripts/test-rust-layer.sh"
-PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/build-linux-amd64.sh"
-PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/deploy-steamdeck-layer.sh"
+OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/build-linux-amd64.sh"
+OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/deploy-steamdeck-layer.sh"
 
 run_case() {
   local suffix="$1"
@@ -37,19 +37,19 @@ run_case() {
     shift
   done
 
-  PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}" \
-  PPFG_LAYER_MODE=bfi \
-  PPFG_VKCUBE_COUNT="${count}" \
-  PPFG_VKCUBE_PRESENT_MODE="${present_mode}" \
-  PPFG_VKCUBE_TIMEOUT_SEC=40 \
-  PPFG_VKCUBE_ARTIFACT_SUFFIX="${suffix}" \
-  PPFG_BFI_PERIOD="${bfi_period}" \
+  OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" \
+  OMFG_LAYER_MODE=bfi \
+  OMFG_VKCUBE_COUNT="${count}" \
+  OMFG_VKCUBE_PRESENT_MODE="${present_mode}" \
+  OMFG_VKCUBE_TIMEOUT_SEC=40 \
+  OMFG_VKCUBE_ARTIFACT_SUFFIX="${suffix}" \
+  OMFG_BFI_PERIOD="${bfi_period}" \
     "${ROOT_DIR}/scripts/test-steamdeck-vkcube.sh"
 
   local -a cmd=(
     python3 "${ROOT_DIR}/scripts/assert-vkcube-log.py"
     --mode bfi
-    --log "${ROOT_DIR}/artifacts/steamdeck/rust/vkcube/bfi-${suffix}/ppfg-vkcube.log"
+    --log "${ROOT_DIR}/artifacts/steamdeck/rust/vkcube/bfi-${suffix}/omfg-vkcube.log"
   )
   if [[ ${skip_mode_markers} -eq 1 ]]; then
     cmd+=(--skip-mode-markers)
@@ -83,4 +83,4 @@ run_case period2-smoke 120 "" 2 \
 
 "${ROOT_DIR}/scripts/collect-steamdeck-display-info.sh" bfi-validation
 
-echo "BFI Steam Deck validation passed for ${PPFG_LAYER_IMPL}"
+echo "BFI Steam Deck validation passed for ${OMFG_LAYER_IMPL}"

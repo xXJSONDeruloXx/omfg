@@ -27,10 +27,12 @@ This is beyond paper architecture at this point.
   - `scripts/run-layer-regression-suite.sh`
   - `scripts/run-advanced-steamdeck-validation.sh`
   - `scripts/run-target-fps-steamdeck-validation.sh`
+  - `scripts/run-present-timing-steamdeck-validation.sh`
   - `scripts/run-bfi-steamdeck-validation.sh`
   - `scripts/collect-steamdeck-display-info.sh`
   - `scripts/run-steamdeck-benchmark-suite.sh`
   - `scripts/run-autoperf-loop.sh`
+  - `scripts/run-steamdeck-multi-count-sweep.sh`
   - `scripts/aggregate-benchmark-results.py`
   - `scripts/compare-benchmark-results.py`
   - `scripts/assert-vkcube-log.py`
@@ -58,8 +60,8 @@ Rust also now has additional next-step backend modes:
 
 Validated via:
 - local `cargo test --locked`
-- Linux/x86_64 Docker build + test via `PPFG_LAYER_IMPL=rust ./scripts/build-linux-amd64.sh`
-- full Deck smoke suite via `PPFG_LAYER_IMPL=rust ./scripts/run-layer-regression-suite.sh`
+- Linux/x86_64 Docker build + test via `OMFG_LAYER_IMPL=rust ./scripts/build-linux-amd64.sh`
+- full Deck smoke suite via `OMFG_LAYER_IMPL=rust ./scripts/run-layer-regression-suite.sh`
 
 ### Verified runtime modes on Steam Deck
 
@@ -94,14 +96,14 @@ Validated with Rust layer on Steam Deck:
 - `vkcube --c 120`
 - `vkcube --c 600`
 - `vkcube --c 120 --present_mode 0`
-- `PPFG_BFI_PERIOD=2 vkcube --c 120`
+- `OMFG_BFI_PERIOD=2 vkcube --c 120`
 - full Rust regression suite including `bfi`
 - dedicated BFI validation via `scripts/run-bfi-steamdeck-validation.sh`
 
 Observed:
 - every inserted generated image is cleared to solid black
-- default `PPFG_BFI_PERIOD=1` inserts one black frame after every intercepted real present
-- `PPFG_BFI_PERIOD=2` reduces insertion cadence and was validated on Deck by ending at `black frame present=60` for a `120`-frame app run
+- default `OMFG_BFI_PERIOD=1` inserts one black frame after every intercepted real present
+- `OMFG_BFI_PERIOD=2` reduces insertion cadence and was validated on Deck by ending at `black frame present=60` for a `120`-frame app run
 - swapchain image count was increased from `3 -> 4` for the validated Deck path
 - stable on Deck through smoke, long, and IMMEDIATE-mode runs
 
@@ -212,9 +214,9 @@ Observed:
 - first frame primes history
 - subsequent real frames emit generated frames before the current real frame
 - generated frames are rendered at multiple temporal blend positions between previous and current frames
-- the layer now **auto-expands swapchain headroom** for larger `PPFG_MULTI_BLEND_COUNT` requests
+- the layer now **auto-expands swapchain headroom** for larger `OMFG_MULTI_BLEND_COUNT` requests
 - new env knob:
-  - `PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` (default `32`)
+  - `OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` (default `32`)
 - Steam Deck multiplier sweep now validates successful `multi-blend` counts from `1..20`
 - artifact root for the successful post-change sweep:
   - `artifacts/steamdeck/rust/benchmark/multi-count-sweep3-20260326-231948/`
@@ -236,9 +238,9 @@ Validated with Rust layer on Steam Deck:
 
 Observed:
 - adapts generated frame count based on runtime timing
-- supports a new LSFG-style **target-FPS controller** via `PPFG_ADAPTIVE_MULTI_TARGET_FPS`
+- supports a new LSFG-style **target-FPS controller** via `OMFG_ADAPTIVE_MULTI_TARGET_FPS`
 - fractional targets are accumulated over time via generated-frame credit, so effective multipliers can fluctuate between `0`, `1`, and `2` generated frames per real frame by default
-- the same dynamic swapchain headroom expansion used by `multi-blend` now also applies to larger `PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES` experiments
+- the same dynamic swapchain headroom expansion used by `multi-blend` now also applies to larger `OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES` experiments
 - Deck validation now includes real target-FPS cases for `90`, `100`, `120`, and `150` FPS targets
 - applies adaptive current-frame bias based on previous/current difference while doing multi-FG
 - stable on the Deck 120-frame smoke path
@@ -269,13 +271,37 @@ That means we can now confirm the **active panel mode** on the Linux target, but
 
 ---
 
+## Present timing instrumentation status
+
+The Rust layer now has a first pass of present-timing instrumentation built around:
+- `VK_KHR_present_id`
+- `VK_KHR_present_wait`
+- `VK_GOOGLE_display_timing`
+
+Current behavior:
+- the layer now appends `VK_KHR_present_id` and `VK_KHR_present_wait` to device creation when available so it can use them internally
+- generated/original injected presents now route through timing-aware present helpers
+- optional env controls exist:
+  - `OMFG_PRESENT_TIMING=1`
+  - `OMFG_PRESENT_WAIT=1`
+  - `OMFG_PRESENT_WAIT_TIMEOUT_NS=<ns>`
+- a Deck smoke run with timing enabled validated successful `present wait` results on injected presents
+
+Current known limitation:
+- on the current Deck `vkcube` path, this instrumentation successfully proved the `present_id` / `present_wait` plumbing, but the `VK_GOOGLE_display_timing` query path still did not report active samples through this app path, so stronger panel-side timing proof remains an open follow-up item
+
+Current timing-validation artifact:
+- `artifacts/steamdeck/rust/vkcube/multi-blend-present-timing/omfg-vkcube.log`
+
+---
+
 ## Benchmark / autoperf status
 
 We now also have a first repo-specific **autoperf loop** for repeated Deck benchmarking.
 
 Current pieces:
 - `scripts/run-steamdeck-benchmark-suite.sh`
-  - supports both `PPFG_BENCHMARK_PRESET=full` and `PPFG_BENCHMARK_PRESET=decision`
+  - supports both `OMFG_BENCHMARK_PRESET=full` and `OMFG_BENCHMARK_PRESET=decision`
 - `scripts/run-steamdeck-multi-count-sweep.sh`
   - probes how far `multi-blend` scaling can be pushed on the Deck
 - `scripts/aggregate-benchmark-results.py`
@@ -315,11 +341,11 @@ This is intended to make future pacing / synchronization experiments much cheape
 Post-dynamic-headroom validation rerun status:
 - `cargo test --locked`
 - `./scripts/test-rust-layer.sh`
-- `PPFG_LAYER_IMPL=rust ./scripts/build-linux-amd64.sh`
-- `PPFG_LAYER_IMPL=rust ./scripts/run-layer-regression-suite.sh`
-- `PPFG_LAYER_IMPL=rust ./scripts/run-advanced-steamdeck-validation.sh`
-- `PPFG_LAYER_IMPL=rust ./scripts/run-target-fps-steamdeck-validation.sh`
-- `PPFG_LAYER_IMPL=rust ./scripts/run-bfi-steamdeck-validation.sh`
+- `OMFG_LAYER_IMPL=rust ./scripts/build-linux-amd64.sh`
+- `OMFG_LAYER_IMPL=rust ./scripts/run-layer-regression-suite.sh`
+- `OMFG_LAYER_IMPL=rust ./scripts/run-advanced-steamdeck-validation.sh`
+- `OMFG_LAYER_IMPL=rust ./scripts/run-target-fps-steamdeck-validation.sh`
+- `OMFG_LAYER_IMPL=rust ./scripts/run-bfi-steamdeck-validation.sh`
 
 All of the above completed successfully after the dynamic multi-FG headroom work.
 
@@ -403,47 +429,20 @@ Separately, the most important parallel research milestone is:
 ## Artifacts
 
 ### vkcube
-C++ MVP:
-- `artifacts/steamdeck/vkcube/passthrough/ppfg-vkcube.log`
-- `artifacts/steamdeck/vkcube/clear/ppfg-vkcube.log`
-- `artifacts/steamdeck/vkcube/copy/ppfg-vkcube.log`
-- `artifacts/steamdeck/vkcube/history-copy/ppfg-vkcube.log`
-- `artifacts/steamdeck/vkcube/history-copy-long/ppfg-vkcube-long.log`
-- `artifacts/steamdeck/vkcube/history-copy-immediate/ppfg-vkcube-immediate.log`
-- `artifacts/steamdeck/vkcube/history-copy-mailbox/ppfg-vkcube-mailbox.log`
+Artifact roots are under:
+- `artifacts/steamdeck/vkcube/`
+- `artifacts/steamdeck/rust/vkcube/`
 
-Rust parity port:
-- `artifacts/steamdeck/rust/vkcube/passthrough/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/clear/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/bfi/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/bfi-smoke/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/bfi-long/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/bfi-immediate/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/bfi-period2-smoke/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/copy/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/history-copy/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/blend/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/blend-long/ppfg-vkcube-blend-long.log`
-- `artifacts/steamdeck/rust/vkcube/blend-immediate/ppfg-vkcube-blend-immediate.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-blend/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-blend-long/ppfg-vkcube-adaptive-long.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-blend-immediate/ppfg-vkcube-adaptive-immediate.log`
-- `artifacts/steamdeck/rust/vkcube/search-blend/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/search-adaptive-blend/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/multi-blend/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/multi-blend-long/ppfg-vkcube-multi-long.log`
-- `artifacts/steamdeck/rust/vkcube/multi-blend-immediate/ppfg-vkcube-multi-immediate.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-long/ppfg-vkcube-adaptive-multi-long.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-immediate/ppfg-vkcube-adaptive-multi-immediate.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-target100-long/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-target120-smoke/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-target150-smoke/ppfg-vkcube.log`
-- `artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-target90-immediate/ppfg-vkcube.log`
+New OMFG runs write:
+- `omfg-vkcube.log`
+- `omfg-vkcube-*.log`
 
 ### vkgears
-- `artifacts/steamdeck/vkgears/clear/ppfg-vkgears.log`
-- `artifacts/steamdeck/rust/vkgears/history-copy/ppfg-vkgears.log`
+Artifact roots are under:
+- `artifacts/steamdeck/vkgears/`
+- `artifacts/steamdeck/rust/vkgears/`
+
+OMFG runs write `omfg-vkgears.log`.
 
 ### display info
 - `artifacts/steamdeck/display-info/bfi-validation/summary.txt`

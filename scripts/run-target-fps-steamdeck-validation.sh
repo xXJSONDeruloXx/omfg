@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-: "${PPFG_LAYER_IMPL:=rust}"
+: "${OMFG_LAYER_IMPL:=rust}"
 
-if [[ "${PPFG_LAYER_IMPL}" != "rust" ]]; then
+if [[ "${OMFG_LAYER_IMPL}" != "rust" ]]; then
   echo "Target-FPS Steam Deck validation currently targets the Rust layer only." >&2
   exit 1
 fi
@@ -15,8 +15,8 @@ if [[ -z "${STEAMDECK_PASS:-}" ]]; then
 fi
 
 "${ROOT_DIR}/scripts/test-rust-layer.sh"
-PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/build-linux-amd64.sh"
-PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/deploy-steamdeck-layer.sh"
+OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/build-linux-amd64.sh"
+OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/deploy-steamdeck-layer.sh"
 
 run_case() {
   local suffix="$1"
@@ -39,22 +39,22 @@ run_case() {
     shift
   done
 
-  PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}" \
-  PPFG_LAYER_MODE=adaptive-multi-blend \
-  PPFG_VKCUBE_COUNT="${count}" \
-  PPFG_VKCUBE_PRESENT_MODE="${present_mode}" \
-  PPFG_VKCUBE_TIMEOUT_SEC=40 \
-  PPFG_VKCUBE_ARTIFACT_SUFFIX="${suffix}" \
-  PPFG_ADAPTIVE_MULTI_TARGET_FPS="${target_fps}" \
-  PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES="${min_generated}" \
-  PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES="${max_generated}" \
-  PPFG_ADAPTIVE_MULTI_INTERVAL_SMOOTHING_ALPHA=0.25 \
+  OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" \
+  OMFG_LAYER_MODE=adaptive-multi-blend \
+  OMFG_VKCUBE_COUNT="${count}" \
+  OMFG_VKCUBE_PRESENT_MODE="${present_mode}" \
+  OMFG_VKCUBE_TIMEOUT_SEC=40 \
+  OMFG_VKCUBE_ARTIFACT_SUFFIX="${suffix}" \
+  OMFG_ADAPTIVE_MULTI_TARGET_FPS="${target_fps}" \
+  OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES="${min_generated}" \
+  OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES="${max_generated}" \
+  OMFG_ADAPTIVE_MULTI_INTERVAL_SMOOTHING_ALPHA=0.25 \
     "${ROOT_DIR}/scripts/test-steamdeck-vkcube.sh"
 
   local -a cmd=(
     python3 "${ROOT_DIR}/scripts/assert-vkcube-log.py"
     --mode adaptive-multi-blend
-    --log "${ROOT_DIR}/artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-${suffix}/ppfg-vkcube.log"
+    --log "${ROOT_DIR}/artifacts/steamdeck/rust/vkcube/adaptive-multi-blend-${suffix}/omfg-vkcube.log"
   )
   if [[ ${skip_mode_markers} -eq 1 ]]; then
     cmd+=(--skip-mode-markers)
@@ -86,4 +86,4 @@ run_case target90-immediate 120 0 90 0 2 \
   "presentMode=IMMEDIATE" \
   "emittedGeneratedFrames=0"
 
-echo "Target-FPS Steam Deck validation passed for ${PPFG_LAYER_IMPL}"
+echo "Target-FPS Steam Deck validation passed for ${OMFG_LAYER_IMPL}"

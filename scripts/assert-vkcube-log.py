@@ -79,7 +79,7 @@ MODE_MARKERS = {
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Assert expected PPFG vkcube log markers.")
+    parser = argparse.ArgumentParser(description="Assert expected OMFG vkcube log markers.")
     parser.add_argument("--mode", required=True, choices=sorted(MODE_MARKERS))
     parser.add_argument("--log", required=True)
     parser.add_argument(

@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-: "${PPFG_LAYER_IMPL:=rust}"
+: "${OMFG_LAYER_IMPL:=rust}"
 
-if [[ "${PPFG_LAYER_IMPL}" != "rust" ]]; then
+if [[ "${OMFG_LAYER_IMPL}" != "rust" ]]; then
   echo "Advanced Steam Deck validation currently targets the Rust layer only." >&2
   exit 1
 fi
@@ -15,8 +15,8 @@ if [[ -z "${STEAMDECK_PASS:-}" ]]; then
 fi
 
 "${ROOT_DIR}/scripts/test-rust-layer.sh"
-PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/build-linux-amd64.sh"
-PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/deploy-steamdeck-layer.sh"
+OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/build-linux-amd64.sh"
+OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" "${ROOT_DIR}/scripts/deploy-steamdeck-layer.sh"
 
 run_case() {
   local mode="$1"
@@ -31,18 +31,18 @@ run_case() {
     shift
   done
 
-  PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}" \
-  PPFG_LAYER_MODE="${mode}" \
-  PPFG_VKCUBE_COUNT="${count}" \
-  PPFG_VKCUBE_PRESENT_MODE="${present_mode}" \
-  PPFG_VKCUBE_TIMEOUT_SEC=40 \
-  PPFG_VKCUBE_ARTIFACT_SUFFIX="${suffix}" \
+  OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}" \
+  OMFG_LAYER_MODE="${mode}" \
+  OMFG_VKCUBE_COUNT="${count}" \
+  OMFG_VKCUBE_PRESENT_MODE="${present_mode}" \
+  OMFG_VKCUBE_TIMEOUT_SEC=40 \
+  OMFG_VKCUBE_ARTIFACT_SUFFIX="${suffix}" \
     "${ROOT_DIR}/scripts/test-steamdeck-vkcube.sh"
 
   local -a cmd=(
     python3 "${ROOT_DIR}/scripts/assert-vkcube-log.py"
     --mode "${mode}"
-    --log "${ROOT_DIR}/artifacts/steamdeck/rust/vkcube/${mode}-${suffix}/ppfg-vkcube.log"
+    --log "${ROOT_DIR}/artifacts/steamdeck/rust/vkcube/${mode}-${suffix}/omfg-vkcube.log"
   )
   if [[ ${#assert_args[@]} -gt 0 ]]; then
     cmd+=("${assert_args[@]}")
@@ -59,4 +59,4 @@ run_case reproject-adaptive-blend smoke 120 ""
 run_case reproject-adaptive-blend long 600 "" "vkQueuePresentKHR frame=600"
 run_case reproject-adaptive-blend immediate 120 0 "presentMode=IMMEDIATE"
 
-echo "Advanced Steam Deck validation passed for ${PPFG_LAYER_IMPL}"
+echo "Advanced Steam Deck validation passed for ${OMFG_LAYER_IMPL}"

@@ -1,10 +1,10 @@
 [package]
-name = "ppfg-vk-layer-rust"
+name = "omfg-vk-layer-rust"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "VkLayer_PPFG_rust"
+name = "VkLayer_OMFG_rust"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-IMAGE_TAG="ppfg-linux-amd64-builder:latest"
+IMAGE_TAG="omfg-linux-amd64-builder:latest"
 SHADER_DIR="${ROOT_DIR}/implementation/vk-layer-rust/shaders"
 
 compile_with_local_tool() {

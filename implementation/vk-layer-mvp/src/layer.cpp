@@ -15,14 +15,14 @@
 #include <utility>
 #include <vector>
 
-namespace ppfg {
+namespace omfg {
 
-constexpr const char* kLayerName = "VK_LAYER_PPFG_mvp";
+constexpr const char* kLayerName = "VK_LAYER_OMFG_mvp";
 
 #if defined(__GNUC__) || defined(__clang__)
-#define PPFG_EXPORT __attribute__((visibility("default")))
+#define OMFG_EXPORT __attribute__((visibility("default")))
 #else
-#define PPFG_EXPORT
+#define OMFG_EXPORT
 #endif
 
 struct Logger {
@@ -44,7 +44,7 @@ struct Logger {
 
     void init() {
         std::call_once(init_once, [&] {
-            const char* path = std::getenv("PPFG_LAYER_LOG_FILE");
+            const char* path = std::getenv("OMFG_LAYER_LOG_FILE");
             if (path && *path) {
                 if (FILE* file = std::fopen(path, "a")) {
                     sink = file;
@@ -61,7 +61,7 @@ struct Logger {
             now.time_since_epoch()).count();
 
         std::lock_guard<std::mutex> lock(mutex);
-        std::fprintf(sink, "[ppfg][%s][%lld] %s\n", level,
+        std::fprintf(sink, "[omfg][%s][%lld] %s\n", level,
             static_cast<long long>(epoch_ms), message.c_str());
         std::fflush(sink);
     }
@@ -95,7 +95,7 @@ enum class Mode {
 };
 
 Mode current_mode() {
-    const char* mode = std::getenv("PPFG_LAYER_MODE");
+    const char* mode = std::getenv("OMFG_LAYER_MODE");
     if (!mode || !*mode) {
         return Mode::PassThrough;
     }
@@ -1755,20 +1755,20 @@ PFN_vkVoidFunction get_intercepted_proc_addr(const char* name) {
         return nullptr;
     }
 
-#define PPFG_HOOK(func) \
+#define OMFG_HOOK(func) \
     if (std::strcmp(name, "vk" #func) == 0) { \
         return reinterpret_cast<PFN_vkVoidFunction>(&layer_##func); \
     }
 
-    PPFG_HOOK(create_instance)
-    PPFG_HOOK(destroy_instance)
-    PPFG_HOOK(create_device)
-    PPFG_HOOK(destroy_device)
-    PPFG_HOOK(create_swapchain_khr)
-    PPFG_HOOK(destroy_swapchain_khr)
-    PPFG_HOOK(queue_present_khr)
+    OMFG_HOOK(create_instance)
+    OMFG_HOOK(destroy_instance)
+    OMFG_HOOK(create_device)
+    OMFG_HOOK(destroy_device)
+    OMFG_HOOK(create_swapchain_khr)
+    OMFG_HOOK(destroy_swapchain_khr)
+    OMFG_HOOK(queue_present_khr)
 
-#undef PPFG_HOOK
+#undef OMFG_HOOK
 
     return nullptr;
 }
@@ -1793,22 +1793,22 @@ PFN_vkVoidFunction get_device_fallback_proc_addr(VkDevice device, const char* na
     return nullptr;
 }
 
-} // namespace ppfg
+} // namespace omfg
 
 extern "C" {
 
-PPFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char* name);
-PPFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, const char* name);
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* version_struct);
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t* property_count, VkLayerProperties* properties);
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char* layer_name, uint32_t* property_count,
+OMFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char* name);
+OMFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, const char* name);
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* version_struct);
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t* property_count, VkLayerProperties* properties);
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char* layer_name, uint32_t* property_count,
         VkExtensionProperties* properties);
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceLayerProperties(VkPhysicalDevice physical_device, uint32_t* property_count,
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceLayerProperties(VkPhysicalDevice physical_device, uint32_t* property_count,
         VkLayerProperties* properties);
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physical_device, const char* layer_name,
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physical_device, const char* layer_name,
         uint32_t* property_count, VkExtensionProperties* properties);
 
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t* property_count, VkLayerProperties* properties) {
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t* property_count, VkLayerProperties* properties) {
     if (!property_count) {
         return VK_ERROR_INITIALIZATION_FAILED;
     }
@@ -1816,7 +1816,7 @@ PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(ui
     *property_count = 1;
     if (properties) {
         std::memset(properties, 0, sizeof(VkLayerProperties));
-        std::strncpy(properties[0].layerName, ppfg::kLayerName, VK_MAX_EXTENSION_NAME_SIZE - 1);
+        std::strncpy(properties[0].layerName, omfg::kLayerName, VK_MAX_EXTENSION_NAME_SIZE - 1);
         std::strncpy(properties[0].description, "Post-process frame generation MVP Vulkan layer", VK_MAX_DESCRIPTION_SIZE - 1);
         properties[0].implementationVersion = 1;
         properties[0].specVersion = VK_MAKE_API_VERSION(0, 1, 3, 250);
@@ -1824,9 +1824,9 @@ PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(ui
     return VK_SUCCESS;
 }
 
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char* layer_name, uint32_t* property_count,
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char* layer_name, uint32_t* property_count,
         VkExtensionProperties* properties) {
-    if (layer_name && std::strcmp(layer_name, ppfg::kLayerName) != 0) {
+    if (layer_name && std::strcmp(layer_name, omfg::kLayerName) != 0) {
         return VK_ERROR_LAYER_NOT_PRESENT;
     }
     if (property_count) {
@@ -1836,15 +1836,15 @@ PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionPropertie
     return VK_SUCCESS;
 }
 
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceLayerProperties(VkPhysicalDevice physical_device, uint32_t* property_count,
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceLayerProperties(VkPhysicalDevice physical_device, uint32_t* property_count,
         VkLayerProperties* properties) {
     (void)physical_device;
     return vkEnumerateInstanceLayerProperties(property_count, properties);
 }
 
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physical_device, const char* layer_name,
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(VkPhysicalDevice physical_device, const char* layer_name,
         uint32_t* property_count, VkExtensionProperties* properties) {
-    if (layer_name && std::strcmp(layer_name, ppfg::kLayerName) == 0) {
+    if (layer_name && std::strcmp(layer_name, omfg::kLayerName) == 0) {
         if (property_count) {
             *property_count = 0;
         }
@@ -1853,8 +1853,8 @@ PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(
         return VK_SUCCESS;
     }
 
-    std::lock_guard<std::mutex> lock(ppfg::g_mutex);
-    if (const auto it = ppfg::g_instance_dispatch.find(ppfg::get_key(physical_device)); it != ppfg::g_instance_dispatch.end()) {
+    std::lock_guard<std::mutex> lock(omfg::g_mutex);
+    if (const auto it = omfg::g_instance_dispatch.find(omfg::get_key(physical_device)); it != omfg::g_instance_dispatch.end()) {
         if (it->second.EnumerateDeviceExtensionProperties) {
             return it->second.EnumerateDeviceExtensionProperties(physical_device, layer_name, property_count, properties);
         }
@@ -1866,7 +1866,7 @@ PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateDeviceExtensionProperties(
     return VK_SUCCESS;
 }
 
-PPFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char* name) {
+OMFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char* name) {
     if (!name) {
         return nullptr;
     }
@@ -1879,31 +1879,31 @@ PPFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkIns
     }
 
     if (std::strcmp(name, "vkCreateInstance") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_create_instance);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_create_instance);
     }
     if (std::strcmp(name, "vkDestroyInstance") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_destroy_instance);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_destroy_instance);
     }
     if (std::strcmp(name, "vkCreateDevice") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_create_device);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_create_device);
     }
     if (std::strcmp(name, "vkDestroyDevice") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_destroy_device);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_destroy_device);
     }
     if (std::strcmp(name, "vkGetDeviceQueue") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_get_device_queue);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_get_device_queue);
     }
     if (std::strcmp(name, "vkGetDeviceQueue2") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_get_device_queue2);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_get_device_queue2);
     }
     if (std::strcmp(name, "vkCreateSwapchainKHR") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_create_swapchain_khr);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_create_swapchain_khr);
     }
     if (std::strcmp(name, "vkDestroySwapchainKHR") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_destroy_swapchain_khr);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_destroy_swapchain_khr);
     }
     if (std::strcmp(name, "vkQueuePresentKHR") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_queue_present_khr);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_queue_present_khr);
     }
     if (std::strcmp(name, "vkEnumerateInstanceLayerProperties") == 0) {
         return reinterpret_cast<PFN_vkVoidFunction>(&vkEnumerateInstanceLayerProperties);
@@ -1918,10 +1918,10 @@ PPFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkIns
         return reinterpret_cast<PFN_vkVoidFunction>(&vkEnumerateDeviceExtensionProperties);
     }
 
-    return ppfg::get_instance_fallback_proc_addr(instance, name);
+    return omfg::get_instance_fallback_proc_addr(instance, name);
 }
 
-PPFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, const char* name) {
+OMFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, const char* name) {
     if (!name) {
         return nullptr;
     }
@@ -1930,28 +1930,28 @@ PPFG_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevic
         return reinterpret_cast<PFN_vkVoidFunction>(&vkGetDeviceProcAddr);
     }
     if (std::strcmp(name, "vkGetDeviceQueue") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_get_device_queue);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_get_device_queue);
     }
     if (std::strcmp(name, "vkGetDeviceQueue2") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_get_device_queue2);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_get_device_queue2);
     }
     if (std::strcmp(name, "vkCreateSwapchainKHR") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_create_swapchain_khr);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_create_swapchain_khr);
     }
     if (std::strcmp(name, "vkDestroySwapchainKHR") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_destroy_swapchain_khr);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_destroy_swapchain_khr);
     }
     if (std::strcmp(name, "vkQueuePresentKHR") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_queue_present_khr);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_queue_present_khr);
     }
     if (std::strcmp(name, "vkDestroyDevice") == 0) {
-        return reinterpret_cast<PFN_vkVoidFunction>(&ppfg::layer_destroy_device);
+        return reinterpret_cast<PFN_vkVoidFunction>(&omfg::layer_destroy_device);
     }
 
-    return ppfg::get_device_fallback_proc_addr(device, name);
+    return omfg::get_device_fallback_proc_addr(device, name);
 }
 
-PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* version_struct) {
+OMFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkNegotiateLoaderLayerInterfaceVersion(VkNegotiateLayerInterface* version_struct) {
     if (!version_struct || version_struct->sType != LAYER_NEGOTIATE_INTERFACE_STRUCT) {
         return VK_ERROR_INITIALIZATION_FAILED;
     }
@@ -1964,7 +1964,7 @@ PPFG_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkNegotiateLoaderLayerInterfaceVersio
     version_struct->pfnGetDeviceProcAddr = vkGetDeviceProcAddr;
     version_struct->pfnGetPhysicalDeviceProcAddr = nullptr;
 
-    ppfg::log_info(std::string("vkNegotiateLoaderLayerInterfaceVersion ok; mode=") + ppfg::mode_name(ppfg::current_mode()));
+    omfg::log_info(std::string("vkNegotiateLoaderLayerInterfaceVersion ok; mode=") + omfg::mode_name(omfg::current_mode()));
     return VK_SUCCESS;
 }
 

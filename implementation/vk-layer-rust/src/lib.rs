@@ -27,7 +27,7 @@ use std::sync::{Mutex, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-const LAYER_NAME_BYTES: &[u8] = b"VK_LAYER_PPFG_rust\0";
+const LAYER_NAME_BYTES: &[u8] = b"VK_LAYER_OMFG_rust\0";
 const LAYER_DESCRIPTION_BYTES: &[u8] = b"Post-process frame generation Rust Vulkan layer\0";
 const BLEND_VERT_SPV: &[u8] = include_bytes!("../shaders/blend.vert.spv");
 const BLEND_FRAG_SPV: &[u8] = include_bytes!("../shaders/blend.frag.spv");
@@ -42,6 +42,18 @@ fn layer_name() -> &'static CStr {
 
 fn layer_description() -> &'static CStr {
     unsafe { CStr::from_bytes_with_nul_unchecked(LAYER_DESCRIPTION_BYTES) }
+}
+
+fn ext_khr_present_id() -> &'static CStr {
+    unsafe { CStr::from_bytes_with_nul_unchecked(b"VK_KHR_present_id\0") }
+}
+
+fn ext_khr_present_wait() -> &'static CStr {
+    unsafe { CStr::from_bytes_with_nul_unchecked(b"VK_KHR_present_wait\0") }
+}
+
+fn ext_google_display_timing() -> &'static CStr {
+    unsafe { CStr::from_bytes_with_nul_unchecked(b"VK_GOOGLE_display_timing\0") }
 }
 
 macro_rules! cstr {
@@ -87,6 +99,10 @@ type PfnVkGetPhysicalDeviceQueueFamilyProperties =
     unsafe extern "system" fn(vk::PhysicalDevice, *mut u32, *mut vk::QueueFamilyProperties);
 type PfnVkGetPhysicalDeviceMemoryProperties =
     unsafe extern "system" fn(vk::PhysicalDevice, *mut vk::PhysicalDeviceMemoryProperties);
+type PfnVkGetPhysicalDeviceFeatures2 = unsafe extern "system" fn(
+    vk::PhysicalDevice,
+    *mut vk::PhysicalDeviceFeatures2<'static>,
+);
 type PfnVkGetPhysicalDeviceSurfaceCapabilitiesKHR = unsafe extern "system" fn(
     vk::PhysicalDevice,
     vk::SurfaceKHR,
@@ -114,6 +130,23 @@ type PfnVkAcquireNextImageKHR = unsafe extern "system" fn(
     vk::Semaphore,
     vk::Fence,
     *mut u32,
+) -> vk::Result;
+type PfnVkWaitForPresentKHR = unsafe extern "system" fn(
+    vk::Device,
+    vk::SwapchainKHR,
+    u64,
+    u64,
+) -> vk::Result;
+type PfnVkGetRefreshCycleDurationGOOGLE = unsafe extern "system" fn(
+    vk::Device,
+    vk::SwapchainKHR,
+    *mut vk::RefreshCycleDurationGOOGLE,
+) -> vk::Result;
+type PfnVkGetPastPresentationTimingGOOGLE = unsafe extern "system" fn(
+    vk::Device,
+    vk::SwapchainKHR,
+    *mut u32,
+    *mut vk::PastPresentationTimingGOOGLE,
 ) -> vk::Result;
 type PfnVkCreateCommandPool = unsafe extern "system" fn(
     vk::Device,
@@ -356,7 +389,7 @@ static LOGGER: OnceLock<Mutex<LoggerSink>> = OnceLock::new();
 
 fn logger() -> &'static Mutex<LoggerSink> {
     LOGGER.get_or_init(|| {
-        let file = std::env::var("PPFG_LAYER_LOG_FILE")
+        let file = std::env::var("OMFG_LAYER_LOG_FILE")
             .ok()
             .filter(|path| !path.is_empty())
             .and_then(|path| OpenOptions::new().create(true).append(true).open(path).ok());
@@ -380,7 +413,7 @@ fn now_epoch_us_u64() -> u64 {
 }
 
 fn log(level: &str, message: impl AsRef<str>) {
-    let line = format!("[ppfg][{level}][{}] {}\n", now_epoch_ms(), message.as_ref());
+    let line = format!("[omfg][{level}][{}] {}\n", now_epoch_ms(), message.as_ref());
     let mut guard = logger().lock().expect("logger mutex poisoned");
     if let Some(file) = guard.file.as_mut() {
         let _ = file.write_all(line.as_bytes());
@@ -411,6 +444,7 @@ struct InstanceDispatch {
     get_physical_device_queue_family_properties:
         Option<PfnVkGetPhysicalDeviceQueueFamilyProperties>,
     get_physical_device_memory_properties: Option<PfnVkGetPhysicalDeviceMemoryProperties>,
+    get_physical_device_features2: Option<PfnVkGetPhysicalDeviceFeatures2>,
     get_physical_device_surface_capabilities_khr:
         Option<PfnVkGetPhysicalDeviceSurfaceCapabilitiesKHR>,
 }
@@ -426,6 +460,9 @@ struct DeviceDispatch {
     destroy_swapchain_khr: Option<PfnVkDestroySwapchainKHR>,
     get_swapchain_images_khr: Option<PfnVkGetSwapchainImagesKHR>,
     acquire_next_image_khr: Option<PfnVkAcquireNextImageKHR>,
+    wait_for_present_khr: Option<PfnVkWaitForPresentKHR>,
+    get_refresh_cycle_duration_google: Option<PfnVkGetRefreshCycleDurationGOOGLE>,
+    get_past_presentation_timing_google: Option<PfnVkGetPastPresentationTimingGOOGLE>,
     create_command_pool: Option<PfnVkCreateCommandPool>,
     destroy_command_pool: Option<PfnVkDestroyCommandPool>,
     reset_command_pool: Option<PfnVkResetCommandPool>,
@@ -617,6 +654,9 @@ struct SwapchainState {
     generated_present_count: u64,
     injection_attempted: bool,
     injection_works: bool,
+    next_present_id: u64,
+    last_logged_timing_present_id: u64,
+    refresh_duration_ns: u64,
     benchmark: BenchmarkStats,
     inject: InjectResources,
     blend: BlendResources,
@@ -649,6 +689,9 @@ impl Default for SwapchainState {
             generated_present_count: 0,
             injection_attempted: false,
             injection_works: false,
+            next_present_id: 1,
+            last_logged_timing_present_id: 0,
+            refresh_duration_ns: 0,
             benchmark: BenchmarkStats::default(),
             inject: InjectResources::default(),
             blend: BlendResources::default(),
@@ -662,6 +705,9 @@ struct DeviceInfo {
     physical_device: vk::PhysicalDevice,
     device: vk::Device,
     timestamp_period_ns: f32,
+    supports_present_id: bool,
+    supports_present_wait: bool,
+    supports_display_timing: bool,
     instance_dispatch: InstanceDispatch,
     dispatch: DeviceDispatch,
 }
@@ -742,6 +788,11 @@ unsafe fn fill_instance_dispatch(
             instance,
             cstr!("vkGetPhysicalDeviceMemoryProperties"),
         ),
+        get_physical_device_features2: load_instance_fn(
+            gipa,
+            instance,
+            cstr!("vkGetPhysicalDeviceFeatures2"),
+        ),
         get_physical_device_surface_capabilities_khr: load_instance_fn(
             gipa,
             instance,
@@ -761,6 +812,17 @@ unsafe fn fill_device_dispatch(device: vk::Device, gdpa: PfnVkGetDeviceProcAddr)
         destroy_swapchain_khr: load_device_fn(gdpa, device, cstr!("vkDestroySwapchainKHR")),
         get_swapchain_images_khr: load_device_fn(gdpa, device, cstr!("vkGetSwapchainImagesKHR")),
         acquire_next_image_khr: load_device_fn(gdpa, device, cstr!("vkAcquireNextImageKHR")),
+        wait_for_present_khr: load_device_fn(gdpa, device, cstr!("vkWaitForPresentKHR")),
+        get_refresh_cycle_duration_google: load_device_fn(
+            gdpa,
+            device,
+            cstr!("vkGetRefreshCycleDurationGOOGLE"),
+        ),
+        get_past_presentation_timing_google: load_device_fn(
+            gdpa,
+            device,
+            cstr!("vkGetPastPresentationTimingGOOGLE"),
+        ),
         create_command_pool: load_device_fn(gdpa, device, cstr!("vkCreateCommandPool")),
         destroy_command_pool: load_device_fn(gdpa, device, cstr!("vkDestroyCommandPool")),
         reset_command_pool: load_device_fn(gdpa, device, cstr!("vkResetCommandPool")),
@@ -891,45 +953,244 @@ fn cstr_opt(ptr: *const c_char) -> Option<String> {
     }
 }
 
+unsafe fn device_create_info_enables_extension(
+    create_info: &DeviceCreateInfo,
+    extension_name: &CStr,
+) -> bool {
+    let count = create_info.enabled_extension_count as usize;
+    if count == 0 || create_info.pp_enabled_extension_names.is_null() {
+        return false;
+    }
+    (0..count).any(|index| {
+        let ptr = *create_info.pp_enabled_extension_names.add(index);
+        !ptr.is_null() && CStr::from_ptr(ptr) == extension_name
+    })
+}
+
+unsafe fn physical_device_supports_extension(
+    instance_dispatch: &InstanceDispatch,
+    physical_device: vk::PhysicalDevice,
+    extension_name: &CStr,
+) -> bool {
+    let Some(enumerate) = instance_dispatch.enumerate_device_extension_properties else {
+        return false;
+    };
+    let mut count = 0;
+    if enumerate(physical_device, ptr::null(), &mut count, ptr::null_mut()) != vk::Result::SUCCESS
+        || count == 0
+    {
+        return false;
+    }
+    let mut properties = vec![vk::ExtensionProperties::default(); count as usize];
+    if enumerate(
+        physical_device,
+        ptr::null(),
+        &mut count,
+        properties.as_mut_ptr(),
+    ) != vk::Result::SUCCESS
+    {
+        return false;
+    }
+    properties.iter().any(|property| {
+        let name = CStr::from_ptr(property.extension_name.as_ptr());
+        name == extension_name
+    })
+}
+
+fn env_string(name: &str) -> Option<String> {
+    std::env::var(name).ok()
+}
+
 fn env_u32(name: &str, default_value: u32) -> u32 {
-    std::env::var(name)
-        .ok()
+    env_string(name)
         .and_then(|value| value.parse::<u32>().ok())
         .unwrap_or(default_value)
 }
 
+fn env_u64(name: &str, default_value: u64) -> u64 {
+    env_string(name)
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or(default_value)
+}
+
 fn env_f32(name: &str, default_value: f32) -> f32 {
-    std::env::var(name)
-        .ok()
+    env_string(name)
         .and_then(|value| value.parse::<f32>().ok())
         .unwrap_or(default_value)
 }
 
 fn env_bool(name: &str, default_value: bool) -> bool {
-    match std::env::var(name) {
-        Ok(value) => match value.trim().to_ascii_lowercase().as_str() {
+    match env_string(name) {
+        Some(value) => match value.trim().to_ascii_lowercase().as_str() {
             "1" | "true" | "yes" | "on" => true,
             "0" | "false" | "no" | "off" => false,
             _ => default_value,
         },
-        Err(_) => default_value,
+        None => default_value,
     }
 }
 
 fn benchmark_enabled() -> bool {
-    env_bool("PPFG_BENCHMARK", false)
+    env_bool("OMFG_BENCHMARK", false)
+}
+
+fn present_timing_enabled() -> bool {
+    env_bool("OMFG_PRESENT_TIMING", true)
+}
+
+fn present_wait_enabled() -> bool {
+    env_bool("OMFG_PRESENT_WAIT", false)
+}
+
+fn present_wait_timeout_ns() -> u64 {
+    env_u64("OMFG_PRESENT_WAIT_TIMEOUT_NS", 5_000_000_000)
 }
 
 fn benchmark_label() -> String {
-    std::env::var("PPFG_BENCHMARK_LABEL")
-        .ok()
+    env_string("OMFG_BENCHMARK_LABEL")
         .filter(|value| !value.trim().is_empty())
         .unwrap_or_else(|| "default".to_string())
 }
 
+fn ns_to_ms(value: u64) -> f64 {
+    value as f64 / 1_000_000.0
+}
+
+unsafe fn maybe_log_present_timing(
+    state: &mut SwapchainState,
+    device_info: &DeviceInfo,
+    origin: &str,
+    present_id: u64,
+) {
+    if !present_timing_enabled() || !device_info.supports_display_timing {
+        return;
+    }
+
+    if state.refresh_duration_ns == 0 {
+        if let Some(get_refresh_cycle_duration) = device_info.dispatch.get_refresh_cycle_duration_google {
+            let mut refresh = vk::RefreshCycleDurationGOOGLE::default();
+            if get_refresh_cycle_duration(device_info.device, state.handle, &mut refresh)
+                == vk::Result::SUCCESS
+            {
+                state.refresh_duration_ns = refresh.refresh_duration;
+                log_info(format!(
+                    "present timing refresh; mode={}; origin={}; refreshMs={:.3}",
+                    Mode::from_env().name(),
+                    origin,
+                    ns_to_ms(state.refresh_duration_ns),
+                ));
+            }
+        }
+    }
+
+    if present_id > 5 && present_id % 60 != 0 {
+        return;
+    }
+
+    let Some(get_past_presentation_timing) = device_info.dispatch.get_past_presentation_timing_google else {
+        return;
+    };
+
+    let mut count = 0;
+    if get_past_presentation_timing(device_info.device, state.handle, &mut count, ptr::null_mut())
+        != vk::Result::SUCCESS
+        || count == 0
+    {
+        return;
+    }
+
+    let mut timings = vec![vk::PastPresentationTimingGOOGLE::default(); count as usize];
+    if get_past_presentation_timing(
+        device_info.device,
+        state.handle,
+        &mut count,
+        timings.as_mut_ptr(),
+    ) != vk::Result::SUCCESS
+    {
+        return;
+    }
+
+    for timing in timings.into_iter().take(count as usize) {
+        let timing_present_id = timing.present_id as u64;
+        if timing_present_id <= state.last_logged_timing_present_id {
+            continue;
+        }
+        state.last_logged_timing_present_id = timing_present_id;
+        if timing_present_id == present_id || timing_present_id <= 5 || timing_present_id % 60 == 0
+        {
+            log_info(format!(
+                "present timing sample; origin={}; presentId={}; desiredMs={:.3}; actualMs={:.3}; earliestMs={:.3}; marginMs={:.3}",
+                origin,
+                timing_present_id,
+                ns_to_ms(timing.desired_present_time),
+                ns_to_ms(timing.actual_present_time),
+                ns_to_ms(timing.earliest_present_time),
+                ns_to_ms(timing.present_margin),
+            ));
+        }
+    }
+}
+
+unsafe fn queue_present_with_timing(
+    state: &mut SwapchainState,
+    device_info: &DeviceInfo,
+    queue_present: PfnVkQueuePresentKHR,
+    queue: vk::Queue,
+    present_info: *const PresentInfoKHR,
+    origin: &str,
+) -> vk::Result {
+    let present_info_ref = &*present_info;
+    let mut modified_present_info = *present_info_ref;
+    let mut present_ids = [0u64; 1];
+    let present_id = if present_timing_enabled()
+        && device_info.supports_present_id
+        && present_info_ref.swapchain_count == 1
+    {
+        present_ids[0] = state.next_present_id;
+        state.next_present_id = state.next_present_id.saturating_add(1);
+        let mut present_id_info = vk::PresentIdKHR::default().present_ids(&present_ids);
+        present_id_info.p_next = modified_present_info.p_next;
+        modified_present_info.p_next = (&present_id_info as *const vk::PresentIdKHR<'_>).cast();
+        let result = queue_present(queue, &modified_present_info);
+        if (result == vk::Result::SUCCESS || result == vk::Result::SUBOPTIMAL_KHR)
+            && device_info.supports_present_wait
+            && present_wait_enabled()
+        {
+            if let Some(wait_for_present) = device_info.dispatch.wait_for_present_khr {
+                let wait_result = wait_for_present(
+                    device_info.device,
+                    state.handle,
+                    present_ids[0],
+                    present_wait_timeout_ns(),
+                );
+                if present_ids[0] <= 5 || present_ids[0] % 60 == 0 {
+                    log_info(format!(
+                        "present wait result; origin={}; presentId={}; result={}",
+                        origin,
+                        present_ids[0],
+                        wait_result.as_raw(),
+                    ));
+                }
+            }
+        }
+        if result == vk::Result::SUCCESS || result == vk::Result::SUBOPTIMAL_KHR {
+            maybe_log_present_timing(state, device_info, origin, present_ids[0]);
+        }
+        return result;
+    } else {
+        0
+    };
+
+    let result = queue_present(queue, present_info);
+    if present_id != 0 && (result == vk::Result::SUCCESS || result == vk::Result::SUBOPTIMAL_KHR) {
+        maybe_log_present_timing(state, device_info, origin, present_id);
+    }
+    result
+}
+
 fn multi_swapchain_generated_frame_cap() -> u32 {
     env_u32(
-        "PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES",
+        "OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES",
         DEFAULT_MULTI_SWAPCHAIN_GENERATED_FRAME_CAP,
     )
     .max(1)
@@ -937,14 +1198,14 @@ fn multi_swapchain_generated_frame_cap() -> u32 {
 
 fn requested_multi_generated_frames_for_swapchain(mode: Mode) -> u32 {
     let requested = match mode {
-        Mode::MultiBlendTest => env_u32("PPFG_MULTI_BLEND_COUNT", 2).max(1),
+        Mode::MultiBlendTest => env_u32("OMFG_MULTI_BLEND_COUNT", 2).max(1),
         Mode::AdaptiveMultiBlendTest => {
             let target_enabled = adaptive_multi_target_fps() > 0.0;
             let min_count = env_u32(
-                "PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES",
+                "OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES",
                 if target_enabled { 0 } else { 1 },
             );
-            env_u32("PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES", 2).max(min_count)
+            env_u32("OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES", 2).max(min_count)
         }
         _ => 0,
     };
@@ -2415,35 +2676,35 @@ unsafe fn update_blend_descriptor_set(
 }
 
 fn blend_adaptive_strength() -> f32 {
-    env_f32("PPFG_BLEND_ADAPTIVE_STRENGTH", 2.0)
+    env_f32("OMFG_BLEND_ADAPTIVE_STRENGTH", 2.0)
 }
 
 fn blend_adaptive_bias() -> f32 {
-    env_f32("PPFG_BLEND_ADAPTIVE_BIAS", 0.25)
+    env_f32("OMFG_BLEND_ADAPTIVE_BIAS", 0.25)
 }
 
 fn search_blend_radius() -> u32 {
-    env_u32("PPFG_SEARCH_BLEND_RADIUS", 1).min(4)
+    env_u32("OMFG_SEARCH_BLEND_RADIUS", 1).min(4)
 }
 
 fn reproject_search_radius() -> u32 {
-    env_u32("PPFG_REPROJECT_SEARCH_RADIUS", 2).clamp(1, 4)
+    env_u32("OMFG_REPROJECT_SEARCH_RADIUS", 2).clamp(1, 4)
 }
 
 fn reproject_patch_radius() -> u32 {
-    env_u32("PPFG_REPROJECT_PATCH_RADIUS", 1).min(2)
+    env_u32("OMFG_REPROJECT_PATCH_RADIUS", 1).min(2)
 }
 
 fn reproject_confidence_scale() -> f32 {
-    env_f32("PPFG_REPROJECT_CONFIDENCE_SCALE", 4.0)
+    env_f32("OMFG_REPROJECT_CONFIDENCE_SCALE", 4.0)
 }
 
 fn adaptive_multi_target_fps() -> f32 {
-    env_f32("PPFG_ADAPTIVE_MULTI_TARGET_FPS", 0.0).max(0.0)
+    env_f32("OMFG_ADAPTIVE_MULTI_TARGET_FPS", 0.0).max(0.0)
 }
 
 fn adaptive_multi_interval_smoothing_alpha() -> f32 {
-    env_f32("PPFG_ADAPTIVE_MULTI_INTERVAL_SMOOTHING_ALPHA", 0.25).clamp(0.0, 1.0)
+    env_f32("OMFG_ADAPTIVE_MULTI_INTERVAL_SMOOTHING_ALPHA", 0.25).clamp(0.0, 1.0)
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -2459,10 +2720,10 @@ fn adaptive_multi_frame_request(state: &mut SwapchainState) -> AdaptiveMultiFram
     let target_fps = adaptive_multi_target_fps();
     let target_enabled = target_fps > 0.0;
     let min_count = env_u32(
-        "PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES",
+        "OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES",
         if target_enabled { 0 } else { 1 },
     );
-    let max_count = env_u32("PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES", 2).max(min_count);
+    let max_count = env_u32("OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES", 2).max(min_count);
 
     if target_enabled {
         let interval = if state.smoothed_present_interval_ms > 0.0 {
@@ -2489,7 +2750,7 @@ fn adaptive_multi_frame_request(state: &mut SwapchainState) -> AdaptiveMultiFram
         }
     } else {
         state.adaptive_generated_frame_credit = 0.0;
-        let threshold_ms = env_f32("PPFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS", 5.0);
+        let threshold_ms = env_f32("OMFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS", 5.0);
         let interval = if state.last_present_interval_ms > 0.0 {
             Some(state.last_present_interval_ms)
         } else {
@@ -3203,7 +3464,14 @@ unsafe fn try_present_blend_frame(
             ..Default::default()
         };
         maybe_sleep_ms(visual_hold_ms());
-        let generated_result = queue_present(queue, &generated_present);
+        let generated_result = queue_present_with_timing(
+            state,
+            device_info,
+            queue_present,
+            queue,
+            &generated_present,
+            "blend-generated",
+        );
         if let Some(timer) = generated_present_timer {
             benchmark_sample.cpu_generated_present_ms = timer.elapsed().as_secs_f64() * 1000.0;
         }
@@ -3231,7 +3499,14 @@ unsafe fn try_present_blend_frame(
     if have_generated {
         maybe_sleep_ms(visual_hold_ms());
     }
-    let original_result = queue_present(queue, &original_present);
+    let original_result = queue_present_with_timing(
+        state,
+        device_info,
+        queue_present,
+        queue,
+        &original_present,
+        "blend-original",
+    );
     if let Some(timer) = original_present_timer {
         benchmark_sample.cpu_original_present_ms = timer.elapsed().as_secs_f64() * 1000.0;
     }
@@ -3337,7 +3612,7 @@ unsafe fn try_present_multi_blend_frame(
         Mode::AdaptiveMultiBlendTest => adaptive_request
             .map(|request| request.generated_frame_count)
             .unwrap_or(0),
-        Mode::MultiBlendTest => env_u32("PPFG_MULTI_BLEND_COUNT", 2).max(1) as usize,
+        Mode::MultiBlendTest => env_u32("OMFG_MULTI_BLEND_COUNT", 2).max(1) as usize,
         _ => 1,
     };
     let generated_plan = multi_blend_push_constants_plan(mode, requested_generated_frame_count);
@@ -3948,7 +4223,14 @@ unsafe fn try_present_multi_blend_frame(
                 ..Default::default()
             };
             maybe_sleep_ms(visual_hold_ms());
-            let generated_result = queue_present(queue, &generated_present);
+            let generated_result = queue_present_with_timing(
+                state,
+                device_info,
+                queue_present,
+                queue,
+                &generated_present,
+                "multi-generated",
+            );
             if generated_result != vk::Result::SUCCESS
                 && generated_result != vk::Result::SUBOPTIMAL_KHR
             {
@@ -3971,7 +4253,14 @@ unsafe fn try_present_multi_blend_frame(
     if emit_generated {
         maybe_sleep_ms(visual_hold_ms());
     }
-    let original_result = queue_present(queue, &original_present);
+    let original_result = queue_present_with_timing(
+        state,
+        device_info,
+        queue_present,
+        queue,
+        &original_present,
+        "multi-original",
+    );
     if let Some(timer) = original_present_timer {
         benchmark_sample.cpu_original_present_ms = timer.elapsed().as_secs_f64() * 1000.0;
     }
@@ -4290,7 +4579,14 @@ unsafe fn try_present_copy_frame(
     let mut original_present = *present_info;
     original_present.wait_semaphore_count = 1;
     original_present.p_wait_semaphores = &state.inject.ready_original_semaphore;
-    let original_result = queue_present(queue, &original_present);
+    let original_result = queue_present_with_timing(
+        state,
+        device_info,
+        queue_present,
+        queue,
+        &original_present,
+        "copy-original",
+    );
     if original_result != vk::Result::SUCCESS && original_result != vk::Result::SUBOPTIMAL_KHR {
         log_warn(format!(
             "original QueuePresentKHR failed in copy mode: {}",
@@ -4308,7 +4604,14 @@ unsafe fn try_present_copy_frame(
         p_image_indices: &generated_image_index,
         ..Default::default()
     };
-    let generated_result = queue_present(queue, &generated_present);
+    let generated_result = queue_present_with_timing(
+        state,
+        device_info,
+        queue_present,
+        queue,
+        &generated_present,
+        "copy-generated",
+    );
     if generated_result != vk::Result::SUCCESS && generated_result != vk::Result::SUBOPTIMAL_KHR {
         log_warn(format!(
             "generated QueuePresentKHR failed in copy mode: {}",
@@ -4694,7 +4997,14 @@ unsafe fn try_present_history_copy_frame(
             p_image_indices: &generated_image_index,
             ..Default::default()
         };
-        let generated_result = queue_present(queue, &generated_present);
+        let generated_result = queue_present_with_timing(
+            state,
+            device_info,
+            queue_present,
+            queue,
+            &generated_present,
+            "history-generated",
+        );
         if generated_result != vk::Result::SUCCESS && generated_result != vk::Result::SUBOPTIMAL_KHR
         {
             log_warn(format!(
@@ -4708,7 +5018,14 @@ unsafe fn try_present_history_copy_frame(
     let mut original_present = *present_info;
     original_present.wait_semaphore_count = 1;
     original_present.p_wait_semaphores = &state.inject.ready_original_semaphore;
-    let original_result = queue_present(queue, &original_present);
+    let original_result = queue_present_with_timing(
+        state,
+        device_info,
+        queue_present,
+        queue,
+        &original_present,
+        "history-original",
+    );
     if original_result != vk::Result::SUCCESS && original_result != vk::Result::SUBOPTIMAL_KHR {
         log_warn(format!(
             "original QueuePresentKHR failed in history-copy mode: {}",
@@ -4743,15 +5060,15 @@ unsafe fn try_present_history_copy_frame(
 }
 
 fn bfi_period() -> u32 {
-    env_u32("PPFG_BFI_PERIOD", 1).max(1)
+    env_u32("OMFG_BFI_PERIOD", 1).max(1)
 }
 
 fn bfi_hold_ms() -> u32 {
-    env_u32("PPFG_BFI_HOLD_MS", 0)
+    env_u32("OMFG_BFI_HOLD_MS", 0)
 }
 
 fn visual_hold_ms() -> u32 {
-    env_u32("PPFG_VISUAL_HOLD_MS", 0)
+    env_u32("OMFG_VISUAL_HOLD_MS", 0)
 }
 
 fn maybe_sleep_ms(duration_ms: u32) {
@@ -5015,7 +5332,18 @@ unsafe fn try_present_clear_frame(
         p_image_indices: &generated_image_index,
         ..Default::default()
     };
-    let generated_present_result = queue_present(queue, &generated_present);
+    let generated_present_result = queue_present_with_timing(
+        state,
+        device_info,
+        queue_present,
+        queue,
+        &generated_present,
+        if matches!(mode, Mode::BfiTest) {
+            "bfi-generated"
+        } else {
+            "clear-generated"
+        },
+    );
     if generated_present_result != vk::Result::SUCCESS
         && generated_present_result != vk::Result::SUBOPTIMAL_KHR
     {
@@ -5190,12 +5518,6 @@ unsafe extern "system" fn layer_create_device(
         return vk::Result::ERROR_INITIALIZATION_FAILED;
     };
 
-    let result = next_create_device(physical_device, create_info, allocator, device);
-    if result != vk::Result::SUCCESS {
-        log_warn(format!("vkCreateDevice returned {}", result.as_raw()));
-        return result;
-    }
-
     let physical_key = dispatch_key_from_handle(physical_device);
     let (instance_dispatch, instance) = {
         let state = global_state().lock().expect("global state mutex poisoned");
@@ -5213,7 +5535,129 @@ unsafe extern "system" fn layer_create_device(
         )
     };
 
+    let create_info_ref = &*create_info;
+    let mut modified_create_info = *create_info_ref;
+    let mut enabled_extension_names: Vec<*const c_char> = if create_info_ref.enabled_extension_count > 0
+        && !create_info_ref.pp_enabled_extension_names.is_null()
+    {
+        std::slice::from_raw_parts(
+            create_info_ref.pp_enabled_extension_names,
+            create_info_ref.enabled_extension_count as usize,
+        )
+        .to_vec()
+    } else {
+        Vec::new()
+    };
+
+    let mut supports_present_id =
+        unsafe { device_create_info_enables_extension(create_info_ref, ext_khr_present_id()) };
+    let mut supports_present_wait =
+        unsafe { device_create_info_enables_extension(create_info_ref, ext_khr_present_wait()) };
+    let mut supports_display_timing = unsafe {
+        device_create_info_enables_extension(create_info_ref, ext_google_display_timing())
+    };
+    let mut appended_extensions = Vec::new();
+
+    if !supports_present_id
+        && unsafe {
+            physical_device_supports_extension(
+                &instance_dispatch,
+                physical_device,
+                ext_khr_present_id(),
+            )
+        }
+    {
+        enabled_extension_names.push(ext_khr_present_id().as_ptr());
+        supports_present_id = true;
+        appended_extensions.push("VK_KHR_present_id");
+    }
+    if !supports_present_wait
+        && unsafe {
+            physical_device_supports_extension(
+                &instance_dispatch,
+                physical_device,
+                ext_khr_present_wait(),
+            )
+        }
+    {
+        enabled_extension_names.push(ext_khr_present_wait().as_ptr());
+        supports_present_wait = true;
+        appended_extensions.push("VK_KHR_present_wait");
+    }
+    if !supports_display_timing
+        && unsafe {
+            physical_device_supports_extension(
+                &instance_dispatch,
+                physical_device,
+                ext_google_display_timing(),
+            )
+        }
+    {
+        enabled_extension_names.push(ext_google_display_timing().as_ptr());
+        supports_display_timing = true;
+        appended_extensions.push("VK_GOOGLE_display_timing");
+    }
+
+    if !enabled_extension_names.is_empty() {
+        modified_create_info.enabled_extension_count = enabled_extension_names.len() as u32;
+        modified_create_info.pp_enabled_extension_names = enabled_extension_names.as_ptr();
+    }
+
+    let mut present_id_features = vk::PhysicalDevicePresentIdFeaturesKHR::default();
+    let mut present_wait_features = vk::PhysicalDevicePresentWaitFeaturesKHR::default();
+    if let Some(get_physical_device_features2) = instance_dispatch.get_physical_device_features2 {
+        let mut features2 = vk::PhysicalDeviceFeatures2::default();
+        let mut query_present_id = vk::PhysicalDevicePresentIdFeaturesKHR::default();
+        let mut query_present_wait = vk::PhysicalDevicePresentWaitFeaturesKHR::default();
+        query_present_id.p_next = (&mut query_present_wait
+            as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>)
+            .cast();
+        features2.p_next = (&mut query_present_id as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>)
+            .cast();
+        get_physical_device_features2(physical_device, &mut features2);
+
+        if supports_present_id && query_present_id.present_id == vk::TRUE {
+            present_id_features.present_id = vk::TRUE;
+            present_id_features.p_next = modified_create_info.p_next.cast_mut();
+            modified_create_info.p_next =
+                (&mut present_id_features as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>)
+                    .cast();
+        } else {
+            supports_present_id = false;
+        }
+
+        if supports_present_wait && query_present_wait.present_wait == vk::TRUE {
+            present_wait_features.present_wait = vk::TRUE;
+            present_wait_features.p_next = modified_create_info.p_next.cast_mut();
+            modified_create_info.p_next =
+                (&mut present_wait_features as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>)
+                    .cast();
+        } else {
+            supports_present_wait = false;
+        }
+    } else {
+        supports_present_id = false;
+        supports_present_wait = false;
+    }
+
+    let result = next_create_device(physical_device, &modified_create_info, allocator, device);
+    if result != vk::Result::SUCCESS {
+        log_warn(format!("vkCreateDevice returned {}", result.as_raw()));
+        return result;
+    }
+
+    if !appended_extensions.is_empty() {
+        log_info(format!(
+            "vkCreateDevice appended timing extensions; extensions={}",
+            appended_extensions.join(",")
+        ));
+    }
+
     let device_dispatch = fill_device_dispatch(*device, next_gdpa);
+    supports_present_wait = supports_present_wait && device_dispatch.wait_for_present_khr.is_some();
+    supports_display_timing = supports_display_timing
+        && device_dispatch.get_refresh_cycle_duration_google.is_some()
+        && device_dispatch.get_past_presentation_timing_google.is_some();
     let mut properties = vk::PhysicalDeviceProperties::default();
     if let Some(get_properties) = instance_dispatch.get_physical_device_properties {
         get_properties(physical_device, &mut properties);
@@ -5223,6 +5667,9 @@ unsafe extern "system" fn layer_create_device(
         physical_device,
         device: *device,
         timestamp_period_ns: properties.limits.timestamp_period,
+        supports_present_id,
+        supports_present_wait,
+        supports_display_timing,
         instance_dispatch,
         dispatch: device_dispatch,
     };
@@ -5289,7 +5736,12 @@ unsafe extern "system" fn layer_create_device(
     let device_name = CStr::from_ptr(properties.device_name.as_ptr())
         .to_string_lossy()
         .into_owned();
-    log_info(format!("vkCreateDevice ok; gpu={device_name}"));
+    log_info(format!(
+        "vkCreateDevice ok; gpu={device_name}; presentId={}; presentWait={}; displayTiming={}",
+        if supports_present_id { 1 } else { 0 },
+        if supports_present_wait { 1 } else { 0 },
+        if supports_display_timing { 1 } else { 0 },
+    ));
     vk::Result::SUCCESS
 }
 
@@ -6123,21 +6575,21 @@ mod tests {
     #[test]
     fn expands_multi_swapchain_headroom_for_larger_requested_counts() {
         let _guard = env_test_lock().lock().expect("env test mutex poisoned");
-        std::env::set_var("PPFG_MULTI_BLEND_COUNT", "6");
-        std::env::remove_var("PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES");
+        std::env::set_var("OMFG_MULTI_BLEND_COUNT", "6");
+        std::env::remove_var("OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES");
         let result = maybe_expand_multi_swapchain_min_image_count(Mode::MultiBlendTest, 3, 6, None);
         assert_eq!(result, 7);
-        std::env::remove_var("PPFG_MULTI_BLEND_COUNT");
+        std::env::remove_var("OMFG_MULTI_BLEND_COUNT");
     }
 
     #[test]
     fn clamps_multi_swapchain_headroom_to_configured_cap() {
         let _guard = env_test_lock().lock().expect("env test mutex poisoned");
-        std::env::set_var("PPFG_MULTI_BLEND_COUNT", "20");
-        std::env::set_var("PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES", "8");
+        std::env::set_var("OMFG_MULTI_BLEND_COUNT", "20");
+        std::env::set_var("OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES", "8");
         let result = maybe_expand_multi_swapchain_min_image_count(Mode::MultiBlendTest, 3, 6, None);
         assert_eq!(result, 9);
-        std::env::remove_var("PPFG_MULTI_BLEND_COUNT");
-        std::env::remove_var("PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES");
+        std::env::remove_var("OMFG_MULTI_BLEND_COUNT");
+        std::env::remove_var("OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES");
     }
 }

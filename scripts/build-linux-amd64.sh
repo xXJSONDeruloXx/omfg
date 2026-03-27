@@ -2,12 +2,12 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-IMAGE_TAG="ppfg-linux-amd64-builder:latest"
+IMAGE_TAG="omfg-linux-amd64-builder:latest"
 
 # shellcheck disable=SC1091
-source "${ROOT_DIR}/scripts/_ppfg_layer_impl.sh"
+source "${ROOT_DIR}/scripts/_omfg_layer_impl.sh"
 
-BUILD_DIR="${ROOT_DIR}/build/linux-amd64/${PPFG_LAYER_BUILD_SUBDIR}"
+BUILD_DIR="${ROOT_DIR}/build/linux-amd64/${OMFG_LAYER_BUILD_SUBDIR}"
 mkdir -p "${BUILD_DIR}"
 
 "${ROOT_DIR}/scripts/compile-rust-shaders.sh"
@@ -18,7 +18,7 @@ docker build \
   -f "${ROOT_DIR}/docker/linux-amd64-builder.Dockerfile" \
   "${ROOT_DIR}"
 
-if [[ "${PPFG_LAYER_BUILD_SYSTEM}" == "cmake" ]]; then
+if [[ "${OMFG_LAYER_BUILD_SYSTEM}" == "cmake" ]]; then
   docker run --rm \
     --platform linux/amd64 \
     -v "${ROOT_DIR}:/workspace" \
@@ -44,7 +44,7 @@ docker run --rm \
     cargo test --locked --offline
     cargo build --release --locked --offline
     mkdir -p /workspace/build/linux-amd64/vk-layer-rust/out
-    cp target/release/libVkLayer_PPFG_rust.so /workspace/build/linux-amd64/vk-layer-rust/out/libVkLayer_PPFG_rust.so
-    cp layer/VkLayer_PPFG_rust.json /workspace/build/linux-amd64/vk-layer-rust/out/VkLayer_PPFG_rust.json
+    cp target/release/libVkLayer_OMFG_rust.so /workspace/build/linux-amd64/vk-layer-rust/out/libVkLayer_OMFG_rust.so
+    cp layer/VkLayer_OMFG_rust.json /workspace/build/linux-amd64/vk-layer-rust/out/VkLayer_OMFG_rust.json
     ls -lah /workspace/build/linux-amd64/vk-layer-rust/out
   '

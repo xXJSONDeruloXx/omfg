@@ -45,15 +45,15 @@ This intentionally favors wins on the multi-FG paths.
 1. Make a candidate change.
 2. Run the fast decision subset several times:
    ```bash
-   PPFG_LAYER_IMPL=rust ./scripts/run-autoperf-loop.sh
+   OMFG_LAYER_IMPL=rust ./scripts/run-autoperf-loop.sh
    ```
 3. Inspect:
    - `artifacts/steamdeck/rust/autoperf/<run-id>/aggregate-summary.txt`
    - `artifacts/steamdeck/rust/autoperf/<run-id>/comparison.txt`
 4. If accepted, optionally promote to the full benchmark suite:
    ```bash
-   PPFG_AUTOPERF_RUN_FULL_ON_ACCEPT=1 \
-   PPFG_LAYER_IMPL=rust \
+   OMFG_AUTOPERF_RUN_FULL_ON_ACCEPT=1 \
+   OMFG_LAYER_IMPL=rust \
    ./scripts/run-autoperf-loop.sh
    ```
 5. Commit only accepted improvements.
@@ -62,8 +62,8 @@ This intentionally favors wins on the multi-FG paths.
 ## Supporting scripts
 
 - `scripts/run-steamdeck-benchmark-suite.sh`
-  - now supports `PPFG_BENCHMARK_PRESET=decision|full`
-  - supports `PPFG_BENCHMARK_ARTIFACT_PREFIX` so repeated runs do not clobber canonical benchmark case artifacts
+  - now supports `OMFG_BENCHMARK_PRESET=decision|full`
+  - supports `OMFG_BENCHMARK_ARTIFACT_PREFIX` so repeated runs do not clobber canonical benchmark case artifacts
 - `scripts/aggregate-benchmark-results.py`
   - aggregates repeated benchmark runs into mean/stdev summaries
 - `scripts/compare-benchmark-results.py`
@@ -80,5 +80,5 @@ Default baseline currently points at the pre-autoperf architectural benchmark ru
 Override with:
 
 ```bash
-PPFG_AUTOPERF_BASELINE=/path/to/results-or-directory ./scripts/run-autoperf-loop.sh
+OMFG_AUTOPERF_BASELINE=/path/to/results-or-directory ./scripts/run-autoperf-loop.sh
 ```

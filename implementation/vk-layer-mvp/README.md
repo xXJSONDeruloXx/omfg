@@ -110,23 +110,23 @@ export STEAMDECK_PASS='...'
 ### vkcube
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_MODE=passthrough
+export OMFG_LAYER_MODE=passthrough
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=clear
+export OMFG_LAYER_MODE=clear
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=copy
+export OMFG_LAYER_MODE=copy
 ./scripts/test-steamdeck-vkcube.sh
 
-export PPFG_LAYER_MODE=history-copy
+export OMFG_LAYER_MODE=history-copy
 ./scripts/test-steamdeck-vkcube.sh
 ```
 
 ### vkgears
 ```bash
 export STEAMDECK_PASS='...'
-export PPFG_LAYER_MODE=copy
+export OMFG_LAYER_MODE=copy
 ./scripts/test-steamdeck-vkgears.sh
 ```
 

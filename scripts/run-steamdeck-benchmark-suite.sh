@@ -2,17 +2,17 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-: "${PPFG_LAYER_IMPL:=rust}"
+: "${OMFG_LAYER_IMPL:=rust}"
 # shellcheck disable=SC1091
-source "${ROOT_DIR}/scripts/_ppfg_layer_impl.sh"
+source "${ROOT_DIR}/scripts/_omfg_layer_impl.sh"
 
-VKCUBE_COUNT="${PPFG_BENCHMARK_VKCUBE_COUNT:-120}"
-TIMEOUT_SEC="${PPFG_BENCHMARK_TIMEOUT_SEC:-30}"
-RUN_ID="${PPFG_BENCHMARK_RUN_ID:-$(date +%Y%m%d-%H%M%S)}"
-PRESET="${PPFG_BENCHMARK_PRESET:-full}"
-CASE_FILTER="${PPFG_BENCHMARK_CASES:-}"
-ARTIFACT_PREFIX="${PPFG_BENCHMARK_ARTIFACT_PREFIX:-}"
-RESULTS_DIR="${ROOT_DIR}/${PPFG_LAYER_ARTIFACT_ROOT_REL}/benchmark/${RUN_ID}"
+VKCUBE_COUNT="${OMFG_BENCHMARK_VKCUBE_COUNT:-120}"
+TIMEOUT_SEC="${OMFG_BENCHMARK_TIMEOUT_SEC:-30}"
+RUN_ID="${OMFG_BENCHMARK_RUN_ID:-$(date +%Y%m%d-%H%M%S)}"
+PRESET="${OMFG_BENCHMARK_PRESET:-full}"
+CASE_FILTER="${OMFG_BENCHMARK_CASES:-}"
+ARTIFACT_PREFIX="${OMFG_BENCHMARK_ARTIFACT_PREFIX:-}"
+RESULTS_DIR="${ROOT_DIR}/${OMFG_LAYER_ARTIFACT_ROOT_REL}/benchmark/${RUN_ID}"
 CSV_PATH="${RESULTS_DIR}/results.csv"
 
 mkdir -p "${RESULTS_DIR}"
@@ -28,15 +28,15 @@ run_case() {
   fi
 
   (
-    export PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}"
-    export PPFG_BENCHMARK=1
-    export PPFG_BENCHMARK_LABEL="${name}"
-    export PPFG_VKCUBE_COUNT="${VKCUBE_COUNT}"
-    export PPFG_VKCUBE_TIMEOUT_SEC="${TIMEOUT_SEC}"
-    export PPFG_VKCUBE_ARTIFACT_SUFFIX="${artifact_suffix}"
-    export PPFG_VISUAL_HOLD_MS=
-    export PPFG_BFI_HOLD_MS=
-    export PPFG_BFI_PERIOD=
+    export OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}"
+    export OMFG_BENCHMARK=1
+    export OMFG_BENCHMARK_LABEL="${name}"
+    export OMFG_VKCUBE_COUNT="${VKCUBE_COUNT}"
+    export OMFG_VKCUBE_TIMEOUT_SEC="${TIMEOUT_SEC}"
+    export OMFG_VKCUBE_ARTIFACT_SUFFIX="${artifact_suffix}"
+    export OMFG_VISUAL_HOLD_MS=
+    export OMFG_BFI_HOLD_MS=
+    export OMFG_BFI_PERIOD=
     for kv in "$@"; do
       export "$kv"
     done
@@ -45,17 +45,17 @@ run_case() {
 
   local mode=""
   for kv in "$@"; do
-    if [[ "${kv}" == PPFG_LAYER_MODE=* ]]; then
-      mode="${kv#PPFG_LAYER_MODE=}"
+    if [[ "${kv}" == OMFG_LAYER_MODE=* ]]; then
+      mode="${kv#OMFG_LAYER_MODE=}"
       break
     fi
   done
   if [[ -z "${mode}" ]]; then
-    echo "run_case requires PPFG_LAYER_MODE" >&2
+    echo "run_case requires OMFG_LAYER_MODE" >&2
     return 1
   fi
 
-  local log_path="${ROOT_DIR}/${PPFG_LAYER_ARTIFACT_ROOT_REL}/vkcube/${mode}-${artifact_suffix}/ppfg-vkcube.log"
+  local log_path="${ROOT_DIR}/${OMFG_LAYER_ARTIFACT_ROOT_REL}/vkcube/${mode}-${artifact_suffix}/omfg-vkcube.log"
   python3 "${ROOT_DIR}/scripts/summarize-benchmark-log.py" "${log_path}" | tee -a "${RESULTS_DIR}/summary.txt"
   python3 "${ROOT_DIR}/scripts/summarize-benchmark-log.py" --csv "${log_path}" >> "${CSV_PATH}"
 }
@@ -84,27 +84,27 @@ add_case() {
 }
 
 run_preset_full() {
-  add_case blend PPFG_LAYER_MODE=blend
-  add_case adaptive-blend PPFG_LAYER_MODE=adaptive-blend
-  add_case search-blend-r1 PPFG_LAYER_MODE=search-blend PPFG_SEARCH_BLEND_RADIUS=1
-  add_case search-blend-r2 PPFG_LAYER_MODE=search-blend PPFG_SEARCH_BLEND_RADIUS=2
-  add_case search-adaptive-blend-r1 PPFG_LAYER_MODE=search-adaptive-blend PPFG_SEARCH_BLEND_RADIUS=1
-  add_case reproject-blend-default PPFG_LAYER_MODE=reproject-blend PPFG_REPROJECT_SEARCH_RADIUS=2 PPFG_REPROJECT_PATCH_RADIUS=1 PPFG_REPROJECT_CONFIDENCE_SCALE=4.0
-  add_case reproject-blend-wide PPFG_LAYER_MODE=reproject-blend PPFG_REPROJECT_SEARCH_RADIUS=3 PPFG_REPROJECT_PATCH_RADIUS=2 PPFG_REPROJECT_CONFIDENCE_SCALE=4.0
-  add_case reproject-adaptive-blend-default PPFG_LAYER_MODE=reproject-adaptive-blend PPFG_REPROJECT_SEARCH_RADIUS=2 PPFG_REPROJECT_PATCH_RADIUS=1 PPFG_REPROJECT_CONFIDENCE_SCALE=4.0
-  add_case multi-blend-count2 PPFG_LAYER_MODE=multi-blend PPFG_MULTI_BLEND_COUNT=2
-  add_case multi-blend-count3 PPFG_LAYER_MODE=multi-blend PPFG_MULTI_BLEND_COUNT=3
-  add_case adaptive-multi-default PPFG_LAYER_MODE=adaptive-multi-blend PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=1 PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2 PPFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS=5.0
-  add_case adaptive-multi-target120 PPFG_LAYER_MODE=adaptive-multi-blend PPFG_ADAPTIVE_MULTI_TARGET_FPS=120 PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0 PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
-  add_case adaptive-multi-target150 PPFG_LAYER_MODE=adaptive-multi-blend PPFG_ADAPTIVE_MULTI_TARGET_FPS=150 PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0 PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
-  add_case adaptive-multi-target180 PPFG_LAYER_MODE=adaptive-multi-blend PPFG_ADAPTIVE_MULTI_TARGET_FPS=180 PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0 PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
+  add_case blend OMFG_LAYER_MODE=blend
+  add_case adaptive-blend OMFG_LAYER_MODE=adaptive-blend
+  add_case search-blend-r1 OMFG_LAYER_MODE=search-blend OMFG_SEARCH_BLEND_RADIUS=1
+  add_case search-blend-r2 OMFG_LAYER_MODE=search-blend OMFG_SEARCH_BLEND_RADIUS=2
+  add_case search-adaptive-blend-r1 OMFG_LAYER_MODE=search-adaptive-blend OMFG_SEARCH_BLEND_RADIUS=1
+  add_case reproject-blend-default OMFG_LAYER_MODE=reproject-blend OMFG_REPROJECT_SEARCH_RADIUS=2 OMFG_REPROJECT_PATCH_RADIUS=1 OMFG_REPROJECT_CONFIDENCE_SCALE=4.0
+  add_case reproject-blend-wide OMFG_LAYER_MODE=reproject-blend OMFG_REPROJECT_SEARCH_RADIUS=3 OMFG_REPROJECT_PATCH_RADIUS=2 OMFG_REPROJECT_CONFIDENCE_SCALE=4.0
+  add_case reproject-adaptive-blend-default OMFG_LAYER_MODE=reproject-adaptive-blend OMFG_REPROJECT_SEARCH_RADIUS=2 OMFG_REPROJECT_PATCH_RADIUS=1 OMFG_REPROJECT_CONFIDENCE_SCALE=4.0
+  add_case multi-blend-count2 OMFG_LAYER_MODE=multi-blend OMFG_MULTI_BLEND_COUNT=2
+  add_case multi-blend-count3 OMFG_LAYER_MODE=multi-blend OMFG_MULTI_BLEND_COUNT=3
+  add_case adaptive-multi-default OMFG_LAYER_MODE=adaptive-multi-blend OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=1 OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2 OMFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS=5.0
+  add_case adaptive-multi-target120 OMFG_LAYER_MODE=adaptive-multi-blend OMFG_ADAPTIVE_MULTI_TARGET_FPS=120 OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0 OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
+  add_case adaptive-multi-target150 OMFG_LAYER_MODE=adaptive-multi-blend OMFG_ADAPTIVE_MULTI_TARGET_FPS=150 OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0 OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
+  add_case adaptive-multi-target180 OMFG_LAYER_MODE=adaptive-multi-blend OMFG_ADAPTIVE_MULTI_TARGET_FPS=180 OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0 OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
 }
 
 run_preset_decision() {
-  add_case blend PPFG_LAYER_MODE=blend
-  add_case reproject-blend-default PPFG_LAYER_MODE=reproject-blend PPFG_REPROJECT_SEARCH_RADIUS=2 PPFG_REPROJECT_PATCH_RADIUS=1 PPFG_REPROJECT_CONFIDENCE_SCALE=4.0
-  add_case multi-blend-count3 PPFG_LAYER_MODE=multi-blend PPFG_MULTI_BLEND_COUNT=3
-  add_case adaptive-multi-target180 PPFG_LAYER_MODE=adaptive-multi-blend PPFG_ADAPTIVE_MULTI_TARGET_FPS=180 PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0 PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
+  add_case blend OMFG_LAYER_MODE=blend
+  add_case reproject-blend-default OMFG_LAYER_MODE=reproject-blend OMFG_REPROJECT_SEARCH_RADIUS=2 OMFG_REPROJECT_PATCH_RADIUS=1 OMFG_REPROJECT_CONFIDENCE_SCALE=4.0
+  add_case multi-blend-count3 OMFG_LAYER_MODE=multi-blend OMFG_MULTI_BLEND_COUNT=3
+  add_case adaptive-multi-target180 OMFG_LAYER_MODE=adaptive-multi-blend OMFG_ADAPTIVE_MULTI_TARGET_FPS=180 OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0 OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
 }
 
 echo "Running benchmark preset=${PRESET} run_id=${RUN_ID} results_dir=${RESULTS_DIR}"

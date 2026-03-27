@@ -2,13 +2,13 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-: "${PPFG_LAYER_IMPL:=rust}"
-MIN_COUNT="${PPFG_MULTI_SWEEP_MIN_COUNT:-1}"
-MAX_COUNT="${PPFG_MULTI_SWEEP_MAX_COUNT:-20}"
-VKCUBE_COUNT="${PPFG_MULTI_SWEEP_VKCUBE_COUNT:-30}"
-TIMEOUT_SEC="${PPFG_MULTI_SWEEP_TIMEOUT_SEC:-25}"
-RUN_ID="${PPFG_MULTI_SWEEP_RUN_ID:-multi-count-sweep-$(date +%Y%m%d-%H%M%S)}"
-RESULTS_DIR="${ROOT_DIR}/artifacts/steamdeck/${PPFG_LAYER_IMPL}/benchmark/${RUN_ID}"
+: "${OMFG_LAYER_IMPL:=rust}"
+MIN_COUNT="${OMFG_MULTI_SWEEP_MIN_COUNT:-1}"
+MAX_COUNT="${OMFG_MULTI_SWEEP_MAX_COUNT:-20}"
+VKCUBE_COUNT="${OMFG_MULTI_SWEEP_VKCUBE_COUNT:-30}"
+TIMEOUT_SEC="${OMFG_MULTI_SWEEP_TIMEOUT_SEC:-25}"
+RUN_ID="${OMFG_MULTI_SWEEP_RUN_ID:-multi-count-sweep-$(date +%Y%m%d-%H%M%S)}"
+RESULTS_DIR="${ROOT_DIR}/artifacts/steamdeck/${OMFG_LAYER_IMPL}/benchmark/${RUN_ID}"
 RESULTS_CSV="${RESULTS_DIR}/results.csv"
 SUMMARY_TXT="${RESULTS_DIR}/summary.txt"
 
@@ -18,18 +18,18 @@ printf 'count,summaryPresent,firstSuccess,samples,generatedFrames,expectedGenera
 
 for count in $(seq "${MIN_COUNT}" "${MAX_COUNT}"); do
   (
-    export PPFG_LAYER_IMPL="${PPFG_LAYER_IMPL}"
-    export PPFG_LAYER_MODE=multi-blend
-    export PPFG_MULTI_BLEND_COUNT="${count}"
-    export PPFG_BENCHMARK=1
-    export PPFG_BENCHMARK_LABEL="multi-blend-count${count}-${RUN_ID}"
-    export PPFG_VKCUBE_COUNT="${VKCUBE_COUNT}"
-    export PPFG_VKCUBE_TIMEOUT_SEC="${TIMEOUT_SEC}"
-    export PPFG_VKCUBE_ARTIFACT_SUFFIX="${RUN_ID}-count${count}"
+    export OMFG_LAYER_IMPL="${OMFG_LAYER_IMPL}"
+    export OMFG_LAYER_MODE=multi-blend
+    export OMFG_MULTI_BLEND_COUNT="${count}"
+    export OMFG_BENCHMARK=1
+    export OMFG_BENCHMARK_LABEL="multi-blend-count${count}-${RUN_ID}"
+    export OMFG_VKCUBE_COUNT="${VKCUBE_COUNT}"
+    export OMFG_VKCUBE_TIMEOUT_SEC="${TIMEOUT_SEC}"
+    export OMFG_VKCUBE_ARTIFACT_SUFFIX="${RUN_ID}-count${count}"
     "${ROOT_DIR}/scripts/test-steamdeck-vkcube.sh"
   ) > "/tmp/${RUN_ID}-count${count}.stdout"
 
-  LOG_PATH="${ROOT_DIR}/artifacts/steamdeck/${PPFG_LAYER_IMPL}/vkcube/multi-blend-${RUN_ID}-count${count}/ppfg-vkcube.log"
+  LOG_PATH="${ROOT_DIR}/artifacts/steamdeck/${OMFG_LAYER_IMPL}/vkcube/multi-blend-${RUN_ID}-count${count}/omfg-vkcube.log"
   python3 - <<'PY' "${count}" "${LOG_PATH}" "${RESULTS_CSV}" "${SUMMARY_TXT}"
 import sys
 from pathlib import Path
