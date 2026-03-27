@@ -22,6 +22,21 @@ PRESETS = {
         {"label": "adaptive-multi-default", "metric": "avgCpuPerGeneratedFrameMs", "weight": 2.0},
         {"label": "adaptive-multi-target180", "metric": "avgCpuPerGeneratedFrameMs", "weight": 3.0},
     ],
+    "optflow-quality": [
+        {"label": "reproject-blend-default", "metric": "avgCpuTotalMs", "weight": 2.0},
+        {"label": "optflow-blend-default", "metric": "avgCpuTotalMs", "weight": 2.0},
+        {"label": "optflow-blend-fast", "metric": "avgCpuTotalMs", "weight": 1.5},
+        {
+            "label": "optflow-adaptive-blend-default",
+            "metric": "avgCpuTotalMs",
+            "weight": 2.0,
+        },
+        {
+            "label": "optflow-multi-blend-count2",
+            "metric": "avgCpuPerGeneratedFrameMs",
+            "weight": 2.0,
+        },
+    ],
     "reproject-quality": [
         {"label": "reproject-blend-default", "metric": "avgCpuTotalMs", "weight": 2.0},
         {"label": "reproject-blend-no-gradient", "metric": "avgCpuTotalMs", "weight": 0.75},

@@ -62,13 +62,13 @@ This intentionally favors wins on the multi-FG paths.
 ## Supporting scripts
 
 - `scripts/run-steamdeck-benchmark-suite.sh`
-  - now supports `OMFG_BENCHMARK_PRESET=decision|full|reproject-quality`
+  - now supports `OMFG_BENCHMARK_PRESET=decision|full|reproject-quality|reproject-disocclusion|optflow-compare|optflow-quality`
   - supports `OMFG_BENCHMARK_ARTIFACT_PREFIX` so repeated runs do not clobber canonical benchmark case artifacts
 - `scripts/aggregate-benchmark-results.py`
   - aggregates repeated benchmark runs into mean/stdev summaries
 - `scripts/compare-benchmark-results.py`
   - compares baseline vs candidate and emits accept/reject
-  - now supports the matching `reproject-quality` comparison preset for focused reprojection heuristic work
+  - supports matching comparison presets: `decision`, `full`, `reproject-quality`, `optflow-quality`
 - `scripts/run-autoperf-loop.sh`
   - orchestrates repeated decision runs, aggregation, comparison, and optional full-suite promotion
 
@@ -82,6 +82,29 @@ OMFG_AUTOPERF_COMPARE_PRESET=reproject-quality \
 OMFG_LAYER_IMPL=rust \
 ./scripts/run-autoperf-loop.sh
 ```
+
+### Focused optflow-quality loop
+
+When comparing optical-flow mode families against the reprojection baseline, or evaluating
+the new `optflow-adaptive-blend` and `optflow-multi-blend` modes:
+
+```bash
+OMFG_AUTOPERF_BENCHMARK_PRESET=optflow-quality \
+OMFG_AUTOPERF_COMPARE_PRESET=optflow-quality \
+OMFG_LAYER_IMPL=rust \
+./scripts/run-autoperf-loop.sh
+```
+
+This preset includes:
+- `reproject-blend-default`: reprojection baseline
+- `optflow-blend-default`: optical-flow v0 with default (wider) search
+- `optflow-blend-fast`: optical-flow v0 with tighter fast search (competitive with reprojection on Deck)
+- `optflow-adaptive-blend-default`: new adaptive variant (optflow + adaptive current-frame bias)
+- `optflow-multi-blend-count2`: new optical-flow-backed multi-FG (2 generated frames, fast profile)
+
+Primary metrics:
+- `avgCpuTotalMs` for single-FG cases
+- `avgCpuPerGeneratedFrameMs` for multi-FG cases
 
 ## Baseline
 

@@ -139,6 +139,18 @@ run_preset_optflow_compare() {
   add_case optflow-blend-fast OMFG_LAYER_MODE=optflow-blend OMFG_OPTICAL_FLOW_SEARCH_RADIUS=1 OMFG_OPTICAL_FLOW_PATCH_RADIUS=1 OMFG_OPTICAL_FLOW_LEVELS=2 OMFG_OPTICAL_FLOW_CONFIDENCE_SCALE=4.0 OMFG_OPTICAL_FLOW_MOTION_PENALTY=0.01
 }
 
+run_preset_optflow_quality() {
+  # Compares optical-flow mode families against the reprojection baseline.
+  # Includes: reproject-blend (baseline), optflow-blend variants, the new
+  # optflow-adaptive-blend (adaptive current-frame bias on top of optflow),
+  # and optflow-multi-blend (optical-flow-backed multi-FG).
+  add_case reproject-blend-default OMFG_LAYER_MODE=reproject-blend OMFG_REPROJECT_SEARCH_RADIUS=2 OMFG_REPROJECT_PATCH_RADIUS=1 OMFG_REPROJECT_CONFIDENCE_SCALE=4.0
+  add_case optflow-blend-default OMFG_LAYER_MODE=optflow-blend OMFG_OPTICAL_FLOW_SEARCH_RADIUS=2 OMFG_OPTICAL_FLOW_PATCH_RADIUS=1 OMFG_OPTICAL_FLOW_LEVELS=3 OMFG_OPTICAL_FLOW_CONFIDENCE_SCALE=4.0 OMFG_OPTICAL_FLOW_MOTION_PENALTY=0.01
+  add_case optflow-blend-fast OMFG_LAYER_MODE=optflow-blend OMFG_OPTICAL_FLOW_SEARCH_RADIUS=1 OMFG_OPTICAL_FLOW_PATCH_RADIUS=1 OMFG_OPTICAL_FLOW_LEVELS=2 OMFG_OPTICAL_FLOW_CONFIDENCE_SCALE=4.0 OMFG_OPTICAL_FLOW_MOTION_PENALTY=0.01
+  add_case optflow-adaptive-blend-default OMFG_LAYER_MODE=optflow-adaptive-blend OMFG_OPTICAL_FLOW_SEARCH_RADIUS=2 OMFG_OPTICAL_FLOW_PATCH_RADIUS=1 OMFG_OPTICAL_FLOW_LEVELS=3 OMFG_OPTICAL_FLOW_CONFIDENCE_SCALE=4.0 OMFG_OPTICAL_FLOW_MOTION_PENALTY=0.01
+  add_case optflow-multi-blend-count2 OMFG_LAYER_MODE=optflow-multi-blend OMFG_MULTI_BLEND_COUNT=2 OMFG_OPTICAL_FLOW_SEARCH_RADIUS=1 OMFG_OPTICAL_FLOW_PATCH_RADIUS=1 OMFG_OPTICAL_FLOW_LEVELS=2 OMFG_OPTICAL_FLOW_CONFIDENCE_SCALE=4.0 OMFG_OPTICAL_FLOW_MOTION_PENALTY=0.01
+}
+
 echo "Running benchmark preset=${PRESET} run_id=${RUN_ID} results_dir=${RESULTS_DIR}"
 if [[ -n "${CASE_FILTER}" ]]; then
   echo "Filtering cases to: ${CASE_FILTER}"
@@ -159,6 +171,9 @@ case "${PRESET}" in
     ;;
   optflow-compare)
     run_preset_optflow_compare
+    ;;
+  optflow-quality)
+    run_preset_optflow_quality
     ;;
   *)
     echo "Unknown benchmark preset: ${PRESET}" >&2
