@@ -1,0 +1,33 @@
+[ppfg][info][1774572481970] vkNegotiateLoaderLayerInterfaceVersion ok; mode=search-blend-test
+[ppfg][info][1774572481972] vkCreateInstance ok; mode=search-blend-test; app=vkcube; engine=vkcube; apiVersion=1.0.0
+[ppfg][info][1774572481994] vkCreateDevice ok; gpu=AMD Custom GPU 0932 (RADV VANGOGH)
+[ppfg][info][1774572482000] created history image for swapchain
+[ppfg][info][1774572482000] vkCreateSwapchainKHR ok; extent=500x500; format=44; presentMode=FIFO; minImages=3->5; usage=COLOR_ATTACHMENT (0x10) -> TRANSFER_SRC|SAMPLED|COLOR_ATTACHMENT (0x15); images=5; mode=search-blend-test
+[ppfg][info][1774572482003] vkQueuePresentKHR frame=1; queueFamily=0; imageIndex=0; waitSemaphores=1
+[ppfg][info][1774572482003] initialized benchmark timestamp query pool; capacity=4096; timestampPeriodNs=10.000; timestampValidBits=64
+[ppfg][info][1774572482003] initialized injection resources for queue family 0
+[ppfg][info][1774572482003] initialized blend resources for swapchain
+[ppfg][info][1774572482003] search-blend primed previous frame history
+[ppfg][info][1774572482003] vkQueuePresentKHR frame=2; queueFamily=0; imageIndex=1; waitSemaphores=1
+[ppfg][info][1774572482004] benchmark sample; label=search-blend-r2; mode=search-blend-test; sample=1; present=2; generatedFrames=1; cpuAcquireMs=0.017; cpuSetupMs=0.004; cpuRecordMs=0.040; cpuSubmitMs=0.050; cpuSubmitWaitMs=0.000; cpuGeneratedPresentMs=0.058; cpuOriginalPresentMs=0.042; cpuQueueIdleMs=0.272; cpuTotalMs=0.482; gpuCmdMs=0.293; gpuAvailable=1
+[ppfg][info][1774572482004] first search blended generated-frame present succeeded
+[ppfg][info][1774572482004] search blended frame present=1; generatedImageIndex=2; currentImageIndex=1
+[ppfg][info][1774572482004] vkQueuePresentKHR frame=3; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774572482005] benchmark sample; label=search-blend-r2; mode=search-blend-test; sample=2; present=3; generatedFrames=1; cpuAcquireMs=0.020; cpuSetupMs=0.005; cpuRecordMs=0.039; cpuSubmitMs=0.045; cpuSubmitWaitMs=0.000; cpuGeneratedPresentMs=0.056; cpuOriginalPresentMs=0.042; cpuQueueIdleMs=0.263; cpuTotalMs=0.469; gpuCmdMs=0.293; gpuAvailable=1
+[ppfg][info][1774572482005] search blended frame present=2; generatedImageIndex=4; currentImageIndex=3
+[ppfg][info][1774572482015] vkQueuePresentKHR frame=4; queueFamily=0; imageIndex=0; waitSemaphores=1
+[ppfg][info][1774572482028] benchmark sample; label=search-blend-r2; mode=search-blend-test; sample=3; present=4; generatedFrames=1; cpuAcquireMs=10.800; cpuSetupMs=0.014; cpuRecordMs=0.090; cpuSubmitMs=0.094; cpuSubmitWaitMs=0.000; cpuGeneratedPresentMs=0.065; cpuOriginalPresentMs=0.046; cpuQueueIdleMs=1.210; cpuTotalMs=12.319; gpuCmdMs=0.398; gpuAvailable=1
+[ppfg][info][1774572482028] search blended frame present=3; generatedImageIndex=2; currentImageIndex=0
+[ppfg][info][1774572482037] vkQueuePresentKHR frame=5; queueFamily=0; imageIndex=1; waitSemaphores=1
+[ppfg][info][1774572482051] benchmark sample; label=search-blend-r2; mode=search-blend-test; sample=4; present=5; generatedFrames=1; cpuAcquireMs=11.235; cpuSetupMs=0.015; cpuRecordMs=0.098; cpuSubmitMs=0.119; cpuSubmitWaitMs=0.000; cpuGeneratedPresentMs=0.096; cpuOriginalPresentMs=0.069; cpuQueueIdleMs=1.560; cpuTotalMs=13.193; gpuCmdMs=0.397; gpuAvailable=1
+[ppfg][info][1774572482051] search blended frame present=4; generatedImageIndex=4; currentImageIndex=1
+[ppfg][info][1774572482073] benchmark sample; label=search-blend-r2; mode=search-blend-test; sample=5; present=6; generatedFrames=1; cpuAcquireMs=10.859; cpuSetupMs=0.013; cpuRecordMs=0.091; cpuSubmitMs=0.094; cpuSubmitWaitMs=0.000; cpuGeneratedPresentMs=0.066; cpuOriginalPresentMs=0.047; cpuQueueIdleMs=1.535; cpuTotalMs=12.705; gpuCmdMs=0.402; gpuAvailable=1
+[ppfg][info][1774572482073] search blended frame present=5; generatedImageIndex=2; currentImageIndex=3
+[ppfg][info][1774572483260] vkQueuePresentKHR frame=60; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774572483295] benchmark sample; label=search-blend-r2; mode=search-blend-test; sample=60; present=61; generatedFrames=1; cpuAcquireMs=10.851; cpuSetupMs=0.013; cpuRecordMs=0.088; cpuSubmitMs=0.092; cpuSubmitWaitMs=0.000; cpuGeneratedPresentMs=0.065; cpuOriginalPresentMs=0.046; cpuQueueIdleMs=1.542; cpuTotalMs=12.697; gpuCmdMs=0.397; gpuAvailable=1
+[ppfg][info][1774572483295] search blended frame present=60; generatedImageIndex=4; currentImageIndex=0
+[ppfg][info][1774572484593] vkQueuePresentKHR frame=120; queueFamily=0; imageIndex=3; waitSemaphores=1
+[ppfg][info][1774572484606] benchmark summary; label=search-blend-r2; mode=search-blend-test; samples=119; generatedFrames=119; gpuSamples=119; avgCpuAcquireMs=10.794; avgCpuSetupMs=0.015; avgCpuRecordMs=0.096; avgCpuSubmitMs=0.100; avgCpuSubmitWaitMs=0.000; avgCpuGeneratedPresentMs=0.073; avgCpuOriginalPresentMs=0.055; avgCpuQueueIdleMs=1.395; avgCpuTotalMs=12.527; avgCpuPerGeneratedFrameMs=12.527; maxCpuTotalMs=13.245; avgGpuCmdMs=0.384; avgGpuPerGeneratedFrameMs=0.384; maxGpuCmdMs=0.402
+[ppfg][info][1774572484606] vkDestroySwapchainKHR
+[ppfg][info][1774572484616] vkDestroyDevice
+[ppfg][info][1774572484701] vkDestroyInstance
