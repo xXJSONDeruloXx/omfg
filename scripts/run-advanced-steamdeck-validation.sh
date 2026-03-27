@@ -4,6 +4,14 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 : "${OMFG_LAYER_IMPL:=rust}"
 
+ENV_FILE="${ROOT_DIR}/.env.steamdeck.local"
+if [[ -f "${ENV_FILE}" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "${ENV_FILE}"
+  set +a
+fi
+
 if [[ "${OMFG_LAYER_IMPL}" != "rust" ]]; then
   echo "Advanced Steam Deck validation currently targets the Rust layer only." >&2
   exit 1

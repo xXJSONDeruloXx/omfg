@@ -4,6 +4,14 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 : "${OMFG_LAYER_IMPL:=rust}"
 
+ENV_FILE="${ROOT_DIR}/.env.steamdeck.local"
+if [[ -f "${ENV_FILE}" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "${ENV_FILE}"
+  set +a
+fi
+
 # shellcheck disable=SC1091
 source "${ROOT_DIR}/scripts/_omfg_layer_impl.sh"
 
