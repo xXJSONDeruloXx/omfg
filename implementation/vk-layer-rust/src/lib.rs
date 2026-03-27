@@ -1000,6 +1000,46 @@ unsafe fn physical_device_supports_extension(
     })
 }
 
+unsafe fn describe_enabled_extensions(create_info: &DeviceCreateInfo) -> String {
+    if create_info.enabled_extension_count == 0 || create_info.pp_enabled_extension_names.is_null() {
+        return "<none>".to_string();
+    }
+
+    std::slice::from_raw_parts(
+        create_info.pp_enabled_extension_names,
+        create_info.enabled_extension_count as usize,
+    )
+    .iter()
+    .map(|name_ptr| {
+        if name_ptr.is_null() {
+            "<null>".to_string()
+        } else {
+            CStr::from_ptr(*name_ptr).to_string_lossy().into_owned()
+        }
+    })
+    .collect::<Vec<_>>()
+    .join(",")
+}
+
+unsafe fn describe_pnext_chain(mut p_next: *const c_void) -> String {
+    if p_next.is_null() {
+        return "<none>".to_string();
+    }
+
+    let mut chain = Vec::new();
+    let mut guard = 0usize;
+    while !p_next.is_null() && guard < 64 {
+        let base = &*(p_next as *const vk::BaseOutStructure<'_>);
+        chain.push(format!("{}", base.s_type.as_raw()));
+        p_next = base.p_next.cast();
+        guard += 1;
+    }
+    if !p_next.is_null() {
+        chain.push("...".to_string());
+    }
+    chain.join("->")
+}
+
 fn env_string(name: &str) -> Option<String> {
     std::env::var(name).ok()
 }
@@ -1031,6 +1071,18 @@ fn env_bool(name: &str, default_value: bool) -> bool {
         },
         None => default_value,
     }
+}
+
+fn create_device_debug_enabled() -> bool {
+    env_bool("OMFG_CREATE_DEVICE_DEBUG", false)
+}
+
+fn append_timing_extensions_enabled() -> bool {
+    env_bool("OMFG_CREATE_DEVICE_APPEND_TIMING_EXTENSIONS", false)
+}
+
+fn append_timing_features_enabled() -> bool {
+    env_bool("OMFG_CREATE_DEVICE_APPEND_TIMING_FEATURES", false)
 }
 
 fn benchmark_enabled() -> bool {
@@ -5763,6 +5815,11 @@ unsafe extern "system" fn layer_create_device(
 
     let create_info_ref = &*create_info;
     let mut modified_create_info = *create_info_ref;
+    let requested_extensions = unsafe { describe_enabled_extensions(create_info_ref) };
+    let requested_pnext = unsafe { describe_pnext_chain(create_info_ref.p_next.cast()) };
+    let create_device_debug = create_device_debug_enabled();
+    let append_timing_extensions = append_timing_extensions_enabled();
+    let append_timing_features = append_timing_features_enabled();
     let mut enabled_extension_names: Vec<*const c_char> = if create_info_ref.enabled_extension_count
         > 0
         && !create_info_ref.pp_enabled_extension_names.is_null()
@@ -5785,44 +5842,57 @@ unsafe extern "system" fn layer_create_device(
     };
     let mut appended_extensions = Vec::new();
 
-    if !supports_present_id
-        && unsafe {
-            physical_device_supports_extension(
-                &instance_dispatch,
-                physical_device,
-                ext_khr_present_id(),
-            )
-        }
-    {
-        enabled_extension_names.push(ext_khr_present_id().as_ptr());
-        supports_present_id = true;
-        appended_extensions.push("VK_KHR_present_id");
+    if create_device_debug {
+        log_info(format!(
+            "vkCreateDevice request; queueInfos={}; requestedExtensions={}; requestedPNext={}; appendTimingExtensions={}; appendTimingFeatures={}",
+            create_info_ref.queue_create_info_count,
+            requested_extensions,
+            requested_pnext,
+            if append_timing_extensions { 1 } else { 0 },
+            if append_timing_features { 1 } else { 0 },
+        ));
     }
-    if !supports_present_wait
-        && unsafe {
-            physical_device_supports_extension(
-                &instance_dispatch,
-                physical_device,
-                ext_khr_present_wait(),
-            )
+
+    if append_timing_extensions {
+        if !supports_present_id
+            && unsafe {
+                physical_device_supports_extension(
+                    &instance_dispatch,
+                    physical_device,
+                    ext_khr_present_id(),
+                )
+            }
+        {
+            enabled_extension_names.push(ext_khr_present_id().as_ptr());
+            supports_present_id = true;
+            appended_extensions.push("VK_KHR_present_id");
         }
-    {
-        enabled_extension_names.push(ext_khr_present_wait().as_ptr());
-        supports_present_wait = true;
-        appended_extensions.push("VK_KHR_present_wait");
-    }
-    if !supports_display_timing
-        && unsafe {
-            physical_device_supports_extension(
-                &instance_dispatch,
-                physical_device,
-                ext_google_display_timing(),
-            )
+        if !supports_present_wait
+            && unsafe {
+                physical_device_supports_extension(
+                    &instance_dispatch,
+                    physical_device,
+                    ext_khr_present_wait(),
+                )
+            }
+        {
+            enabled_extension_names.push(ext_khr_present_wait().as_ptr());
+            supports_present_wait = true;
+            appended_extensions.push("VK_KHR_present_wait");
         }
-    {
-        enabled_extension_names.push(ext_google_display_timing().as_ptr());
-        supports_display_timing = true;
-        appended_extensions.push("VK_GOOGLE_display_timing");
+        if !supports_display_timing
+            && unsafe {
+                physical_device_supports_extension(
+                    &instance_dispatch,
+                    physical_device,
+                    ext_google_display_timing(),
+                )
+            }
+        {
+            enabled_extension_names.push(ext_google_display_timing().as_ptr());
+            supports_display_timing = true;
+            appended_extensions.push("VK_GOOGLE_display_timing");
+        }
     }
 
     if !enabled_extension_names.is_empty() {
@@ -5832,43 +5902,67 @@ unsafe extern "system" fn layer_create_device(
 
     let mut present_id_features = vk::PhysicalDevicePresentIdFeaturesKHR::default();
     let mut present_wait_features = vk::PhysicalDevicePresentWaitFeaturesKHR::default();
-    if let Some(get_physical_device_features2) = instance_dispatch.get_physical_device_features2 {
-        let mut features2 = vk::PhysicalDeviceFeatures2::default();
-        let mut query_present_id = vk::PhysicalDevicePresentIdFeaturesKHR::default();
-        let mut query_present_wait = vk::PhysicalDevicePresentWaitFeaturesKHR::default();
-        query_present_id.p_next =
-            (&mut query_present_wait as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>).cast();
-        features2.p_next =
-            (&mut query_present_id as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>).cast();
-        get_physical_device_features2(physical_device, &mut features2);
+    if append_timing_features {
+        if let Some(get_physical_device_features2) = instance_dispatch.get_physical_device_features2 {
+            let mut features2 = vk::PhysicalDeviceFeatures2::default();
+            let mut query_present_id = vk::PhysicalDevicePresentIdFeaturesKHR::default();
+            let mut query_present_wait = vk::PhysicalDevicePresentWaitFeaturesKHR::default();
+            query_present_id.p_next =
+                (&mut query_present_wait as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>).cast();
+            features2.p_next =
+                (&mut query_present_id as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>).cast();
+            get_physical_device_features2(physical_device, &mut features2);
 
-        if supports_present_id && query_present_id.present_id == vk::TRUE {
-            present_id_features.present_id = vk::TRUE;
-            present_id_features.p_next = modified_create_info.p_next.cast_mut();
-            modified_create_info.p_next = (&mut present_id_features
-                as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>)
-                .cast();
+            if supports_present_id && query_present_id.present_id == vk::TRUE {
+                present_id_features.present_id = vk::TRUE;
+                present_id_features.p_next = modified_create_info.p_next.cast_mut();
+                modified_create_info.p_next = (&mut present_id_features
+                    as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>)
+                    .cast();
+            } else {
+                supports_present_id = false;
+            }
+
+            if supports_present_wait && query_present_wait.present_wait == vk::TRUE {
+                present_wait_features.present_wait = vk::TRUE;
+                present_wait_features.p_next = modified_create_info.p_next.cast_mut();
+                modified_create_info.p_next = (&mut present_wait_features
+                    as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>)
+                    .cast();
+            } else {
+                supports_present_wait = false;
+            }
         } else {
             supports_present_id = false;
-        }
-
-        if supports_present_wait && query_present_wait.present_wait == vk::TRUE {
-            present_wait_features.present_wait = vk::TRUE;
-            present_wait_features.p_next = modified_create_info.p_next.cast_mut();
-            modified_create_info.p_next = (&mut present_wait_features
-                as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>)
-                .cast();
-        } else {
             supports_present_wait = false;
         }
-    } else {
-        supports_present_id = false;
-        supports_present_wait = false;
+    }
+
+    if create_device_debug {
+        log_info(format!(
+            "vkCreateDevice modified request; extensions={}; pNext={}; appendedTimingExtensions={}",
+            unsafe { describe_enabled_extensions(&modified_create_info) },
+            unsafe { describe_pnext_chain(modified_create_info.p_next.cast()) },
+            if appended_extensions.is_empty() {
+                "<none>".to_string()
+            } else {
+                appended_extensions.join(",")
+            },
+        ));
     }
 
     let result = next_create_device(physical_device, &modified_create_info, allocator, device);
     if result != vk::Result::SUCCESS {
-        log_warn(format!("vkCreateDevice returned {}", result.as_raw()));
+        log_warn(format!(
+            "vkCreateDevice returned {}; requestedExtensions={}; requestedPNext={}; modifiedExtensions={}; modifiedPNext={}; appendTimingExtensions={}; appendTimingFeatures={}",
+            result.as_raw(),
+            requested_extensions,
+            requested_pnext,
+            unsafe { describe_enabled_extensions(&modified_create_info) },
+            unsafe { describe_pnext_chain(modified_create_info.p_next.cast()) },
+            if append_timing_extensions { 1 } else { 0 },
+            if append_timing_features { 1 } else { 0 },
+        ));
         return result;
     }
 
