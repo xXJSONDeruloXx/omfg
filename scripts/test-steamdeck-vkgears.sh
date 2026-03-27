@@ -27,9 +27,10 @@ export ${PPFG_LAYER_ENABLE_ENV}=1
 export PPFG_LAYER_MODE=${MODE}
 export PPFG_LAYER_LOG_FILE=${REMOTE_BASE}/ppfg-vkgears.log
 export PPFG_BFI_PERIOD=${PPFG_BFI_PERIOD:-}
+export PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES=${PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES:-}
 export VK_LAYER_PATH=${REMOTE_BASE}
 export VK_INSTANCE_LAYERS=${PPFG_LAYER_NAME}
-printf 'RUN impl=%s display=%s xauthority=%s mode=%s layer=%s\n' "${PPFG_LAYER_IMPL}" "\$DISPLAY" "\$XAUTHORITY" "\$PPFG_LAYER_MODE" "\$VK_INSTANCE_LAYERS"
+printf 'RUN impl=%s display=%s xauthority=%s mode=%s layer=%s multi_swapchain_cap=%s\n' "${PPFG_LAYER_IMPL}" "\$DISPLAY" "\$XAUTHORITY" "\$PPFG_LAYER_MODE" "\$VK_INSTANCE_LAYERS" "${PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES:-default}"
 timeout 10s vkgears > ${REMOTE_BASE}/vkgears.stdout 2>&1 || status=\$?
 printf 'VKGEARS_STATUS=%s\n' "\${status:-0}"
 ls -lah ${REMOTE_BASE}

@@ -57,6 +57,11 @@ Continue iterating on the Rust implementation until practical feature parity is 
   - repeated-run aggregation
   - weighted baseline-vs-candidate comparison
   - optional full-suite promotion path
+- Dynamic multi-FG swapchain headroom scaling:
+  - new auto-expansion of swapchain image count for larger requested multi-FG counts
+  - controlled by `PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` (default `32`)
+  - validated on the Steam Deck through a successful `multi-blend` count sweep from `1..20`
+  - repeatable via `scripts/run-steamdeck-multi-count-sweep.sh`
 
 ## Mainline vs research branches
 
@@ -95,12 +100,14 @@ Goal:
 Current status:
 - initial stepping stone achieved via `multi-blend`
 - adaptive synthesis variant achieved via `adaptive-multi-blend`
-- two generated frames are now emitted between real frames in Rust
+- the original validated mainline path emitted two generated frames between real frames in Rust
+- swapchain headroom now scales automatically for larger requested multi-FG counts
+- successful Deck sweep now validates `multi-blend` counts from `1..20`
 - LSFG-style target-FPS control now exists in `adaptive-multi-blend` via fractional generated-frame credit accumulation
 - real Steam Deck target-FPS validation now covers `90`, `100`, `120`, and `150` FPS targets
 
 Next likely path:
-- generalize beyond the current `0..2` generated-frame range
+- extend the higher-count work from `multi-blend` into `adaptive-multi-blend`
 - decouple controller quality from the current conservative synchronization overhead
 - improve synchronization model beyond the current conservative approach
 - validate with broader Deck finite-frame runs and additional modes
@@ -188,7 +195,7 @@ With `reproject-blend`, `reproject-adaptive-blend`, and `adaptive-multi-blend` n
 
 More specifically, the current ordering is:
 1. pacing / present-timing instrumentation and scheduling improvements
-2. dynamic multi-FG scaling and swapchain headroom improvements
+2. extend the new dynamic multi-FG scaling work into adaptive/higher-quality paths
 3. stronger reprojection inside multi-FG
 4. confidence / disocclusion / hole-filling improvements
 5. post-process optical-flow style estimation

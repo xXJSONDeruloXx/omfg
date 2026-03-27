@@ -210,9 +210,19 @@ Validated with Rust layer on Steam Deck:
 
 Observed:
 - first frame primes history
-- subsequent real frames emit **two generated frames** before the current real frame
+- subsequent real frames emit generated frames before the current real frame
 - generated frames are rendered at multiple temporal blend positions between previous and current frames
-- swapchain image count was increased from `3 -> 6` for the validated Deck path
+- the layer now **auto-expands swapchain headroom** for larger `PPFG_MULTI_BLEND_COUNT` requests
+- new env knob:
+  - `PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` (default `32`)
+- Steam Deck multiplier sweep now validates successful `multi-blend` counts from `1..20`
+- artifact root for the successful post-change sweep:
+  - `artifacts/steamdeck/rust/benchmark/multi-count-sweep3-20260326-231948/`
+- counts above the current GPU-acquire-chain limit (`4` generated acquires in the current fast path) still succeed by falling back to the CPU acquire path once enough swapchain images are provisioned
+- swapchain image count now scales with requested multiplier, e.g.:
+  - `count=6` -> `minImages=3->7`
+  - `count=10` -> `minImages=3->11`
+  - `count=20` -> `minImages=3->21`
 - stable on Deck through 120-frame, 600-frame, and IMMEDIATE-mode runs
 
 #### 10. `adaptive-multi-blend` (Rust)
@@ -227,7 +237,8 @@ Validated with Rust layer on Steam Deck:
 Observed:
 - adapts generated frame count based on runtime timing
 - supports a new LSFG-style **target-FPS controller** via `PPFG_ADAPTIVE_MULTI_TARGET_FPS`
-- fractional targets are accumulated over time via generated-frame credit, so effective multipliers can fluctuate between `0`, `1`, and `2` generated frames per real frame
+- fractional targets are accumulated over time via generated-frame credit, so effective multipliers can fluctuate between `0`, `1`, and `2` generated frames per real frame by default
+- the same dynamic swapchain headroom expansion used by `multi-blend` now also applies to larger `PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES` experiments
 - Deck validation now includes real target-FPS cases for `90`, `100`, `120`, and `150` FPS targets
 - applies adaptive current-frame bias based on previous/current difference while doing multi-FG
 - stable on the Deck 120-frame smoke path
@@ -265,6 +276,8 @@ We now also have a first repo-specific **autoperf loop** for repeated Deck bench
 Current pieces:
 - `scripts/run-steamdeck-benchmark-suite.sh`
   - supports both `PPFG_BENCHMARK_PRESET=full` and `PPFG_BENCHMARK_PRESET=decision`
+- `scripts/run-steamdeck-multi-count-sweep.sh`
+  - probes how far `multi-blend` scaling can be pushed on the Deck
 - `scripts/aggregate-benchmark-results.py`
   - aggregates repeated benchmark runs into mean / stdev summaries
 - `scripts/compare-benchmark-results.py`
@@ -298,6 +311,17 @@ First validated autoperf run:
   - accepted with weighted improvement `1.163%`
 
 This is intended to make future pacing / synchronization experiments much cheaper to validate before paying for the full Deck benchmark matrix.
+
+Post-dynamic-headroom validation rerun status:
+- `cargo test --locked`
+- `./scripts/test-rust-layer.sh`
+- `PPFG_LAYER_IMPL=rust ./scripts/build-linux-amd64.sh`
+- `PPFG_LAYER_IMPL=rust ./scripts/run-layer-regression-suite.sh`
+- `PPFG_LAYER_IMPL=rust ./scripts/run-advanced-steamdeck-validation.sh`
+- `PPFG_LAYER_IMPL=rust ./scripts/run-target-fps-steamdeck-validation.sh`
+- `PPFG_LAYER_IMPL=rust ./scripts/run-bfi-steamdeck-validation.sh`
+
+All of the above completed successfully after the dynamic multi-FG headroom work.
 
 ---
 
@@ -336,6 +360,13 @@ Detailed rationale now lives in:
 - use conservative synchronization and queue idle in test mode
 
 That is not final-product pacing, but it is a real, working insertion path.
+
+A later dynamic-multiplier sweep on the Deck (`multi-count-sweep3-20260326-231948`) also produced an important pacing clue:
+- `multi-blend` counts `1..20` all completed successfully once swapchain headroom scaled with requested multiplier
+- average **CPU wall time per generated frame** stayed near the display refresh interval (`~11.0-11.3 ms/generated`)
+- average **GPU time per generated frame** remained tiny relative to that wall
+
+This strongly suggests the current architecture is still primarily constrained by **present/acquire pacing against the 90 Hz panel**, not by shader cost for the classical multi-blend backend.
 
 ---
 

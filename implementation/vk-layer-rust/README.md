@@ -107,6 +107,12 @@ export PPFG_LAYER_MODE=reproject-adaptive-blend
 export PPFG_LAYER_MODE=multi-blend
 ./scripts/test-steamdeck-vkcube.sh
 
+# Optional higher-count multi-FG experiments.
+# The layer now auto-expands swapchain image headroom for larger counts,
+# capped by PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES (default: 32).
+export PPFG_MULTI_BLEND_COUNT=10
+./scripts/test-steamdeck-vkcube.sh
+
 export PPFG_LAYER_MODE=adaptive-multi-blend
 ./scripts/test-steamdeck-vkcube.sh
 
@@ -171,6 +177,15 @@ export PPFG_LAYER_IMPL=rust
 PPFG_BENCHMARK_PRESET=decision ./scripts/run-steamdeck-benchmark-suite.sh
 ```
 
+### Multi-count sweep
+This runs a `multi-blend` multiplier sweep and records how far the current architecture scales.
+
+```bash
+export STEAMDECK_PASS='...'
+export PPFG_LAYER_IMPL=rust
+./scripts/run-steamdeck-multi-count-sweep.sh
+```
+
 ### Autoperf loop
 This repeatedly runs the fast decision subset, aggregates the results, compares them against a baseline, and can optionally promote winners to the full benchmark suite.
 
@@ -211,7 +226,9 @@ The `search-blend` mode adds a small neighborhood search on the previous frame t
 The `search-adaptive-blend` mode combines the small neighborhood search with adaptive current-frame weighting.
 The `reproject-blend` mode adds a stronger **symmetric patch-search reprojection** step, searching for a midpoint half-motion offset between the previous and current frames and blending confidence-weighted reprojected samples.
 The `reproject-adaptive-blend` mode combines that stronger reprojection path with adaptive current-frame weighting.
-The `multi-blend` mode is the first Rust **multi-FG** step, emitting two synthetic frames between real frames using temporal blend positions.
+The `multi-blend` mode is the first Rust **multi-FG** step, emitting multiple synthetic frames between real frames using temporal blend positions.
+It now auto-expands swapchain image headroom for larger requested multipliers, controlled by `PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` (default `32`).
+A Steam Deck sweep has now validated successful `multi-blend` counts from `1..20` with full generated-frame success once that dynamic headroom expansion is enabled.
 The `adaptive-multi-blend` mode combines both ideas: multi-FG plus adaptive current-frame weighting, and now includes both:
 - the older present-interval heuristic path
 - a newer **target-FPS adaptive controller** (`PPFG_ADAPTIVE_MULTI_TARGET_FPS`) that accumulates fractional generated-frame credit so the effective FG multiplier can fluctuate over time.

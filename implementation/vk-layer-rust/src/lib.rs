@@ -34,6 +34,7 @@ const BLEND_FRAG_SPV: &[u8] = include_bytes!("../shaders/blend.frag.spv");
 const BENCHMARK_QUERY_CAPACITY: u32 = 4096;
 const MAX_MULTI_ACQUIRE_SEMAPHORES: usize = 4;
 const MAX_TRACKED_PRESENT_READY_SEMAPHORES: usize = 16;
+const DEFAULT_MULTI_SWAPCHAIN_GENERATED_FRAME_CAP: u32 = 32;
 
 fn layer_name() -> &'static CStr {
     unsafe { CStr::from_bytes_with_nul_unchecked(LAYER_NAME_BYTES) }
@@ -924,6 +925,53 @@ fn benchmark_label() -> String {
         .ok()
         .filter(|value| !value.trim().is_empty())
         .unwrap_or_else(|| "default".to_string())
+}
+
+fn multi_swapchain_generated_frame_cap() -> u32 {
+    env_u32(
+        "PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES",
+        DEFAULT_MULTI_SWAPCHAIN_GENERATED_FRAME_CAP,
+    )
+    .max(1)
+}
+
+fn requested_multi_generated_frames_for_swapchain(mode: Mode) -> u32 {
+    let requested = match mode {
+        Mode::MultiBlendTest => env_u32("PPFG_MULTI_BLEND_COUNT", 2).max(1),
+        Mode::AdaptiveMultiBlendTest => {
+            let target_enabled = adaptive_multi_target_fps() > 0.0;
+            let min_count = env_u32(
+                "PPFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES",
+                if target_enabled { 0 } else { 1 },
+            );
+            env_u32("PPFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES", 2).max(min_count)
+        }
+        _ => 0,
+    };
+    requested.min(multi_swapchain_generated_frame_cap())
+}
+
+fn maybe_expand_multi_swapchain_min_image_count(
+    mode: Mode,
+    original_min_image_count: u32,
+    current_modified_min_image_count: u32,
+    max_image_count: Option<u32>,
+) -> u32 {
+    if !matches!(mode, Mode::MultiBlendTest | Mode::AdaptiveMultiBlendTest) {
+        return current_modified_min_image_count;
+    }
+
+    let requested_generated_frames = requested_multi_generated_frames_for_swapchain(mode);
+    if requested_generated_frames == 0 {
+        return current_modified_min_image_count;
+    }
+
+    let desired = current_modified_min_image_count
+        .max(original_min_image_count.max(requested_generated_frames.saturating_add(1)));
+    match max_image_count {
+        Some(max) if max > 0 => desired.min(max),
+        _ => desired,
+    }
 }
 
 fn can_use_multi_gpu_acquire_chain(state: &SwapchainState, generated_frame_count: usize) -> bool {
@@ -5450,7 +5498,13 @@ unsafe extern "system" fn layer_create_swapchain_khr(
         create_info_ref.image_usage,
         max_image_count,
     );
-    modified.min_image_count = mutation.modified_min_image_count;
+    let expanded_min_image_count = maybe_expand_multi_swapchain_min_image_count(
+        mode,
+        create_info_ref.min_image_count,
+        mutation.modified_min_image_count,
+        max_image_count,
+    );
+    modified.min_image_count = expanded_min_image_count;
     modified.image_usage = mutation.modified_usage;
 
     let Some(create_swapchain) = device_info.dispatch.create_swapchain_khr else {
@@ -5505,6 +5559,19 @@ unsafe extern "system" fn layer_create_swapchain_khr(
         state
             .swapchains
             .insert((*swapchain).as_raw(), state_entry.clone());
+    }
+
+    if matches!(mode, Mode::MultiBlendTest | Mode::AdaptiveMultiBlendTest)
+        && expanded_min_image_count > mutation.modified_min_image_count
+    {
+        let requested_generated_frames = requested_multi_generated_frames_for_swapchain(mode);
+        log_info(format!(
+            "expanded multi-fg swapchain headroom; requestedGeneratedFrames={}; minImages={}->{}; cap={}",
+            requested_generated_frames,
+            mutation.modified_min_image_count,
+            expanded_min_image_count,
+            multi_swapchain_generated_frame_cap(),
+        ));
     }
 
     log_info(format!(
@@ -5987,6 +6054,12 @@ pub unsafe extern "system" fn vkNegotiateLoaderLayerInterfaceVersion(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Mutex, OnceLock};
+
+    fn env_test_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
 
     #[test]
     fn dispatch_key_reads_first_pointer_word() {
@@ -6045,5 +6118,26 @@ mod tests {
         let gdpa_ptr = negotiate.pfn_get_device_proc_addr as usize;
         assert_ne!(gipa_ptr, 0);
         assert_ne!(gdpa_ptr, 0);
+    }
+
+    #[test]
+    fn expands_multi_swapchain_headroom_for_larger_requested_counts() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::set_var("PPFG_MULTI_BLEND_COUNT", "6");
+        std::env::remove_var("PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES");
+        let result = maybe_expand_multi_swapchain_min_image_count(Mode::MultiBlendTest, 3, 6, None);
+        assert_eq!(result, 7);
+        std::env::remove_var("PPFG_MULTI_BLEND_COUNT");
+    }
+
+    #[test]
+    fn clamps_multi_swapchain_headroom_to_configured_cap() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::set_var("PPFG_MULTI_BLEND_COUNT", "20");
+        std::env::set_var("PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES", "8");
+        let result = maybe_expand_multi_swapchain_min_image_count(Mode::MultiBlendTest, 3, 6, None);
+        assert_eq!(result, 9);
+        std::env::remove_var("PPFG_MULTI_BLEND_COUNT");
+        std::env::remove_var("PPFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES");
     }
 }
