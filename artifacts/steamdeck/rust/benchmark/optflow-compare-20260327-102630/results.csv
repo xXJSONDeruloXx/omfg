@@ -1,0 +1,4 @@
+label,mode,debugView,samples,generatedFrames,gpuSamples,avgCpuAcquireMs,avgCpuSetupMs,avgCpuRecordMs,avgCpuSubmitMs,avgCpuSubmitWaitMs,avgCpuGeneratedPresentMs,avgCpuOriginalPresentMs,avgCpuQueueIdleMs,avgCpuTotalMs,avgCpuPerGeneratedFrameMs,maxCpuTotalMs,avgGpuCmdMs,avgGpuPerGeneratedFrameMs,maxGpuCmdMs
+reproject-blend-default,reproject-blend-test,off,59,59,59,10.613,0.014,0.107,0.105,0.0,0.088,0.065,4.988,15.98,15.98,17.034,3.898,3.898,3.979
+optflow-blend-default,optflow-blend-test,off,59,59,59,8.614,0.019,0.113,0.108,0.0,0.083,0.064,12.254,21.255,21.255,22.879,11.101,11.101,11.19
+optflow-blend-fast,optflow-blend-test,off,59,59,59,10.574,0.017,0.117,0.121,0.0,0.106,0.074,4.091,15.1,15.1,16.157,2.998,2.998,3.052
