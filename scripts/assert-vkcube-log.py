@@ -75,6 +75,16 @@ MODE_MARKERS = {
         "first reproject adaptive blended generated-frame present succeeded",
         "reproject adaptive blended frame present=60",
     ],
+    "reproject-multi-blend": [
+        "reproject-multi-blend primed previous frame history",
+        "first reproject multi blended generated-frame present succeeded",
+        "reproject multi blended frame present=120",
+    ],
+    "reproject-adaptive-multi-blend": [
+        "reproject-adaptive-multi-blend primed previous frame history",
+        "first reproject adaptive multi blended generated-frame present succeeded",
+        "reproject adaptive multi blended frame present=1",
+    ],
 }
 
 

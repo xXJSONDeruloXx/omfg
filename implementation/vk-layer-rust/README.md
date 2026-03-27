@@ -24,7 +24,9 @@ Current Rust capability set:
   - `reproject-adaptive-blend`
   - `multi-blend`
   - `adaptive-multi-blend`
-- LSFG-style target-FPS adaptive controller for `adaptive-multi-blend`
+  - `reproject-multi-blend`
+  - `reproject-adaptive-multi-blend`
+- LSFG-style target-FPS adaptive controller for `adaptive-multi-blend` and `reproject-adaptive-multi-blend`
 - testable swapchain mutation + present sequencing logic
 - expandable regression harness for future interpolation work
 
@@ -42,7 +44,7 @@ This currently covers:
 - swapchain mutation policy
 - present ordering semantics
 - generated-frame accounting
-- clear/bfi/copy/history and blend/adaptive-blend/search-blend/search-adaptive-blend/reproject-blend/reproject-adaptive-blend/multi-blend/adaptive-multi-blend policy semantics
+- clear/bfi/copy/history and blend/adaptive-blend/search-blend/search-adaptive-blend/reproject-blend/reproject-adaptive-blend/multi-blend/adaptive-multi-blend/reproject-multi-blend/reproject-adaptive-multi-blend policy semantics
 - target-FPS adaptive multi-FG controller logic
 - pure Rust motion-search / reprojection heuristic tests
 - dispatch-key extraction helper
@@ -104,6 +106,12 @@ export OMFG_LAYER_MODE=reproject-blend
 export OMFG_LAYER_MODE=reproject-adaptive-blend
 ./scripts/test-steamdeck-vkcube.sh
 
+export OMFG_LAYER_MODE=reproject-multi-blend
+./scripts/test-steamdeck-vkcube.sh
+
+export OMFG_LAYER_MODE=reproject-adaptive-multi-blend
+./scripts/test-steamdeck-vkcube.sh
+
 export OMFG_LAYER_MODE=multi-blend
 ./scripts/test-steamdeck-vkcube.sh
 
@@ -113,10 +121,23 @@ export OMFG_LAYER_MODE=multi-blend
 export OMFG_MULTI_BLEND_COUNT=10
 ./scripts/test-steamdeck-vkcube.sh
 
+export OMFG_LAYER_MODE=reproject-multi-blend
+export OMFG_MULTI_BLEND_COUNT=6
+./scripts/test-steamdeck-vkcube.sh
+
 export OMFG_LAYER_MODE=adaptive-multi-blend
 ./scripts/test-steamdeck-vkcube.sh
 
-# Optional LSFG-style target-FPS controller for adaptive-multi-blend
+export OMFG_LAYER_MODE=reproject-adaptive-multi-blend
+./scripts/test-steamdeck-vkcube.sh
+
+# Optional higher-count adaptive multi-FG experiment.
+export OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=1
+export OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=6
+export OMFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS=1.0
+./scripts/test-steamdeck-vkcube.sh
+
+# Optional LSFG-style target-FPS controller for adaptive multi-FG modes.
 export OMFG_ADAPTIVE_MULTI_TARGET_FPS=120
 export OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0
 export OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
@@ -137,7 +158,7 @@ export OMFG_LAYER_IMPL=rust
 ```
 
 ### Advanced Steam Deck validation
-This extends the normal smoke suite with long FIFO and IMMEDIATE runs for the stronger motion-aware single-FG modes.
+This extends the normal smoke suite with long FIFO and IMMEDIATE runs for the stronger motion-aware single-FG modes and the newer reprojection-backed multi-FG modes.
 
 ```bash
 export STEAMDECK_PASS='...'
@@ -247,6 +268,11 @@ A Steam Deck sweep has now validated successful `multi-blend` counts from `1..20
 The `adaptive-multi-blend` mode combines both ideas: multi-FG plus adaptive current-frame weighting, and now includes both:
 - the older present-interval heuristic path
 - a newer **target-FPS adaptive controller** (`OMFG_ADAPTIVE_MULTI_TARGET_FPS`) that accumulates fractional generated-frame credit so the effective FG multiplier can fluctuate over time.
+The `reproject-multi-blend` mode now propagates the stronger symmetric reprojection + confidence/disocclusion path into multi-FG generation.
+That higher-quality reprojection-backed multi-FG path is now validated on Deck through smoke, long, IMMEDIATE, and a higher-count `OMFG_MULTI_BLEND_COUNT=6` run.
+The `reproject-adaptive-multi-blend` mode combines reprojection, confidence/disocclusion-aware fallback, adaptive current-frame weighting, and adaptive multi-FG control in one backend.
+That mode is also now validated on Deck through smoke, long, IMMEDIATE, and a forced higher-count adaptive run with `OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=6`.
+A focused benchmark run at `artifacts/steamdeck/rust/benchmark/reproject-multi-20260327-002943/` shows the reprojection-backed multi-FG path costs about `~3.76–3.79 ms/generated` on the Deck GPU for the current default reprojection settings.
 
 Today that target-FPS controller is already validated on the Deck, but it still observes the app's intercepted present cadence under the current conservative synchronization model, so its decisions are still coupled to current pacing overhead.
 

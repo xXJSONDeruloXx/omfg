@@ -99,10 +99,8 @@ type PfnVkGetPhysicalDeviceQueueFamilyProperties =
     unsafe extern "system" fn(vk::PhysicalDevice, *mut u32, *mut vk::QueueFamilyProperties);
 type PfnVkGetPhysicalDeviceMemoryProperties =
     unsafe extern "system" fn(vk::PhysicalDevice, *mut vk::PhysicalDeviceMemoryProperties);
-type PfnVkGetPhysicalDeviceFeatures2 = unsafe extern "system" fn(
-    vk::PhysicalDevice,
-    *mut vk::PhysicalDeviceFeatures2<'static>,
-);
+type PfnVkGetPhysicalDeviceFeatures2 =
+    unsafe extern "system" fn(vk::PhysicalDevice, *mut vk::PhysicalDeviceFeatures2<'static>);
 type PfnVkGetPhysicalDeviceSurfaceCapabilitiesKHR = unsafe extern "system" fn(
     vk::PhysicalDevice,
     vk::SurfaceKHR,
@@ -131,12 +129,8 @@ type PfnVkAcquireNextImageKHR = unsafe extern "system" fn(
     vk::Fence,
     *mut u32,
 ) -> vk::Result;
-type PfnVkWaitForPresentKHR = unsafe extern "system" fn(
-    vk::Device,
-    vk::SwapchainKHR,
-    u64,
-    u64,
-) -> vk::Result;
+type PfnVkWaitForPresentKHR =
+    unsafe extern "system" fn(vk::Device, vk::SwapchainKHR, u64, u64) -> vk::Result;
 type PfnVkGetRefreshCycleDurationGOOGLE = unsafe extern "system" fn(
     vk::Device,
     vk::SwapchainKHR,
@@ -1067,7 +1061,9 @@ unsafe fn maybe_log_present_timing(
     }
 
     if state.refresh_duration_ns == 0 {
-        if let Some(get_refresh_cycle_duration) = device_info.dispatch.get_refresh_cycle_duration_google {
+        if let Some(get_refresh_cycle_duration) =
+            device_info.dispatch.get_refresh_cycle_duration_google
+        {
             let mut refresh = vk::RefreshCycleDurationGOOGLE::default();
             if get_refresh_cycle_duration(device_info.device, state.handle, &mut refresh)
                 == vk::Result::SUCCESS
@@ -1087,13 +1083,19 @@ unsafe fn maybe_log_present_timing(
         return;
     }
 
-    let Some(get_past_presentation_timing) = device_info.dispatch.get_past_presentation_timing_google else {
+    let Some(get_past_presentation_timing) =
+        device_info.dispatch.get_past_presentation_timing_google
+    else {
         return;
     };
 
     let mut count = 0;
-    if get_past_presentation_timing(device_info.device, state.handle, &mut count, ptr::null_mut())
-        != vk::Result::SUCCESS
+    if get_past_presentation_timing(
+        device_info.device,
+        state.handle,
+        &mut count,
+        ptr::null_mut(),
+    ) != vk::Result::SUCCESS
         || count == 0
     {
         return;
@@ -1198,8 +1200,10 @@ fn multi_swapchain_generated_frame_cap() -> u32 {
 
 fn requested_multi_generated_frames_for_swapchain(mode: Mode) -> u32 {
     let requested = match mode {
-        Mode::MultiBlendTest => env_u32("OMFG_MULTI_BLEND_COUNT", 2).max(1),
-        Mode::AdaptiveMultiBlendTest => {
+        Mode::MultiBlendTest | Mode::ReprojectMultiBlendTest => {
+            env_u32("OMFG_MULTI_BLEND_COUNT", 2).max(1)
+        }
+        Mode::AdaptiveMultiBlendTest | Mode::ReprojectAdaptiveMultiBlendTest => {
             let target_enabled = adaptive_multi_target_fps() > 0.0;
             let min_count = env_u32(
                 "OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES",
@@ -1218,7 +1222,13 @@ fn maybe_expand_multi_swapchain_min_image_count(
     current_modified_min_image_count: u32,
     max_image_count: Option<u32>,
 ) -> u32 {
-    if !matches!(mode, Mode::MultiBlendTest | Mode::AdaptiveMultiBlendTest) {
+    if !matches!(
+        mode,
+        Mode::MultiBlendTest
+            | Mode::AdaptiveMultiBlendTest
+            | Mode::ReprojectMultiBlendTest
+            | Mode::ReprojectAdaptiveMultiBlendTest
+    ) {
         return current_modified_min_image_count;
     }
 
@@ -2827,7 +2837,14 @@ fn multi_blend_push_constants_plan(
     mode: Mode,
     generated_frame_count: usize,
 ) -> Vec<BlendPushConstants> {
-    let adaptive = matches!(mode, Mode::AdaptiveMultiBlendTest);
+    let adaptive = matches!(
+        mode,
+        Mode::AdaptiveMultiBlendTest | Mode::ReprojectAdaptiveMultiBlendTest
+    );
+    let reproject = matches!(
+        mode,
+        Mode::ReprojectMultiBlendTest | Mode::ReprojectAdaptiveMultiBlendTest
+    );
 
     (1..=generated_frame_count)
         .map(|index| {
@@ -2840,7 +2857,27 @@ fn multi_blend_push_constants_plan(
                     0.0
                 },
                 adaptive_bias: if adaptive { blend_adaptive_bias() } else { 0.0 },
-                mode: if adaptive { 1 } else { 0 },
+                confidence_scale: if reproject {
+                    reproject_confidence_scale()
+                } else {
+                    0.0
+                },
+                search_radius: if reproject {
+                    reproject_search_radius()
+                } else {
+                    0
+                },
+                patch_radius: if reproject {
+                    reproject_patch_radius()
+                } else {
+                    0
+                },
+                mode: match (reproject, adaptive) {
+                    (false, false) => 0,
+                    (false, true) => 1,
+                    (true, false) => 4,
+                    (true, true) => 5,
+                },
                 ..Default::default()
             }
         })
@@ -2884,11 +2921,37 @@ fn blend_mode_labels(mode: Mode) -> (&'static str, &'static str, &'static str) {
             "first adaptive multi blended generated-frame present succeeded",
             "adaptive multi blended frame present=",
         ),
+        Mode::ReprojectMultiBlendTest => (
+            "reproject-multi-blend primed previous frame history",
+            "first reproject multi blended generated-frame present succeeded",
+            "reproject multi blended frame present=",
+        ),
+        Mode::ReprojectAdaptiveMultiBlendTest => (
+            "reproject-adaptive-multi-blend primed previous frame history",
+            "first reproject adaptive multi blended generated-frame present succeeded",
+            "reproject adaptive multi blended frame present=",
+        ),
         _ => (
             "blend primed previous frame history",
             "first blended generated-frame present succeeded",
             "blended frame present=",
         ),
+    }
+}
+
+fn adaptive_multi_controller_log_label(mode: Mode) -> &'static str {
+    match mode {
+        Mode::ReprojectAdaptiveMultiBlendTest => "reproject-adaptive-multi",
+        _ => "adaptive-multi",
+    }
+}
+
+fn adaptive_multi_refresh_log_label(mode: Mode) -> &'static str {
+    match mode {
+        Mode::ReprojectAdaptiveMultiBlendTest => {
+            "reproject-adaptive-multi-blend refreshed history without generated frame"
+        }
+        _ => "adaptive-multi-blend refreshed history without generated frame",
     }
 }
 
@@ -3605,14 +3668,18 @@ unsafe fn try_present_multi_blend_frame(
     };
 
     let adaptive_request = match mode {
-        Mode::AdaptiveMultiBlendTest => Some(adaptive_multi_frame_request(state)),
+        Mode::AdaptiveMultiBlendTest | Mode::ReprojectAdaptiveMultiBlendTest => {
+            Some(adaptive_multi_frame_request(state))
+        }
         _ => None,
     };
     let requested_generated_frame_count = match mode {
-        Mode::AdaptiveMultiBlendTest => adaptive_request
+        Mode::AdaptiveMultiBlendTest | Mode::ReprojectAdaptiveMultiBlendTest => adaptive_request
             .map(|request| request.generated_frame_count)
             .unwrap_or(0),
-        Mode::MultiBlendTest => env_u32("OMFG_MULTI_BLEND_COUNT", 2).max(1) as usize,
+        Mode::MultiBlendTest | Mode::ReprojectMultiBlendTest => {
+            env_u32("OMFG_MULTI_BLEND_COUNT", 2).max(1) as usize
+        }
         _ => 1,
     };
     let generated_plan = multi_blend_push_constants_plan(mode, requested_generated_frame_count);
@@ -3630,7 +3697,8 @@ unsafe fn try_present_multi_blend_frame(
             != requested_generated_frame_count as u32;
         if state.present_count <= 5 || state.present_count % 60 == 0 || count_changed {
             log_info(format!(
-                "adaptive-multi target controller; present={}; targetFps={:.1}; baseFps={:.1}; desiredGeneratedFrames={:.3}; emittedGeneratedFrames={}; carry={:.3}; intervalMs={:.3}; smoothedIntervalMs={:.3}",
+                "{} target controller; present={}; targetFps={:.1}; baseFps={:.1}; desiredGeneratedFrames={:.3}; emittedGeneratedFrames={}; carry={:.3}; intervalMs={:.3}; smoothedIntervalMs={:.3}",
+                adaptive_multi_controller_log_label(mode),
                 state.present_count,
                 request.target_fps.unwrap_or(0.0),
                 request.base_fps,
@@ -4305,7 +4373,8 @@ unsafe fn try_present_multi_blend_frame(
     } else if have_history {
         if state.present_count <= 5 || state.present_count % 60 == 0 {
             log_info(format!(
-                "adaptive-multi-blend refreshed history without generated frame; currentImageIndex={}",
+                "{}; currentImageIndex={}",
+                adaptive_multi_refresh_log_label(mode),
                 source_index
             ));
         }
@@ -5537,7 +5606,8 @@ unsafe extern "system" fn layer_create_device(
 
     let create_info_ref = &*create_info;
     let mut modified_create_info = *create_info_ref;
-    let mut enabled_extension_names: Vec<*const c_char> = if create_info_ref.enabled_extension_count > 0
+    let mut enabled_extension_names: Vec<*const c_char> = if create_info_ref.enabled_extension_count
+        > 0
         && !create_info_ref.pp_enabled_extension_names.is_null()
     {
         std::slice::from_raw_parts(
@@ -5609,19 +5679,18 @@ unsafe extern "system" fn layer_create_device(
         let mut features2 = vk::PhysicalDeviceFeatures2::default();
         let mut query_present_id = vk::PhysicalDevicePresentIdFeaturesKHR::default();
         let mut query_present_wait = vk::PhysicalDevicePresentWaitFeaturesKHR::default();
-        query_present_id.p_next = (&mut query_present_wait
-            as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>)
-            .cast();
-        features2.p_next = (&mut query_present_id as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>)
-            .cast();
+        query_present_id.p_next =
+            (&mut query_present_wait as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>).cast();
+        features2.p_next =
+            (&mut query_present_id as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>).cast();
         get_physical_device_features2(physical_device, &mut features2);
 
         if supports_present_id && query_present_id.present_id == vk::TRUE {
             present_id_features.present_id = vk::TRUE;
             present_id_features.p_next = modified_create_info.p_next.cast_mut();
-            modified_create_info.p_next =
-                (&mut present_id_features as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>)
-                    .cast();
+            modified_create_info.p_next = (&mut present_id_features
+                as *mut vk::PhysicalDevicePresentIdFeaturesKHR<'_>)
+                .cast();
         } else {
             supports_present_id = false;
         }
@@ -5629,9 +5698,9 @@ unsafe extern "system" fn layer_create_device(
         if supports_present_wait && query_present_wait.present_wait == vk::TRUE {
             present_wait_features.present_wait = vk::TRUE;
             present_wait_features.p_next = modified_create_info.p_next.cast_mut();
-            modified_create_info.p_next =
-                (&mut present_wait_features as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>)
-                    .cast();
+            modified_create_info.p_next = (&mut present_wait_features
+                as *mut vk::PhysicalDevicePresentWaitFeaturesKHR<'_>)
+                .cast();
         } else {
             supports_present_wait = false;
         }
@@ -5657,7 +5726,9 @@ unsafe extern "system" fn layer_create_device(
     supports_present_wait = supports_present_wait && device_dispatch.wait_for_present_khr.is_some();
     supports_display_timing = supports_display_timing
         && device_dispatch.get_refresh_cycle_duration_google.is_some()
-        && device_dispatch.get_past_presentation_timing_google.is_some();
+        && device_dispatch
+            .get_past_presentation_timing_google
+            .is_some();
     let mut properties = vk::PhysicalDeviceProperties::default();
     if let Some(get_properties) = instance_dispatch.get_physical_device_properties {
         get_properties(physical_device, &mut properties);
@@ -6002,6 +6073,8 @@ unsafe extern "system" fn layer_create_swapchain_khr(
             | Mode::ReprojectAdaptiveBlendTest
             | Mode::MultiBlendTest
             | Mode::AdaptiveMultiBlendTest
+            | Mode::ReprojectMultiBlendTest
+            | Mode::ReprojectAdaptiveMultiBlendTest
     ) {
         let _ = ensure_history_image(&mut state_entry, &device_info);
     }
@@ -6013,8 +6086,13 @@ unsafe extern "system" fn layer_create_swapchain_khr(
             .insert((*swapchain).as_raw(), state_entry.clone());
     }
 
-    if matches!(mode, Mode::MultiBlendTest | Mode::AdaptiveMultiBlendTest)
-        && expanded_min_image_count > mutation.modified_min_image_count
+    if matches!(
+        mode,
+        Mode::MultiBlendTest
+            | Mode::AdaptiveMultiBlendTest
+            | Mode::ReprojectMultiBlendTest
+            | Mode::ReprojectAdaptiveMultiBlendTest
+    ) && expanded_min_image_count > mutation.modified_min_image_count
     {
         let requested_generated_frames = requested_multi_generated_frames_for_swapchain(mode);
         log_info(format!(
@@ -6137,6 +6215,8 @@ unsafe extern "system" fn layer_queue_present_khr(
                         | Mode::ReprojectAdaptiveBlendTest
                         | Mode::MultiBlendTest
                         | Mode::AdaptiveMultiBlendTest
+                        | Mode::ReprojectMultiBlendTest
+                        | Mode::ReprojectAdaptiveMultiBlendTest
                 ) {
                     "vkQueuePresentKHR frame="
                 } else {
@@ -6249,8 +6329,13 @@ unsafe extern "system" fn layer_queue_present_khr(
                 }
                 planner::PresentSequence::PrimeHistory
                 | planner::PresentSequence::GeneratedThenOriginal
-                    if matches!(mode, Mode::MultiBlendTest | Mode::AdaptiveMultiBlendTest)
-                        && have_queue =>
+                    if matches!(
+                        mode,
+                        Mode::MultiBlendTest
+                            | Mode::AdaptiveMultiBlendTest
+                            | Mode::ReprojectMultiBlendTest
+                            | Mode::ReprojectAdaptiveMultiBlendTest
+                    ) && have_queue =>
                 {
                     swapchain_state.injection_attempted = true;
                     if try_present_multi_blend_frame(
@@ -6591,5 +6676,31 @@ mod tests {
         assert_eq!(result, 9);
         std::env::remove_var("OMFG_MULTI_BLEND_COUNT");
         std::env::remove_var("OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES");
+    }
+
+    #[test]
+    fn expands_reproject_multi_swapchain_headroom_for_larger_requested_counts() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::set_var("OMFG_MULTI_BLEND_COUNT", "6");
+        std::env::remove_var("OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES");
+        let result =
+            maybe_expand_multi_swapchain_min_image_count(Mode::ReprojectMultiBlendTest, 3, 6, None);
+        assert_eq!(result, 7);
+        std::env::remove_var("OMFG_MULTI_BLEND_COUNT");
+    }
+
+    #[test]
+    fn expands_reproject_adaptive_multi_swapchain_headroom_from_adaptive_limit() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::set_var("OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES", "6");
+        std::env::remove_var("OMFG_ADAPTIVE_MULTI_TARGET_FPS");
+        let result = maybe_expand_multi_swapchain_min_image_count(
+            Mode::ReprojectAdaptiveMultiBlendTest,
+            3,
+            6,
+            None,
+        );
+        assert_eq!(result, 7);
+        std::env::remove_var("OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES");
     }
 }

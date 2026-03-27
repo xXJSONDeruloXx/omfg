@@ -55,8 +55,12 @@ Rust also now has additional next-step backend modes:
 - `adaptive-blend`
 - `search-blend`
 - `search-adaptive-blend`
+- `reproject-blend`
+- `reproject-adaptive-blend`
 - `multi-blend`
 - `adaptive-multi-blend`
+- `reproject-multi-blend`
+- `reproject-adaptive-multi-blend`
 
 Validated via:
 - local `cargo test --locked`
@@ -201,6 +205,37 @@ Observed:
 - adaptive current-frame weighting is then applied using the matched previous sample
 - stable on the Deck 120-frame smoke path
 
+#### 8a. `reproject-blend` (Rust)
+Working as the first stronger reprojection backend.
+
+Validated with Rust layer on Steam Deck:
+- `vkcube --c 120`
+- `vkcube --c 600`
+- `vkcube --c 120 --present_mode 0`
+- full Rust regression suite including `reproject-blend`
+- advanced Deck validation via `scripts/run-advanced-steamdeck-validation.sh`
+
+Observed:
+- first frame primes history
+- subsequent generated frames use a stronger **symmetric patch-search reprojection** step
+- reprojected samples are blended with confidence weighting and a disocclusion-aware fallback toward the original frames
+- stable on Deck through smoke, long, and IMMEDIATE-mode runs
+
+#### 8b. `reproject-adaptive-blend` (Rust)
+Working as the adaptive variant of the stronger reprojection backend.
+
+Validated with Rust layer on Steam Deck:
+- `vkcube --c 120`
+- `vkcube --c 600`
+- `vkcube --c 120 --present_mode 0`
+- full Rust regression suite including `reproject-adaptive-blend`
+- advanced Deck validation via `scripts/run-advanced-steamdeck-validation.sh`
+
+Observed:
+- combines the stronger symmetric reprojection step with adaptive current-frame biasing
+- keeps the same confidence/disocclusion-aware reprojection fallback path
+- stable on Deck through smoke, long, and IMMEDIATE-mode runs
+
 #### 9. `multi-blend` (Rust)
 Working as the first multi-FG stepping stone.
 
@@ -228,7 +263,7 @@ Observed:
 - stable on Deck through 120-frame, 600-frame, and IMMEDIATE-mode runs
 
 #### 10. `adaptive-multi-blend` (Rust)
-Working as the current richest generated-frame backend in the Rust layer.
+Working as the current controller-oriented adaptive multi-FG backend in the Rust layer.
 
 Validated with Rust layer on Steam Deck:
 - `vkcube --c 120`
@@ -246,6 +281,54 @@ Observed:
 - stable on the Deck 120-frame smoke path
 - stable on an additional **600-frame** run
 - demonstrates the first combined multi-FG + adaptive synthesis + target-FPS control mode in Rust
+
+#### 10a. `reproject-multi-blend` (Rust)
+Working as the first higher-quality reprojection-backed multi-FG path.
+
+Validated with Rust layer on Steam Deck:
+- `vkcube --c 120`
+- `vkcube --c 600`
+- `vkcube --c 120 --present_mode 0`
+- `OMFG_MULTI_BLEND_COUNT=6 vkcube --c 120`
+- full Rust regression suite including `reproject-multi-blend`
+- advanced Deck validation via `scripts/run-advanced-steamdeck-validation.sh`
+
+Observed:
+- propagates the stronger symmetric reprojection + confidence/disocclusion path into multi-FG generation
+- stable on Deck through smoke, long, and IMMEDIATE-mode runs
+- larger-count validation now proves the higher-quality reprojection path also benefits from dynamic swapchain headroom expansion
+- a targeted `count=6` Deck smoke run succeeded with:
+  - `requestedGeneratedFrames=6`
+  - `minImages=3->7`
+  - generated output continuing through `reproject multi blended frame present=660`
+- higher counts above the current GPU-acquire fast path fall back to the CPU acquire path but still complete successfully once enough images are provisioned
+- targeted benchmark artifact:
+  - `artifacts/steamdeck/rust/benchmark/reproject-multi-20260327-002943/`
+  - `reproject-multi-count2` ~ `7.563 ms` GPU total, ~ `3.781 ms/generated`
+  - `reproject-multi-count3` ~ `11.274 ms` GPU total, ~ `3.758 ms/generated`
+
+#### 10b. `reproject-adaptive-multi-blend` (Rust)
+Working as the current richest generated-frame backend in the Rust layer.
+
+Validated with Rust layer on Steam Deck:
+- `vkcube --c 120`
+- `vkcube --c 600`
+- `vkcube --c 120 --present_mode 0`
+- `OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=1 OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=6 OMFG_ADAPTIVE_MULTI_INTERVAL_THRESHOLD_MS=1.0 vkcube --c 120`
+- full Rust regression suite including `reproject-adaptive-multi-blend`
+- advanced Deck validation via `scripts/run-advanced-steamdeck-validation.sh`
+
+Observed:
+- combines stronger reprojection, confidence/disocclusion-aware fallback, adaptive current-frame weighting, and adaptive multi-FG control in one backend
+- the same target/controller plumbing used by `adaptive-multi-blend` now also drives the reprojection-backed multi-FG path
+- higher-count adaptive validation now also succeeds on Deck:
+  - `requestedGeneratedFrames=6`
+  - `emittedGeneratedFrames=6`
+  - `minImages=3->7`
+- targeted benchmark artifact:
+  - `artifacts/steamdeck/rust/benchmark/reproject-multi-20260327-002943/`
+  - `reproject-adaptive-multi-default` ~ `7.469 ms` GPU total, ~ `3.782 ms/generated`
+  - `reproject-adaptive-multi-target180` ~ `7.466 ms` GPU total, ~ `3.785 ms/generated`
 
 These modes are still stepping stones toward motion-aware interpolation, but they are now clearly beyond placeholder-only generation in the Rust implementation.
 

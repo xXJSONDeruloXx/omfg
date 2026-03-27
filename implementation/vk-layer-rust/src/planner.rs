@@ -54,7 +54,13 @@ pub fn mutate_swapchain(
         };
     }
 
-    if matches!(mode, Mode::MultiBlendTest | Mode::AdaptiveMultiBlendTest) {
+    if matches!(
+        mode,
+        Mode::MultiBlendTest
+            | Mode::AdaptiveMultiBlendTest
+            | Mode::ReprojectMultiBlendTest
+            | Mode::ReprojectAdaptiveMultiBlendTest
+    ) {
         modified_usage |= vk::ImageUsageFlags::TRANSFER_SRC;
         modified_usage |= vk::ImageUsageFlags::SAMPLED;
         let desired = original_min_image_count.saturating_add(3);
@@ -96,6 +102,8 @@ pub fn planned_sequence(mode: Mode, state: &SimulatedPresentState) -> PresentSeq
         | Mode::SearchAdaptiveBlendTest
         | Mode::ReprojectBlendTest
         | Mode::ReprojectAdaptiveBlendTest
+        | Mode::ReprojectMultiBlendTest
+        | Mode::ReprojectAdaptiveMultiBlendTest
         | Mode::MultiBlendTest
         | Mode::AdaptiveMultiBlendTest
             if !state.history_valid =>
@@ -109,6 +117,8 @@ pub fn planned_sequence(mode: Mode, state: &SimulatedPresentState) -> PresentSeq
         | Mode::SearchAdaptiveBlendTest
         | Mode::ReprojectBlendTest
         | Mode::ReprojectAdaptiveBlendTest
+        | Mode::ReprojectMultiBlendTest
+        | Mode::ReprojectAdaptiveMultiBlendTest
         | Mode::MultiBlendTest
         | Mode::AdaptiveMultiBlendTest => PresentSequence::GeneratedThenOriginal,
     }
@@ -236,7 +246,10 @@ pub fn mark_injection_result(
             }
             state.history_valid = true;
         }
-        Mode::MultiBlendTest | Mode::AdaptiveMultiBlendTest => {
+        Mode::MultiBlendTest
+        | Mode::AdaptiveMultiBlendTest
+        | Mode::ReprojectMultiBlendTest
+        | Mode::ReprojectAdaptiveMultiBlendTest => {
             if state.history_valid && injected_successfully {
                 state.injection_works = true;
                 state.generated_present_count += 2;
@@ -457,6 +470,36 @@ mod tests {
     }
 
     #[test]
+    fn reproject_multi_blend_mode_requests_extra_headroom() {
+        let result = mutate_swapchain(
+            Mode::ReprojectMultiBlendTest,
+            3,
+            vk::ImageUsageFlags::COLOR_ATTACHMENT,
+            Some(10),
+        );
+        assert_eq!(result.modified_min_image_count, 6);
+        assert!(result
+            .modified_usage
+            .contains(vk::ImageUsageFlags::TRANSFER_SRC));
+        assert!(result.modified_usage.contains(vk::ImageUsageFlags::SAMPLED));
+    }
+
+    #[test]
+    fn reproject_adaptive_multi_blend_mode_requests_extra_headroom() {
+        let result = mutate_swapchain(
+            Mode::ReprojectAdaptiveMultiBlendTest,
+            3,
+            vk::ImageUsageFlags::COLOR_ATTACHMENT,
+            Some(10),
+        );
+        assert_eq!(result.modified_min_image_count, 6);
+        assert!(result
+            .modified_usage
+            .contains(vk::ImageUsageFlags::TRANSFER_SRC));
+        assert!(result.modified_usage.contains(vk::ImageUsageFlags::SAMPLED));
+    }
+
+    #[test]
     fn history_copy_primes_then_switches_to_generated_before_original() {
         let mut state = SimulatedPresentState::default();
         assert_eq!(
@@ -623,6 +666,44 @@ mod tests {
             PresentSequence::GeneratedThenOriginal
         );
         mark_injection_result(Mode::AdaptiveMultiBlendTest, &mut state, true);
+        assert_eq!(state.generated_present_count, 2);
+        assert!(state.injection_works);
+    }
+
+    #[test]
+    fn reproject_multi_blend_mode_counts_two_generated_frames_per_real_frame() {
+        let mut state = SimulatedPresentState::default();
+        assert_eq!(
+            planned_sequence(Mode::ReprojectMultiBlendTest, &state),
+            PresentSequence::PrimeHistory
+        );
+        mark_injection_result(Mode::ReprojectMultiBlendTest, &mut state, true);
+        assert!(state.history_valid);
+        assert_eq!(state.generated_present_count, 0);
+        assert_eq!(
+            planned_sequence(Mode::ReprojectMultiBlendTest, &state),
+            PresentSequence::GeneratedThenOriginal
+        );
+        mark_injection_result(Mode::ReprojectMultiBlendTest, &mut state, true);
+        assert_eq!(state.generated_present_count, 2);
+        assert!(state.injection_works);
+    }
+
+    #[test]
+    fn reproject_adaptive_multi_blend_mode_counts_two_generated_frames_per_real_frame() {
+        let mut state = SimulatedPresentState::default();
+        assert_eq!(
+            planned_sequence(Mode::ReprojectAdaptiveMultiBlendTest, &state),
+            PresentSequence::PrimeHistory
+        );
+        mark_injection_result(Mode::ReprojectAdaptiveMultiBlendTest, &mut state, true);
+        assert!(state.history_valid);
+        assert_eq!(state.generated_present_count, 0);
+        assert_eq!(
+            planned_sequence(Mode::ReprojectAdaptiveMultiBlendTest, &state),
+            PresentSequence::GeneratedThenOriginal
+        );
+        mark_injection_result(Mode::ReprojectAdaptiveMultiBlendTest, &mut state, true);
         assert_eq!(state.generated_present_count, 2);
         assert!(state.injection_works);
     }

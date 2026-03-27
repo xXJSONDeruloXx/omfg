@@ -1,0 +1,5 @@
+label,mode,samples,generatedFrames,gpuSamples,avgCpuAcquireMs,avgCpuSetupMs,avgCpuRecordMs,avgCpuSubmitMs,avgCpuSubmitWaitMs,avgCpuGeneratedPresentMs,avgCpuOriginalPresentMs,avgCpuQueueIdleMs,avgCpuTotalMs,avgCpuPerGeneratedFrameMs,maxCpuTotalMs,avgGpuCmdMs,avgGpuPerGeneratedFrameMs,maxGpuCmdMs
+reproject-multi-count2,reproject-multi-blend-test,119,238,119,21.845,0.003,0.108,0.113,8.953,0.184,0.043,0.0,31.251,15.625,32.159,7.563,3.781,7.596
+reproject-multi-count3,reproject-multi-blend-test,119,357,119,30.709,0.003,0.116,0.122,12.587,0.29,0.042,0.0,43.87,14.623,44.931,11.274,3.758,11.307
+reproject-adaptive-multi-default,reproject-adaptive-multi-blend-test,119,235,119,21.495,0.003,0.105,0.108,8.849,0.185,0.044,0.0,30.789,15.591,31.942,7.469,3.782,7.59
+reproject-adaptive-multi-target180,reproject-adaptive-multi-blend-test,110,217,110,21.913,0.003,0.121,0.109,8.877,0.178,0.045,0.0,31.247,15.839,32.085,7.466,3.785,7.588

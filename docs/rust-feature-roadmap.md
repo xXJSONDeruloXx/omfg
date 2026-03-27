@@ -52,6 +52,10 @@ Continue iterating on the Rust implementation until practical feature parity is 
   - `multi-blend`
 - Adaptive multi-FG synthesis stepping stone:
   - `adaptive-multi-blend`
+- First reprojection-backed higher-quality multi-FG mode:
+  - `reproject-multi-blend`
+- First adaptive reprojection-backed multi-FG mode:
+  - `reproject-adaptive-multi-blend`
 - First repo-specific autoperf harness:
   - fast decision benchmark subset
   - repeated-run aggregation
@@ -100,17 +104,24 @@ Goal:
 Current status:
 - initial stepping stone achieved via `multi-blend`
 - adaptive synthesis variant achieved via `adaptive-multi-blend`
+- higher-quality reprojection-backed variants now also exist:
+  - `reproject-multi-blend`
+  - `reproject-adaptive-multi-blend`
 - the original validated mainline path emitted two generated frames between real frames in Rust
 - swapchain headroom now scales automatically for larger requested multi-FG counts
 - successful Deck sweep now validates `multi-blend` counts from `1..20`
-- LSFG-style target-FPS control now exists in `adaptive-multi-blend` via fractional generated-frame credit accumulation
-- real Steam Deck target-FPS validation now covers `90`, `100`, `120`, and `150` FPS targets
+- higher-quality reprojection-backed Deck validation now also covers:
+  - `reproject-multi-blend` smoke / long / IMMEDIATE
+  - `reproject-adaptive-multi-blend` smoke / long / IMMEDIATE
+  - targeted higher-count smoke runs at `6` generated frames for both reprojection-backed multi-FG paths
+- LSFG-style target-FPS control now exists in `adaptive-multi-blend` and `reproject-adaptive-multi-blend` via fractional generated-frame credit accumulation
+- real Steam Deck target-FPS validation is fully automated for `adaptive-multi-blend` and manually smoke-validated for the reprojection-backed adaptive multi path
 
 Next likely path:
-- extend the higher-count work from `multi-blend` into `adaptive-multi-blend`
-- decouple controller quality from the current conservative synchronization overhead
+- improve confidence/disocclusion handling inside the new reprojection-backed multi-FG modes
+- better separate controller policy from current pacing overhead
 - improve synchronization model beyond the current conservative approach
-- validate with broader Deck finite-frame runs and additional modes
+- validate with broader Deck finite-frame runs and additional quality settings
 
 ### 2. Adaptive FG controller
 Goal:
@@ -139,12 +150,16 @@ Current status:
 - `search-blend` and `search-adaptive-blend` established the first local motion-search heuristics
 - `reproject-blend` now adds a stronger symmetric patch-search reprojection step
 - `reproject-adaptive-blend` adds adaptive weighting on top of that reprojection path
-- both reprojection modes are now validated locally, in Linux Docker, and on the Steam Deck through smoke, long, and IMMEDIATE runs
+- that stronger reprojection path has now been propagated into multi-FG via:
+  - `reproject-multi-blend`
+  - `reproject-adaptive-multi-blend`
+- all four reprojection-backed modes are now validated locally, in Linux Docker, and on the Steam Deck through smoke, long, and IMMEDIATE runs
+- focused Deck benchmarking now shows the reprojection-backed multi-FG path costs roughly `~3.76–3.79 ms/generated` with the current default reprojection settings
 
 Next likely path:
-- propagate reprojection logic into multi-FG paths
 - improve confidence and disocclusion handling around reprojected samples
 - experiment with larger search windows / better patch metrics
+- reduce visible failure cases in higher-count reprojection-backed multi-FG
 - eventual optical-flow style pipeline
 
 ### 4. Temporal quality / disocclusion handling
@@ -196,15 +211,15 @@ New capability work should continue following this loop:
 
 ## Current practical priority
 
-With `reproject-blend`, `reproject-adaptive-blend`, and `adaptive-multi-blend` now working, the current mainline priority is:
+With `reproject-multi-blend` and `reproject-adaptive-multi-blend` now working, the current mainline priority is:
 
-## **bringing stronger reprojection into higher-quality multi-FG and richer confidence/disocclusion handling**
+## **improving confidence/disocclusion handling and pacing for the new reprojection-backed multi-FG path**
 
 More specifically, the current ordering is:
 1. pacing / present-timing instrumentation and scheduling improvements
-2. extend the new dynamic multi-FG scaling work into adaptive/higher-quality paths
-3. stronger reprojection inside multi-FG
-4. confidence / disocclusion / hole-filling improvements
+2. richer confidence / disocclusion / hole-filling improvements inside reprojection-backed multi-FG
+3. stronger patch metrics / search-window experiments / temporal stability tuning
+4. cleaner controller-vs-backend separation for adaptive higher-quality multi-FG
 5. post-process optical-flow style estimation
 
 In parallel, but not as the default mainline:

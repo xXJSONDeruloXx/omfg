@@ -11,6 +11,8 @@ pub enum Mode {
     SearchAdaptiveBlendTest,
     ReprojectBlendTest,
     ReprojectAdaptiveBlendTest,
+    ReprojectMultiBlendTest,
+    ReprojectAdaptiveMultiBlendTest,
     MultiBlendTest,
     AdaptiveMultiBlendTest,
 }
@@ -41,6 +43,14 @@ impl Mode {
             | "adaptive-reproject-blend"
             | "vector-reproject-adaptive"
             | "reproject-adaptive-blend-test" => Self::ReprojectAdaptiveBlendTest,
+            "reproject-multi-blend"
+            | "reproject-multi-fg"
+            | "reproject-multi-blend-test"
+            | "multi-reproject-blend" => Self::ReprojectMultiBlendTest,
+            "reproject-adaptive-multi-blend"
+            | "adaptive-reproject-multi-blend"
+            | "reproject-adaptive-multi-fg"
+            | "reproject-adaptive-multi-blend-test" => Self::ReprojectAdaptiveMultiBlendTest,
             "multi-blend" | "multi-fg" | "multi-fg-test" | "multi-blend-test" => {
                 Self::MultiBlendTest
             }
@@ -69,6 +79,8 @@ impl Mode {
             Self::SearchAdaptiveBlendTest => "search-adaptive-blend-test",
             Self::ReprojectBlendTest => "reproject-blend-test",
             Self::ReprojectAdaptiveBlendTest => "reproject-adaptive-blend-test",
+            Self::ReprojectMultiBlendTest => "reproject-multi-blend-test",
+            Self::ReprojectAdaptiveMultiBlendTest => "reproject-adaptive-multi-blend-test",
             Self::MultiBlendTest => "multi-blend-test",
             Self::AdaptiveMultiBlendTest => "adaptive-multi-blend-test",
         }
@@ -196,6 +208,38 @@ mod tests {
             Mode::ReprojectAdaptiveBlendTest
         );
         assert_eq!(
+            Mode::from_env_value(Some("reproject-multi-blend")),
+            Mode::ReprojectMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("reproject-multi-fg")),
+            Mode::ReprojectMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("reproject-multi-blend-test")),
+            Mode::ReprojectMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("multi-reproject-blend")),
+            Mode::ReprojectMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("reproject-adaptive-multi-blend")),
+            Mode::ReprojectAdaptiveMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("adaptive-reproject-multi-blend")),
+            Mode::ReprojectAdaptiveMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("reproject-adaptive-multi-fg")),
+            Mode::ReprojectAdaptiveMultiBlendTest
+        );
+        assert_eq!(
+            Mode::from_env_value(Some("reproject-adaptive-multi-blend-test")),
+            Mode::ReprojectAdaptiveMultiBlendTest
+        );
+        assert_eq!(
             Mode::from_env_value(Some("multi-blend")),
             Mode::MultiBlendTest
         );
@@ -245,6 +289,14 @@ mod tests {
         assert_eq!(
             Mode::ReprojectAdaptiveBlendTest.name(),
             "reproject-adaptive-blend-test"
+        );
+        assert_eq!(
+            Mode::ReprojectMultiBlendTest.name(),
+            "reproject-multi-blend-test"
+        );
+        assert_eq!(
+            Mode::ReprojectAdaptiveMultiBlendTest.name(),
+            "reproject-adaptive-multi-blend-test"
         );
         assert_eq!(Mode::MultiBlendTest.name(), "multi-blend-test");
         assert_eq!(
