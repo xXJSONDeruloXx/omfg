@@ -1,0 +1,3 @@
+label=reproject-blend-default mode=reproject-blend-test debugView=off samples=59 generatedFrames=59 avgCpuTotalMs=18.452 avgCpuPerGeneratedFrameMs=18.452 avgGpuCmdMs=3.896 avgGpuPerGeneratedFrameMs=3.896 maxCpuTotalMs=20.006 maxGpuCmdMs=4.072
+label=optflow-blend-default mode=optflow-blend-test debugView=off samples=59 generatedFrames=59 avgCpuTotalMs=21.288 avgCpuPerGeneratedFrameMs=21.288 avgGpuCmdMs=10.955 avgGpuPerGeneratedFrameMs=10.955 maxCpuTotalMs=22.737 maxGpuCmdMs=11.024
+label=optflow-blend-fast mode=optflow-blend-test debugView=off samples=59 generatedFrames=59 avgCpuTotalMs=15.12 avgCpuPerGeneratedFrameMs=15.12 avgGpuCmdMs=2.987 avgGpuPerGeneratedFrameMs=2.987 maxCpuTotalMs=16.117 maxGpuCmdMs=3.016
