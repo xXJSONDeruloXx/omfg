@@ -1,0 +1,31 @@
+[omfg][info][1774622494930] vkNegotiateLoaderLayerInterfaceVersion ok; mode=reproject-multi-blend-test
+[omfg][info][1774622494933] vkCreateInstance ok; mode=reproject-multi-blend-test; app=vkcube; engine=vkcube; apiVersion=1.0.0
+[omfg][info][1774622494956] vkCreateDevice appended timing extensions; extensions=VK_KHR_present_id,VK_KHR_present_wait
+[omfg][info][1774622494956] vkCreateDevice ok; gpu=AMD Custom GPU 0932 (RADV VANGOGH); presentId=1; presentWait=1; displayTiming=0
+[omfg][info][1774622494960] created history image for swapchain
+[omfg][info][1774622494960] vkCreateSwapchainKHR ok; extent=500x500; format=44; presentMode=FIFO; minImages=3->6; usage=COLOR_ATTACHMENT (0x10) -> TRANSFER_SRC|SAMPLED|COLOR_ATTACHMENT (0x15); images=6; mode=reproject-multi-blend-test
+[omfg][info][1774622494963] vkQueuePresentKHR frame=1; queueFamily=0; imageIndex=0; waitSemaphores=1
+[omfg][info][1774622494963] initialized benchmark timestamp query pool; capacity=4096; timestampPeriodNs=10.000; timestampValidBits=64
+[omfg][info][1774622494963] initialized injection resources for queue family 0
+[omfg][info][1774622494964] initialized blend resources for swapchain
+[omfg][info][1774622494964] reproject-multi-blend primed previous frame history
+[omfg][info][1774622494964] vkQueuePresentKHR frame=2; queueFamily=0; imageIndex=1; waitSemaphores=1
+[omfg][info][1774622494976] benchmark sample; label=reproject-multi-count3-no-current-bias; mode=reproject-multi-blend-test; debugView=off; sample=1; present=2; generatedFrames=3; cpuAcquireMs=0.042; cpuSetupMs=0.001; cpuRecordMs=0.046; cpuSubmitMs=0.049; cpuSubmitWaitMs=11.620; cpuGeneratedPresentMs=0.186; cpuOriginalPresentMs=0.049; cpuQueueIdleMs=0.000; cpuTotalMs=11.993; gpuCmdMs=11.497; gpuAvailable=1
+[omfg][info][1774622494976] first reproject multi blended generated-frame present succeeded
+[omfg][info][1774622494976] reproject multi blended frame present=3; generatedImageIndices=[2, 3, 4]; currentImageIndex=1
+[omfg][info][1774622494976] vkQueuePresentKHR frame=3; queueFamily=0; imageIndex=5; waitSemaphores=1
+[omfg][info][1774622495008] benchmark sample; label=reproject-multi-count3-no-current-bias; mode=reproject-multi-blend-test; debugView=off; sample=2; present=3; generatedFrames=3; cpuAcquireMs=17.924; cpuSetupMs=0.003; cpuRecordMs=0.123; cpuSubmitMs=0.127; cpuSubmitWaitMs=12.652; cpuGeneratedPresentMs=0.270; cpuOriginalPresentMs=0.053; cpuQueueIdleMs=0.000; cpuTotalMs=31.151; gpuCmdMs=11.587; gpuAvailable=1
+[omfg][info][1774622495008] reproject multi blended frame present=6; generatedImageIndices=[0, 2, 3]; currentImageIndex=5
+[omfg][info][1774622495008] vkQueuePresentKHR frame=4; queueFamily=0; imageIndex=4; waitSemaphores=1
+[omfg][info][1774622495052] benchmark sample; label=reproject-multi-count3-no-current-bias; mode=reproject-multi-blend-test; debugView=off; sample=3; present=4; generatedFrames=3; cpuAcquireMs=30.779; cpuSetupMs=0.002; cpuRecordMs=0.087; cpuSubmitMs=0.088; cpuSubmitWaitMs=12.751; cpuGeneratedPresentMs=0.193; cpuOriginalPresentMs=0.044; cpuQueueIdleMs=0.000; cpuTotalMs=43.946; gpuCmdMs=11.341; gpuAvailable=1
+[omfg][info][1774622495052] reproject multi blended frame present=9; generatedImageIndices=[1, 0, 2]; currentImageIndex=4
+[omfg][info][1774622495052] vkQueuePresentKHR frame=5; queueFamily=0; imageIndex=3; waitSemaphores=1
+[omfg][info][1774622495096] benchmark sample; label=reproject-multi-count3-no-current-bias; mode=reproject-multi-blend-test; debugView=off; sample=4; present=5; generatedFrames=3; cpuAcquireMs=31.007; cpuSetupMs=0.002; cpuRecordMs=0.108; cpuSubmitMs=0.120; cpuSubmitWaitMs=12.503; cpuGeneratedPresentMs=0.210; cpuOriginalPresentMs=0.050; cpuQueueIdleMs=0.000; cpuTotalMs=44.001; gpuCmdMs=11.350; gpuAvailable=1
+[omfg][info][1774622495142] benchmark sample; label=reproject-multi-count3-no-current-bias; mode=reproject-multi-blend-test; debugView=off; sample=5; present=6; generatedFrames=3; cpuAcquireMs=31.421; cpuSetupMs=0.003; cpuRecordMs=0.104; cpuSubmitMs=0.097; cpuSubmitWaitMs=13.108; cpuGeneratedPresentMs=0.373; cpuOriginalPresentMs=0.045; cpuQueueIdleMs=0.000; cpuTotalMs=45.150; gpuCmdMs=11.633; gpuAvailable=1
+[omfg][info][1774622495807] reproject multi blended frame present=60; generatedImageIndices=[0, 2, 3]; currentImageIndex=5
+[omfg][info][1774622496697] reproject multi blended frame present=120; generatedImageIndices=[5, 1, 0]; currentImageIndex=3
+[omfg][info][1774622497497] vkQueuePresentKHR frame=60; queueFamily=0; imageIndex=2; waitSemaphores=1
+[omfg][info][1774622497541] benchmark summary; label=reproject-multi-count3-no-current-bias; mode=reproject-multi-blend-test; debugView=off; samples=59; generatedFrames=177; gpuSamples=59; avgCpuAcquireMs=30.003; avgCpuSetupMs=0.003; avgCpuRecordMs=0.118; avgCpuSubmitMs=0.118; avgCpuSubmitWaitMs=12.885; avgCpuGeneratedPresentMs=0.293; avgCpuOriginalPresentMs=0.045; avgCpuQueueIdleMs=0.000; avgCpuTotalMs=43.466; avgCpuPerGeneratedFrameMs=14.489; maxCpuTotalMs=45.407; avgGpuCmdMs=11.614; avgGpuPerGeneratedFrameMs=3.871; maxGpuCmdMs=11.768
+[omfg][info][1774622497541] vkDestroySwapchainKHR
+[omfg][info][1774622497551] vkDestroyDevice
+[omfg][info][1774622497656] vkDestroyInstance
