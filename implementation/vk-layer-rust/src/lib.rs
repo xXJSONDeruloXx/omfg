@@ -8,7 +8,7 @@ mod planner;
 
 use ash::vk;
 use ash::vk::Handle;
-use config::Mode;
+use config::{DebugView, Mode};
 use layer_defs::{
     VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo, VkNegotiateLayerInterface,
     VkNegotiateLayerStructType, CURRENT_LOADER_LAYER_INTERFACE_VERSION,
@@ -625,6 +625,7 @@ struct BlendPushConstants {
     patch_radius: u32,
     hole_fill_radius: u32,
     mode: u32,
+    debug_view: u32,
 }
 
 #[derive(Clone)]
@@ -1288,9 +1289,10 @@ fn record_benchmark_sample(
 
     if stats.samples <= 5 || stats.samples % 60 == 0 {
         log_info(format!(
-            "benchmark sample; label={}; mode={}; sample={}; present={}; generatedFrames={}; cpuAcquireMs={:.3}; cpuSetupMs={:.3}; cpuRecordMs={:.3}; cpuSubmitMs={:.3}; cpuSubmitWaitMs={:.3}; cpuGeneratedPresentMs={:.3}; cpuOriginalPresentMs={:.3}; cpuQueueIdleMs={:.3}; cpuTotalMs={:.3}; gpuCmdMs={:.3}; gpuAvailable={}",
+            "benchmark sample; label={}; mode={}; debugView={}; sample={}; present={}; generatedFrames={}; cpuAcquireMs={:.3}; cpuSetupMs={:.3}; cpuRecordMs={:.3}; cpuSubmitMs={:.3}; cpuSubmitWaitMs={:.3}; cpuGeneratedPresentMs={:.3}; cpuOriginalPresentMs={:.3}; cpuQueueIdleMs={:.3}; cpuTotalMs={:.3}; gpuCmdMs={:.3}; gpuAvailable={}",
             benchmark_label(),
             mode.name(),
+            effective_debug_view(mode).name(),
             stats.samples,
             present_count,
             sample.generated_frames,
@@ -1318,9 +1320,10 @@ fn log_benchmark_summary(mode: Mode, stats: &BenchmarkStats) {
     let generated_divisor = stats.generated_frames.max(1) as f64;
     let gpu_sample_divisor = stats.gpu_samples.max(1) as f64;
     log_info(format!(
-        "benchmark summary; label={}; mode={}; samples={}; generatedFrames={}; gpuSamples={}; avgCpuAcquireMs={:.3}; avgCpuSetupMs={:.3}; avgCpuRecordMs={:.3}; avgCpuSubmitMs={:.3}; avgCpuSubmitWaitMs={:.3}; avgCpuGeneratedPresentMs={:.3}; avgCpuOriginalPresentMs={:.3}; avgCpuQueueIdleMs={:.3}; avgCpuTotalMs={:.3}; avgCpuPerGeneratedFrameMs={:.3}; maxCpuTotalMs={:.3}; avgGpuCmdMs={:.3}; avgGpuPerGeneratedFrameMs={:.3}; maxGpuCmdMs={:.3}",
+        "benchmark summary; label={}; mode={}; debugView={}; samples={}; generatedFrames={}; gpuSamples={}; avgCpuAcquireMs={:.3}; avgCpuSetupMs={:.3}; avgCpuRecordMs={:.3}; avgCpuSubmitMs={:.3}; avgCpuSubmitWaitMs={:.3}; avgCpuGeneratedPresentMs={:.3}; avgCpuOriginalPresentMs={:.3}; avgCpuQueueIdleMs={:.3}; avgCpuTotalMs={:.3}; avgCpuPerGeneratedFrameMs={:.3}; maxCpuTotalMs={:.3}; avgGpuCmdMs={:.3}; avgGpuPerGeneratedFrameMs={:.3}; maxGpuCmdMs={:.3}",
         benchmark_label(),
         mode.name(),
+        effective_debug_view(mode).name(),
         stats.samples,
         stats.generated_frames,
         stats.gpu_samples,
@@ -2738,6 +2741,24 @@ fn reproject_ambiguity_scale() -> f32 {
     env_f32("OMFG_REPROJECT_AMBIGUITY_SCALE", 6.0).clamp(0.0, 32.0)
 }
 
+fn debug_view() -> DebugView {
+    DebugView::from_env()
+}
+
+fn effective_debug_view(mode: Mode) -> DebugView {
+    if matches!(
+        mode,
+        Mode::ReprojectBlendTest
+            | Mode::ReprojectAdaptiveBlendTest
+            | Mode::ReprojectMultiBlendTest
+            | Mode::ReprojectAdaptiveMultiBlendTest
+    ) {
+        debug_view()
+    } else {
+        DebugView::Off
+    }
+}
+
 fn adaptive_multi_target_fps() -> f32 {
     env_f32("OMFG_ADAPTIVE_MULTI_TARGET_FPS", 0.0).max(0.0)
 }
@@ -2852,6 +2873,7 @@ fn blend_push_constants_for_mode(mode: Mode) -> BlendPushConstants {
             patch_radius: reproject_patch_radius(),
             hole_fill_radius: reproject_hole_fill_radius(),
             mode: 4,
+            debug_view: effective_debug_view(mode).shader_code(),
             ..Default::default()
         },
         Mode::ReprojectAdaptiveBlendTest => BlendPushConstants {
@@ -2868,6 +2890,7 @@ fn blend_push_constants_for_mode(mode: Mode) -> BlendPushConstants {
             patch_radius: reproject_patch_radius(),
             hole_fill_radius: reproject_hole_fill_radius(),
             mode: 5,
+            debug_view: effective_debug_view(mode).shader_code(),
             ..Default::default()
         },
         _ => BlendPushConstants::default(),
@@ -2948,6 +2971,11 @@ fn multi_blend_push_constants_plan(
                     (false, true) => 1,
                     (true, false) => 4,
                     (true, true) => 5,
+                },
+                debug_view: if reproject {
+                    effective_debug_view(mode).shader_code()
+                } else {
+                    DebugView::Off.shader_code()
                 },
                 ..Default::default()
             }
@@ -6785,6 +6813,7 @@ mod tests {
         std::env::set_var("OMFG_REPROJECT_GRADIENT_CONFIDENCE_WEIGHT", "12.0");
         std::env::set_var("OMFG_REPROJECT_CHROMA_WEIGHT", "0.5");
         std::env::set_var("OMFG_REPROJECT_AMBIGUITY_SCALE", "7.5");
+        std::env::set_var("OMFG_DEBUG_VIEW", "motion");
 
         let push = blend_push_constants_for_mode(Mode::ReprojectBlendTest);
         assert_eq!(push.confidence_scale, 3.5);
@@ -6794,6 +6823,7 @@ mod tests {
         assert_eq!(push.gradient_confidence_weight, 12.0);
         assert_eq!(push.chroma_weight, 0.5);
         assert_eq!(push.ambiguity_scale, 7.5);
+        assert_eq!(push.debug_view, DebugView::Motion.shader_code());
 
         std::env::remove_var("OMFG_REPROJECT_CONFIDENCE_SCALE");
         std::env::remove_var("OMFG_REPROJECT_DISOCCLUSION_SCALE");
@@ -6802,6 +6832,7 @@ mod tests {
         std::env::remove_var("OMFG_REPROJECT_GRADIENT_CONFIDENCE_WEIGHT");
         std::env::remove_var("OMFG_REPROJECT_CHROMA_WEIGHT");
         std::env::remove_var("OMFG_REPROJECT_AMBIGUITY_SCALE");
+        std::env::remove_var("OMFG_DEBUG_VIEW");
     }
 
     #[test]
@@ -6814,6 +6845,7 @@ mod tests {
         std::env::set_var("OMFG_REPROJECT_GRADIENT_CONFIDENCE_WEIGHT", "6.0");
         std::env::set_var("OMFG_REPROJECT_CHROMA_WEIGHT", "0.4");
         std::env::set_var("OMFG_REPROJECT_AMBIGUITY_SCALE", "5.5");
+        std::env::set_var("OMFG_DEBUG_VIEW", "ambiguity");
 
         let plan = multi_blend_push_constants_plan(Mode::ReprojectAdaptiveMultiBlendTest, 3);
         assert_eq!(plan.len(), 3);
@@ -6826,6 +6858,7 @@ mod tests {
             assert_eq!(push.chroma_weight, 0.4);
             assert_eq!(push.ambiguity_scale, 5.5);
             assert_eq!(push.mode, 5);
+            assert_eq!(push.debug_view, DebugView::Ambiguity.shader_code());
         }
 
         std::env::remove_var("OMFG_REPROJECT_CONFIDENCE_SCALE");
@@ -6835,5 +6868,23 @@ mod tests {
         std::env::remove_var("OMFG_REPROJECT_GRADIENT_CONFIDENCE_WEIGHT");
         std::env::remove_var("OMFG_REPROJECT_CHROMA_WEIGHT");
         std::env::remove_var("OMFG_REPROJECT_AMBIGUITY_SCALE");
+        std::env::remove_var("OMFG_DEBUG_VIEW");
+    }
+
+    #[test]
+    fn non_reproject_modes_ignore_requested_debug_view() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::set_var("OMFG_DEBUG_VIEW", "confidence");
+
+        let single = blend_push_constants_for_mode(Mode::BlendTest);
+        assert_eq!(single.debug_view, DebugView::Off.shader_code());
+
+        let multi = multi_blend_push_constants_plan(Mode::AdaptiveMultiBlendTest, 2);
+        assert_eq!(multi.len(), 2);
+        for push in multi {
+            assert_eq!(push.debug_view, DebugView::Off.shader_code());
+        }
+
+        std::env::remove_var("OMFG_DEBUG_VIEW");
     }
 }

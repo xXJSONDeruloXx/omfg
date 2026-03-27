@@ -87,9 +87,50 @@ impl Mode {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DebugView {
+    Off,
+    Motion,
+    Confidence,
+    Ambiguity,
+}
+
+impl DebugView {
+    pub fn from_env_value(value: Option<&str>) -> Self {
+        match value.unwrap_or_default() {
+            "motion" | "vector" | "offset" | "reprojection-offset" => Self::Motion,
+            "confidence" | "reproject-confidence" => Self::Confidence,
+            "ambiguity" | "reproject-ambiguity" => Self::Ambiguity,
+            _ => Self::Off,
+        }
+    }
+
+    pub fn from_env() -> Self {
+        Self::from_env_value(std::env::var("OMFG_DEBUG_VIEW").ok().as_deref())
+    }
+
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Off => "off",
+            Self::Motion => "motion",
+            Self::Confidence => "confidence",
+            Self::Ambiguity => "ambiguity",
+        }
+    }
+
+    pub const fn shader_code(self) -> u32 {
+        match self {
+            Self::Off => 0,
+            Self::Motion => 1,
+            Self::Confidence => 2,
+            Self::Ambiguity => 3,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::Mode;
+    use super::{DebugView, Mode};
 
     #[test]
     fn parses_mode_aliases() {
@@ -303,5 +344,47 @@ mod tests {
             Mode::AdaptiveMultiBlendTest.name(),
             "adaptive-multi-blend-test"
         );
+    }
+
+    #[test]
+    fn parses_debug_view_aliases() {
+        assert_eq!(DebugView::from_env_value(None), DebugView::Off);
+        assert_eq!(DebugView::from_env_value(Some("")), DebugView::Off);
+        assert_eq!(DebugView::from_env_value(Some("motion")), DebugView::Motion);
+        assert_eq!(DebugView::from_env_value(Some("vector")), DebugView::Motion);
+        assert_eq!(DebugView::from_env_value(Some("offset")), DebugView::Motion);
+        assert_eq!(
+            DebugView::from_env_value(Some("reprojection-offset")),
+            DebugView::Motion
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("confidence")),
+            DebugView::Confidence
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("reproject-confidence")),
+            DebugView::Confidence
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("ambiguity")),
+            DebugView::Ambiguity
+        );
+        assert_eq!(
+            DebugView::from_env_value(Some("reproject-ambiguity")),
+            DebugView::Ambiguity
+        );
+        assert_eq!(DebugView::from_env_value(Some("wat")), DebugView::Off);
+    }
+
+    #[test]
+    fn returns_stable_debug_view_names_and_codes() {
+        assert_eq!(DebugView::Off.name(), "off");
+        assert_eq!(DebugView::Motion.name(), "motion");
+        assert_eq!(DebugView::Confidence.name(), "confidence");
+        assert_eq!(DebugView::Ambiguity.name(), "ambiguity");
+        assert_eq!(DebugView::Off.shader_code(), 0);
+        assert_eq!(DebugView::Motion.shader_code(), 1);
+        assert_eq!(DebugView::Confidence.shader_code(), 2);
+        assert_eq!(DebugView::Ambiguity.shader_code(), 3);
     }
 }

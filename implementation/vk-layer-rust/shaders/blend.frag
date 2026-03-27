@@ -17,6 +17,7 @@ layout(push_constant) uniform BlendParams {
     uint patch_radius;
     uint hole_fill_radius;
     uint mode;
+    uint debug_view;
 } u_params;
 
 layout(location = 0) in vec2 v_uv;
@@ -93,6 +94,10 @@ void main() {
     float reproject_hole_fill_weight = 0.0;
     bool reproject_mode = false;
 
+    vec2 debug_half_offset_px = vec2(0.0);
+    float debug_confidence = 0.0;
+    float debug_ambiguity = 0.0;
+
     if (u_params.mode == 2u || u_params.mode == 3u) {
         ivec2 size_px = textureSize(u_prev_frame, 0);
         vec2 texel = 1.0 / vec2(size_px);
@@ -150,6 +155,7 @@ void main() {
         vec4 reproject_prev = texture(u_prev_frame, v_uv + half_offset_uv);
         vec4 reproject_curr = texture(u_curr_frame, v_uv - half_offset_uv);
         float confidence = clamp((zero_error - best_error) * u_params.confidence_scale, 0.0, 1.0);
+        debug_half_offset_px = vec2(best_half_offset);
 
         // Gradient-weighted confidence: reduce trust in flat regions where motion
         // estimation is unreliable. Textured regions preserve full confidence.
@@ -167,6 +173,7 @@ void main() {
         if (u_params.ambiguity_scale > 0.0 && second_best_error < 1e19) {
             float ambiguity_margin = max(second_best_error - best_error, 0.0);
             float ambiguity_factor = clamp(ambiguity_margin * u_params.ambiguity_scale, 0.0, 1.0);
+            debug_ambiguity = 1.0 - ambiguity_factor;
             // When multiple candidates are nearly tied, suppress confidence.
             confidence *= mix(0.2, 1.0, ambiguity_factor);
         }
@@ -178,6 +185,7 @@ void main() {
 
         reproject_half_offset_uv = half_offset_uv;
         reproject_texel = texel;
+        debug_confidence = confidence;
         reproject_hole_fill_weight = clamp((1.0 - confidence) * disocclusion * u_params.hole_fill_strength, 0.0, 1.0);
 
         source_prev = mix(prev_color, reproject_prev, confidence);
@@ -195,6 +203,22 @@ void main() {
         int hole_fill_radius = min(int(u_params.hole_fill_radius), MAX_HOLE_FILL_RADIUS);
         vec4 hole_fill_color = neighborhood_temporal_fill(v_uv, reproject_half_offset_uv, blend_alpha, hole_fill_radius, reproject_texel);
         blended_color = mix(blended_color, hole_fill_color, reproject_hole_fill_weight);
+    }
+
+    if (u_params.debug_view == 1u) {
+        float search_norm = max(float(search_radius), 1.0);
+        vec2 motion_norm = clamp(debug_half_offset_px / search_norm, vec2(-1.0), vec2(1.0));
+        float motion_mag = clamp(length(debug_half_offset_px) / (search_norm * 1.41421356), 0.0, 1.0);
+        out_color = vec4(0.5 + 0.5 * motion_norm.x, 0.5 + 0.5 * motion_norm.y, motion_mag, 1.0);
+        return;
+    }
+    if (u_params.debug_view == 2u) {
+        out_color = vec4(vec3(debug_confidence), 1.0);
+        return;
+    }
+    if (u_params.debug_view == 3u) {
+        out_color = vec4(vec3(debug_ambiguity), 1.0);
+        return;
     }
 
     out_color = blended_color;

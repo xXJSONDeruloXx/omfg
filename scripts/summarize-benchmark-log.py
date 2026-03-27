@@ -7,6 +7,7 @@ from pathlib import Path
 ORDER = [
     "label",
     "mode",
+    "debugView",
     "samples",
     "generatedFrames",
     "gpuSamples",
@@ -83,6 +84,7 @@ def main():
         parser.error("log_path is required unless --header is used")
 
     data = parse_summary(args.log_path)
+    data.setdefault("debugView", "off")
 
     if args.as_json:
         print(json.dumps(data, indent=2, sort_keys=True))
@@ -93,7 +95,7 @@ def main():
         return
 
     print(
-        "label={label} mode={mode} samples={samples} generatedFrames={generatedFrames} "
+        "label={label} mode={mode} debugView={debugView} samples={samples} generatedFrames={generatedFrames} "
         "avgCpuTotalMs={avgCpuTotalMs} avgCpuPerGeneratedFrameMs={avgCpuPerGeneratedFrameMs} "
         "avgGpuCmdMs={avgGpuCmdMs} avgGpuPerGeneratedFrameMs={avgGpuPerGeneratedFrameMs} "
         "maxCpuTotalMs={maxCpuTotalMs} maxGpuCmdMs={maxGpuCmdMs}".format(**data)
