@@ -249,7 +249,7 @@ These are read directly by the Rust Vulkan layer.
 | `OMFG_GENERATED_ACQUIRE_TIMEOUT_INTERVAL_MULTIPLIER` | float `>= 1.0` | `4.0` | If no hard timeout is supplied, timeout is derived from recent present interval × this multiplier. |
 | `OMFG_GENERATED_ACQUIRE_TIMEOUT_MIN_NS` | integer `u64` | `50000000` | Lower clamp for adaptive acquire timeout. |
 | `OMFG_GENERATED_ACQUIRE_TIMEOUT_MAX_NS` | integer `u64` | `500000000` | Upper clamp for adaptive acquire timeout. |
-| `OMFG_PRESENT_TIMING` | boolean | `true` | Enables present-id / present-timing instrumentation. |
+| `OMFG_PRESENT_TIMING` | boolean | `true` | Enables present-id / present-timing instrumentation where OMFG can safely inject its own present IDs. If the game already supplies `VkPresentIdKHR`, OMFG now preserves the app's IDs and skips its own injected present-id tagging on generated/original injected presents to avoid compatibility hangs. |
 | `OMFG_PRESENT_WAIT` | boolean | `false` | Enables present wait behavior where available. |
 | `OMFG_PRESENT_WAIT_TIMEOUT_NS` | integer `u64` nanoseconds | `5000000000` | Present-wait timeout. |
 | `OMFG_CREATE_DEVICE_DEBUG` | boolean | `false` | Extra device-creation debug logging/behavior. |

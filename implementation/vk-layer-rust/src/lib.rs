@@ -1043,6 +1043,22 @@ unsafe fn describe_pnext_chain(mut p_next: *const c_void) -> String {
     chain.join("->")
 }
 
+unsafe fn pnext_chain_contains_structure_type(
+    mut p_next: *const c_void,
+    expected: vk::StructureType,
+) -> bool {
+    let mut guard = 0usize;
+    while !p_next.is_null() && guard < 64 {
+        let base = &*(p_next as *const vk::BaseOutStructure<'_>);
+        if base.s_type == expected {
+            return true;
+        }
+        p_next = base.p_next.cast();
+        guard += 1;
+    }
+    false
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct HotConfigFileSignature {
     len: u64,
@@ -1458,11 +1474,23 @@ unsafe fn queue_present_with_timing(
     origin: &str,
 ) -> vk::Result {
     let present_info_ref = &*present_info;
+    let app_supplied_present_id = pnext_chain_contains_structure_type(
+        present_info_ref.p_next,
+        vk::StructureType::PRESENT_ID_KHR,
+    );
+    if app_supplied_present_id && (state.present_count <= 5 || state.present_count % 60 == 0) {
+        log_info(format!(
+            "skipping OMFG present-id injection; origin={}; reason=app-supplied-present-id",
+            origin,
+        ));
+    }
+
     let mut modified_present_info = *present_info_ref;
     let mut present_ids = [0u64; 1];
     let present_id = if present_timing_enabled()
         && device_info.supports_present_id
         && present_info_ref.swapchain_count == 1
+        && !app_supplied_present_id
     {
         present_ids[0] = state.next_present_id;
         state.next_present_id = state.next_present_id.saturating_add(1);
@@ -7462,6 +7490,22 @@ OMFG_REPROJECT_CONFIDENCE_SCALE = 7.25
         std::env::remove_var("OMFG_REPROJECT_CONFIDENCE_SCALE");
         let _ = std::fs::remove_file(path);
         reset_hot_config_state();
+    }
+
+    #[test]
+    fn detects_present_id_in_pnext_chain() {
+        let mut present_id = vk::PresentIdKHR::default();
+        let p_next = (&mut present_id as *mut vk::PresentIdKHR<'_>).cast::<c_void>();
+        assert!(unsafe {
+            pnext_chain_contains_structure_type(p_next, vk::StructureType::PRESENT_ID_KHR)
+        });
+    }
+
+    #[test]
+    fn missing_present_id_in_pnext_chain_returns_false() {
+        assert!(!unsafe {
+            pnext_chain_contains_structure_type(ptr::null(), vk::StructureType::PRESENT_ID_KHR)
+        });
     }
 
     #[test]
