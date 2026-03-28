@@ -244,7 +244,7 @@ These are read directly by the Rust Vulkan layer.
 | `OMFG_BENCHMARK_LABEL` | non-empty string | `default` | Label written into benchmark logs. |
 | `OMFG_HISTORY_COPY_FREEZE_HISTORY` | boolean | `false` | Freezes history updates for `history-copy` style experiments. |
 | `OMFG_COPY_ORIGINAL_PRESENT_FIRST` | boolean | `false` | In `copy` paths, present the original before the generated frame. |
-| `OMFG_BLEND_ORIGINAL_PRESENT_FIRST` | boolean | `false` | In blend paths, present the original before the generated frame. |
+| `OMFG_BLEND_ORIGINAL_PRESENT_FIRST` | boolean | `false` | In blend paths, present the original before the generated frame. For the multi-blend family on `MAILBOX`, OMFG now auto-enables original-first unless you explicitly set this variable, because leaving the generated frame last produced better RE8 pacing in Deck measurements. |
 | `OMFG_GENERATED_ACQUIRE_TIMEOUT_NS` | integer `u64` nanoseconds | unset | Hard override for generated-image acquire timeout. |
 | `OMFG_GENERATED_ACQUIRE_TIMEOUT_INTERVAL_MULTIPLIER` | float `>= 1.0` | `4.0` | If no hard timeout is supplied, timeout is derived from recent present interval × this multiplier. |
 | `OMFG_GENERATED_ACQUIRE_TIMEOUT_MIN_NS` | integer `u64` | `50000000` | Lower clamp for adaptive acquire timeout. |

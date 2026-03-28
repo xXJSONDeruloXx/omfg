@@ -1287,15 +1287,19 @@ fn env_f32(name: &str, default_value: f32) -> f32 {
         .unwrap_or(default_value)
 }
 
-fn env_bool(name: &str, default_value: bool) -> bool {
+fn env_bool_opt(name: &str) -> Option<bool> {
     match env_string(name) {
         Some(value) => match value.trim().to_ascii_lowercase().as_str() {
-            "1" | "true" | "yes" | "on" => true,
-            "0" | "false" | "no" | "off" => false,
-            _ => default_value,
+            "1" | "true" | "yes" | "on" => Some(true),
+            "0" | "false" | "no" | "off" => Some(false),
+            _ => None,
         },
-        None => default_value,
+        None => None,
     }
+}
+
+fn env_bool(name: &str, default_value: bool) -> bool {
+    env_bool_opt(name).unwrap_or(default_value)
 }
 
 fn create_device_debug_enabled() -> bool {
@@ -1356,8 +1360,28 @@ fn generated_acquire_timeout_ns_for_state(state: &SwapchainState) -> u64 {
     adaptive_ns
 }
 
+fn default_multi_blend_original_present_first(mode: Mode, present_mode: vk::PresentModeKHR) -> bool {
+    matches!(
+        mode,
+        Mode::MultiBlendTest
+            | Mode::AdaptiveMultiBlendTest
+            | Mode::ReprojectMultiBlendTest
+            | Mode::ReprojectAdaptiveMultiBlendTest
+            | Mode::OptFlowMultiBlendTest
+            | Mode::OptFlowAdaptiveMultiBlendTest
+    ) && present_mode == vk::PresentModeKHR::MAILBOX
+}
+
 fn blend_original_present_first_enabled() -> bool {
     env_bool("OMFG_BLEND_ORIGINAL_PRESENT_FIRST", false)
+}
+
+fn blend_original_present_first_enabled_for_swapchain(
+    mode: Mode,
+    present_mode: vk::PresentModeKHR,
+) -> bool {
+    env_bool_opt("OMFG_BLEND_ORIGINAL_PRESENT_FIRST")
+        .unwrap_or_else(|| default_multi_blend_original_present_first(mode, present_mode))
 }
 
 fn present_timing_enabled() -> bool {
@@ -4309,7 +4333,8 @@ unsafe fn try_present_multi_blend_frame(
     };
     let generated_plan = multi_blend_push_constants_plan(mode, requested_generated_frame_count);
     let (prime_label, first_success_label, generated_label_prefix) = blend_mode_labels(mode);
-    let blend_original_first = blend_original_present_first_enabled();
+    let blend_original_first =
+        blend_original_present_first_enabled_for_swapchain(mode, state.present_mode);
     let benchmark_active = benchmark_enabled();
     let mut benchmark_sample = BenchmarkSample::default();
     let benchmark_query_span = if benchmark_active {
@@ -5018,7 +5043,11 @@ unsafe fn try_present_multi_blend_frame(
             || state.generated_present_count % 60 == 0
         {
             if first_success && blend_original_first {
-                log_info("multi-blend original-first mode enabled");
+                if env_bool_opt("OMFG_BLEND_ORIGINAL_PRESENT_FIRST").is_some() {
+                    log_info("multi-blend original-first mode enabled");
+                } else {
+                    log_info("multi-blend original-first mode auto-enabled for MAILBOX present mode");
+                }
             }
             log_info(format!(
                 "{}{}; generatedImageIndices={:?}; currentImageIndex={}; originalFirst={}",
@@ -7547,6 +7576,31 @@ OMFG_REPROJECT_CONFIDENCE_SCALE = 7.25
         std::env::remove_var("OMFG_HOT_CONFIG_PATH");
         let _ = std::fs::remove_file(path);
         reset_hot_config_state();
+    }
+
+    #[test]
+    fn mailbox_multi_defaults_to_original_first() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::remove_var("OMFG_BLEND_ORIGINAL_PRESENT_FIRST");
+        assert!(blend_original_present_first_enabled_for_swapchain(
+            Mode::ReprojectMultiBlendTest,
+            vk::PresentModeKHR::MAILBOX,
+        ));
+        assert!(!blend_original_present_first_enabled_for_swapchain(
+            Mode::ReprojectMultiBlendTest,
+            vk::PresentModeKHR::FIFO,
+        ));
+    }
+
+    #[test]
+    fn explicit_original_first_override_beats_mailbox_default() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::set_var("OMFG_BLEND_ORIGINAL_PRESENT_FIRST", "0");
+        assert!(!blend_original_present_first_enabled_for_swapchain(
+            Mode::ReprojectMultiBlendTest,
+            vk::PresentModeKHR::MAILBOX,
+        ));
+        std::env::remove_var("OMFG_BLEND_ORIGINAL_PRESENT_FIRST");
     }
 
     #[test]
