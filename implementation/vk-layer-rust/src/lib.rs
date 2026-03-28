@@ -1514,10 +1514,30 @@ fn multi_swapchain_generated_frame_cap() -> u32 {
     .max(1)
 }
 
+fn fixed_multi_generated_frame_count() -> u32 {
+    env_u32("OMFG_MULTI_BLEND_COUNT", 2)
+}
+
+fn fixed_multi_reserved_generated_frame_count() -> u32 {
+    env_u32(
+        "OMFG_MULTI_BLEND_RESERVED_COUNT",
+        fixed_multi_generated_frame_count(),
+    )
+}
+
+fn effective_fixed_multi_generated_frame_count() -> u32 {
+    fixed_multi_generated_frame_count().min(multi_swapchain_generated_frame_cap())
+}
+
+fn reserved_fixed_multi_generated_frame_count() -> u32 {
+    fixed_multi_reserved_generated_frame_count().min(multi_swapchain_generated_frame_cap())
+}
+
 fn requested_multi_generated_frames_for_swapchain(mode: Mode) -> u32 {
     let requested = match mode {
         Mode::MultiBlendTest | Mode::ReprojectMultiBlendTest | Mode::OptFlowMultiBlendTest => {
-            env_u32("OMFG_MULTI_BLEND_COUNT", 2).max(1)
+            effective_fixed_multi_generated_frame_count()
+                .max(reserved_fixed_multi_generated_frame_count())
         }
         Mode::AdaptiveMultiBlendTest
         | Mode::ReprojectAdaptiveMultiBlendTest
@@ -4255,7 +4275,7 @@ unsafe fn try_present_multi_blend_frame(
             .map(|request| request.generated_frame_count)
             .unwrap_or(0),
         Mode::MultiBlendTest | Mode::ReprojectMultiBlendTest | Mode::OptFlowMultiBlendTest => {
-            env_u32("OMFG_MULTI_BLEND_COUNT", 2).max(1) as usize
+            effective_fixed_multi_generated_frame_count() as usize
         }
         _ => 1,
     };
@@ -6899,6 +6919,10 @@ unsafe extern "system" fn layer_queue_present_khr(
     }
 
     let mode = Mode::from_env();
+    let multi_mode_disabled = matches!(
+        mode,
+        Mode::MultiBlendTest | Mode::ReprojectMultiBlendTest | Mode::OptFlowMultiBlendTest
+    ) && effective_fixed_multi_generated_frame_count() == 0;
     let present_info_ref = &*present_info;
     if present_info_ref.swapchain_count == 1 {
         let mut state_guard = global_state().lock().expect("global state mutex poisoned");
@@ -6924,27 +6948,28 @@ unsafe extern "system" fn layer_queue_present_khr(
             swapchain_state.last_present_timestamp_us = now_us;
             swapchain_state.present_count += 1;
             if swapchain_state.present_count <= 5 || swapchain_state.present_count % 60 == 0 {
-                let prefix = if matches!(
-                    mode,
-                    Mode::ClearTest
-                        | Mode::BfiTest
-                        | Mode::CopyTest
-                        | Mode::HistoryCopyTest
-                        | Mode::BlendTest
-                        | Mode::AdaptiveBlendTest
-                        | Mode::SearchBlendTest
-                        | Mode::SearchAdaptiveBlendTest
-                        | Mode::ReprojectBlendTest
-                        | Mode::ReprojectAdaptiveBlendTest
-                        | Mode::OptFlowBlendTest
-                        | Mode::OptFlowAdaptiveBlendTest
-                        | Mode::OptFlowMultiBlendTest
-                        | Mode::OptFlowAdaptiveMultiBlendTest
-                        | Mode::MultiBlendTest
-                        | Mode::AdaptiveMultiBlendTest
-                        | Mode::ReprojectMultiBlendTest
-                        | Mode::ReprojectAdaptiveMultiBlendTest
-                ) {
+                let prefix = if !multi_mode_disabled
+                    && matches!(
+                        mode,
+                        Mode::ClearTest
+                            | Mode::BfiTest
+                            | Mode::CopyTest
+                            | Mode::HistoryCopyTest
+                            | Mode::BlendTest
+                            | Mode::AdaptiveBlendTest
+                            | Mode::SearchBlendTest
+                            | Mode::SearchAdaptiveBlendTest
+                            | Mode::ReprojectBlendTest
+                            | Mode::ReprojectAdaptiveBlendTest
+                            | Mode::OptFlowBlendTest
+                            | Mode::OptFlowAdaptiveBlendTest
+                            | Mode::OptFlowMultiBlendTest
+                            | Mode::OptFlowAdaptiveMultiBlendTest
+                            | Mode::MultiBlendTest
+                            | Mode::AdaptiveMultiBlendTest
+                            | Mode::ReprojectMultiBlendTest
+                            | Mode::ReprojectAdaptiveMultiBlendTest
+                    ) {
                     "vkQueuePresentKHR frame="
                 } else {
                     "vkQueuePresentKHR passthrough frame="
@@ -6959,14 +6984,20 @@ unsafe extern "system" fn layer_queue_present_khr(
                 ));
             }
 
-            match planned_sequence(
-                mode,
-                &planner::SimulatedPresentState {
-                    history_valid: swapchain_state.history_valid,
-                    injection_works: swapchain_state.injection_works,
-                    generated_present_count: swapchain_state.generated_present_count,
-                },
-            ) {
+            let planned_sequence = if multi_mode_disabled {
+                planner::PresentSequence::PassThrough
+            } else {
+                planned_sequence(
+                    mode,
+                    &planner::SimulatedPresentState {
+                        history_valid: swapchain_state.history_valid,
+                        injection_works: swapchain_state.injection_works,
+                        generated_present_count: swapchain_state.generated_present_count,
+                    },
+                )
+            };
+
+            match planned_sequence {
                 planner::PresentSequence::PassThrough => {}
                 planner::PresentSequence::OriginalThenGenerated
                     if matches!(mode, Mode::ClearTest | Mode::BfiTest) && have_queue =>
@@ -7472,6 +7503,41 @@ OMFG_REPROJECT_CONFIDENCE_SCALE = 7.25
         std::env::remove_var("OMFG_HOT_CONFIG_PATH");
         let _ = std::fs::remove_file(path);
         reset_hot_config_state();
+    }
+
+    #[test]
+    fn fixed_multi_can_be_live_disabled_with_zero_generated_frames() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::set_var("OMFG_MULTI_BLEND_COUNT", "0");
+        std::env::remove_var("OMFG_MULTI_BLEND_RESERVED_COUNT");
+        assert_eq!(effective_fixed_multi_generated_frame_count(), 0);
+        assert_eq!(requested_multi_generated_frames_for_swapchain(Mode::MultiBlendTest), 0);
+        std::env::remove_var("OMFG_MULTI_BLEND_COUNT");
+    }
+
+    #[test]
+    fn fixed_multi_zero_count_can_still_reserve_swapchain_headroom() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::set_var("OMFG_MULTI_BLEND_COUNT", "0");
+        std::env::set_var("OMFG_MULTI_BLEND_RESERVED_COUNT", "3");
+        assert_eq!(effective_fixed_multi_generated_frame_count(), 0);
+        assert_eq!(requested_multi_generated_frames_for_swapchain(Mode::MultiBlendTest), 3);
+        let result = maybe_expand_multi_swapchain_min_image_count(Mode::MultiBlendTest, 3, 6, None);
+        assert_eq!(result, 6);
+        std::env::remove_var("OMFG_MULTI_BLEND_COUNT");
+        std::env::remove_var("OMFG_MULTI_BLEND_RESERVED_COUNT");
+    }
+
+    #[test]
+    fn fixed_multi_reserved_count_is_clamped_to_cap() {
+        let _guard = env_test_lock().lock().expect("env test mutex poisoned");
+        std::env::set_var("OMFG_MULTI_BLEND_COUNT", "0");
+        std::env::set_var("OMFG_MULTI_BLEND_RESERVED_COUNT", "99");
+        std::env::set_var("OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES", "4");
+        assert_eq!(requested_multi_generated_frames_for_swapchain(Mode::ReprojectMultiBlendTest), 4);
+        std::env::remove_var("OMFG_MULTI_BLEND_COUNT");
+        std::env::remove_var("OMFG_MULTI_BLEND_RESERVED_COUNT");
+        std::env::remove_var("OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES");
     }
 
     #[test]

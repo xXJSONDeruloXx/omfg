@@ -297,7 +297,8 @@ These are read directly by the Rust Vulkan layer.
 
 | Variable | Accepted values | Default | Effect |
 |---|---|---:|---|
-| `OMFG_MULTI_BLEND_COUNT` | integer `>= 1` | `2` in multi modes | Number of generated frames requested between real frames for non-adaptive multi modes. |
+| `OMFG_MULTI_BLEND_COUNT` | integer `>= 0` | `2` in multi modes | Number of generated frames requested between real frames for fixed non-adaptive multi modes. `0` means "armed but currently off" if swapchain headroom was reserved. |
+| `OMFG_MULTI_BLEND_RESERVED_COUNT` | integer `>= 0` | falls back to `OMFG_MULTI_BLEND_COUNT` | Extra fixed multi-FG headroom to reserve at swapchain creation even if the current live count is lower. Useful for launching with count `0` and hot-switching to `1/2/3` later. |
 | `OMFG_MULTI_SWAPCHAIN_MAX_GENERATED_FRAMES` | integer `>= 1` | `32` | Hard cap used when auto-expanding swapchain image count for multi-FG modes. |
 | `OMFG_ADAPTIVE_MULTI_TARGET_FPS` | float `>= 0.0` | `0.0` | If `> 0`, adaptive multi modes target an output FPS instead of just using threshold rules. |
 | `OMFG_ADAPTIVE_MULTI_INTERVAL_SMOOTHING_ALPHA` | float `0.0..1.0` | `0.25` | Smoothing factor for measured present interval. |
@@ -495,3 +496,19 @@ export OMFG_ADAPTIVE_MULTI_MIN_GENERATED_FRAMES=0
 export OMFG_ADAPTIVE_MULTI_MAX_GENERATED_FRAMES=2
 /home/deck/omfg.sh <steam/proton command>
 ```
+
+## Start multi-FG armed but visually off, then hot-switch live
+
+```bash
+export OMFG_LAYER_MODE=reproject-multi-blend
+export OMFG_MULTI_BLEND_COUNT=0
+export OMFG_MULTI_BLEND_RESERVED_COUNT=3
+/home/deck/omfg.sh <steam/proton command>
+```
+
+With that launch shape:
+
+- `OMFG_MULTI_BLEND_COUNT=0` → effectively native/off
+- `OMFG_MULTI_BLEND_COUNT=1` → 2x FG
+- `OMFG_MULTI_BLEND_COUNT=2` → 3x FG
+- `OMFG_MULTI_BLEND_COUNT=3` → 4x FG
